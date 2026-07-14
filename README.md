@@ -23,6 +23,13 @@ from one clean, fast, native app. Your fonts never leave your machine.
 **[💻 Source Code](https://github.com/TheHolyOneZ/ZFontManager)** ·
 **[👤 The Developer](https://github.com/TheHolyOneZ)**
 
+<br>
+<br>
+
+<img src="main.png" alt="ZFontManager — library view with live font previews, activation toggles and the detail panel" width="920" />
+
+<sub>The library: every family rendered live, one toggle away from any app's font menu.</sub>
+
 </div>
 
 <br>
@@ -240,6 +247,14 @@ browser, it works exactly the way you expect.
   independently of (or together with) your system-wide preference.
 - A **first-launch tour** glides a spotlight over the interface and teaches
   the essentials in a minute. Replayable anytime from Settings.
+
+<div align="center">
+
+<img src="settings.png" alt="ZFontManager settings — watched folders, backup, theme, reduced motion and interface sounds" width="820" />
+
+<sub>Settings: watched folders, one-file backup, themes, motion and sound to taste.</sub>
+
+</div>
 
 ### Back up your curation
 

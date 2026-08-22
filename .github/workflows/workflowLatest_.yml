@@ -1,0 +1,293 @@
+name: Build ZFontManager (Windows + macOS)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - "src/**"
+      - "src-tauri/**"
+      - "public/**"
+      - "index.html"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "vite.config.ts"
+      - "tsconfig.json"
+      - ".github/workflows/build.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: short
+
+  COREPACK_ENABLE_AUTO_PIN: "0"
+  COREPACK_ENABLE_STRICT: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+
+  build-windows:
+    name: Windows x64
+    runs-on: windows-2025
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Set up Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Prepend Cargo bin to PATH
+        shell: pwsh
+        run: |
+          "$env:USERPROFILE\.cargo\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Add x86_64-pc-windows-msvc target
+        run: rustup target add x86_64-pc-windows-msvc
+
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          workspaces: src-tauri
+          key: windows-x64
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build — NSIS + MSI
+        run: pnpm tauri build --bundles nsis,msi --target x86_64-pc-windows-msvc
+
+      - name: List bundle output
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "=== All bundle files ==="
+          Get-ChildItem -Recurse src-tauri/target -Include *.exe,*.msi -ErrorAction SilentlyContinue | Select-Object FullName
+          Write-Host "=== Bundle directory tree ==="
+          Get-ChildItem -Recurse src-tauri/target -Directory -Filter bundle -ErrorAction SilentlyContinue | Select-Object FullName
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: |
+            src-tauri/target/**/release/bundle/**/*.exe
+            src-tauri/target/**/release/bundle/**/*.msi
+          if-no-files-found: error
+          retention-days: 30
+
+
+  build-macos-intel:
+    name: macOS Intel x64 (cross-compiled)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Set up Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Prepend Cargo bin to PATH
+        run: |
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          echo "CARGO=$HOME/.cargo/bin/cargo" >> $GITHUB_ENV
+
+      - name: Add x86_64-apple-darwin target
+        run: rustup target add x86_64-apple-darwin
+
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          workspaces: src-tauri
+          key: macos-intel
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build — DMG (Intel x64, cross-compiled)
+        run: pnpm tauri build --bundles dmg --target x86_64-apple-darwin
+        env:
+          APPLE_SIGNING_IDENTITY: "-"
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: List bundle output
+        if: always()
+        run: |
+          echo "=== All bundle files ==="
+          find src-tauri/target -type f \( -name '*.dmg' -o -name '*.app' \) 2>/dev/null || echo "(nothing found)"
+          echo "=== Bundle directory tree ==="
+          find src-tauri/target -type d -name bundle 2>/dev/null || echo "(no bundle dirs)"
+
+      - name: Upload macOS Intel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-intel-x64
+          path: src-tauri/target/**/release/bundle/**/*.dmg
+          if-no-files-found: error
+          retention-days: 30
+
+
+  build-macos-silicon:
+    name: macOS Apple Silicon
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Set up Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Prepend Cargo bin to PATH
+        run: |
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          echo "CARGO=$HOME/.cargo/bin/cargo" >> $GITHUB_ENV
+
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          workspaces: src-tauri
+          key: macos-silicon
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build — DMG (Apple Silicon, native)
+        run: pnpm tauri build --bundles dmg
+        env:
+          APPLE_SIGNING_IDENTITY: "-"
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: List bundle output
+        if: always()
+        run: |
+          echo "=== All bundle files ==="
+          find src-tauri/target -type f \( -name '*.dmg' -o -name '*.app' \) 2>/dev/null || echo "(nothing found)"
+          echo "=== Bundle directory tree ==="
+          find src-tauri/target -type d -name bundle 2>/dev/null || echo "(no bundle dirs)"
+
+      - name: Upload macOS Apple Silicon artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-apple-silicon
+          path: src-tauri/target/**/release/bundle/**/*.dmg
+          if-no-files-found: error
+          retention-days: 30
+
+
+  draft-release:
+    name: Draft release
+    needs: [build-windows, build-macos-intel, build-macos-silicon]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read app version
+        id: meta
+        run: |
+          VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building draft for v$VERSION"
+
+      - name: Refuse to touch an already-published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+          PUBLISHED=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq "[.[] | select(.tag_name==\"$TAG\" and .draft==false)] | length")
+          if [ "$PUBLISHED" != "0" ]; then
+            echo "::error::A published release $TAG already exists. Bump the version in src-tauri/tauri.conf.json (and package.json, Cargo.toml, src/lib/version.ts) before building."
+            exit 1
+          fi
+
+      - name: Remove any previous draft for this tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+          for ID in $(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq ".[] | select(.tag_name==\"$TAG\" and .draft==true) | .id"); do
+            echo "Deleting stale draft release $ID"
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$ID"
+          done
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Flatten installers into release/
+        run: |
+          mkdir -p release
+          find dist -type f \( \
+            -name '*.msi' -o \
+            -name '*.exe' -o \
+            -name '*.dmg' \
+          \) -exec cp {} release/ \;
+          echo "=== release/ ==="
+          ls -lah release/
+          test -n "$(ls -A release)" || { echo "::error::No installers found"; exit 1; }
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ZFontManager ${{ steps.meta.outputs.tag }}
+          draft: true
+          prerelease: false
+          files: release/*
+          body: |
+            **Draft — Windows and macOS builds only.**
+
+            Linux bundles (`.AppImage`, `.deb`, `.rpm`) are built locally and are
+            not attached here. Download these installers, then run
+            `node prepare-release.mjs` locally to build the Linux bundles, collect
+            everything into the webspace and refresh the download page.
+
+            Delete this draft once the files are downloaded.

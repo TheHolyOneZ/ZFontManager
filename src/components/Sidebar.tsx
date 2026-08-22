@@ -5,6 +5,7 @@ import { openContextMenu } from "../design/primitives/ContextMenu";
 import { spring, springSoft, staggerDelay } from "../design/springs";
 import { allTags, familiesFor, useFontStore, type Family, type Nav } from "../state/fontStore";
 import { exportFontList } from "../lib/menus";
+import { t as translate, useT } from "../lib/i18n";
 
 function navKey(n: Nav): string {
   if (n.kind === "tag") return `tag:${n.tag}`;
@@ -52,6 +53,7 @@ function NavRow({
 }
 
 function NewCollectionInput({ onDone }: { onDone: () => void }) {
+  const t = useT();
   const createCollection = useFontStore((s) => s.createCollection);
   const [name, setName] = useState("");
   const ref = useRef<HTMLInputElement>(null);
@@ -80,8 +82,8 @@ function NewCollectionInput({ onDone }: { onDone: () => void }) {
           if (e.key === "Escape") onDone();
         }}
         onBlur={commit}
-        placeholder="Collection name…"
-        aria-label="New collection name"
+        placeholder={t("side.collectionPlaceholder")}
+        aria-label={t("side.newCollectionAria")}
         spellCheck={false}
       />
     </motion.div>
@@ -97,6 +99,7 @@ function RenameInput({
   onCommit: (name: string) => void;
   onCancel: () => void;
 }) {
+  const t = useT();
   const [name, setName] = useState(initial);
   const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -115,7 +118,7 @@ function RenameInput({
           if (e.key === "Escape") onCancel();
         }}
         onBlur={() => onCommit(name)}
-        aria-label="Rename collection"
+        aria-label={t("side.renameAria")}
         spellCheck={false}
       />
     </div>
@@ -123,6 +126,7 @@ function RenameInput({
 }
 
 export function Sidebar() {
+  const t = useT();
   const fonts = useFontStore((s) => s.fonts);
   const tags = useFontStore((s) => s.tags);
   const collections = useFontStore((s) => s.collections);
@@ -162,18 +166,18 @@ export function Sidebar() {
       transition={springSoft}
     >
       <div className="sidebar-section">
-        <div className="sidebar-heading">Browse</div>
+        <div className="sidebar-heading">{t("side.browse")}</div>
         <NavRow
           nav={{ kind: "library" }}
           icon={<Library size={15} strokeWidth={1.5} />}
-          label="Library"
+          label={t("side.library")}
           count={familyCount}
           index={i++}
         />
         <NavRow
           nav={{ kind: "favorites" }}
           icon={<Star size={15} strokeWidth={1.5} />}
-          label="Favorites"
+          label={t("side.favorites")}
           count={favorites.length}
           index={i++}
         />
@@ -181,10 +185,10 @@ export function Sidebar() {
 
       <div className="sidebar-section">
         <div className="sidebar-heading sidebar-heading-row">
-          <span>Collections</span>
+          <span>{t("side.collections")}</span>
           <motion.button
             className="sidebar-add"
-            aria-label="New collection"
+            aria-label={t("side.newCollection")}
             onClick={() => setCreating(true)}
             whileTap={{ scale: 0.9 }}
           >
@@ -220,9 +224,9 @@ export function Sidebar() {
               index={i++}
               onContextMenu={(e) =>
                 openContextMenu(e, [
-                  { label: "Rename", action: () => setRenaming(name) },
+                  { label: translate("menu.rename"), action: () => setRenaming(name) },
                   {
-                    label: "Export font list (metadata)…",
+                    label: translate("menu.exportFontList"),
                     action: () => {
                       const map = familiesFor(fonts, tags);
                       const fams = (collections[name] ?? [])
@@ -233,7 +237,7 @@ export function Sidebar() {
                   },
                   { kind: "separator" },
                   {
-                    label: "Delete collection",
+                    label: translate("menu.deleteCollection"),
                     danger: true,
                     action: () => void deleteCollection(name),
                   },
@@ -244,14 +248,14 @@ export function Sidebar() {
         )}
         {collectionNames.length === 0 && !creating && (
           <button className="sidebar-hint" onClick={() => setCreating(true)}>
-            Create your first collection →
+            {t("side.firstCollection")}
           </button>
         )}
       </div>
 
       {tagCounts.size > 0 && (
         <div className="sidebar-section">
-          <div className="sidebar-heading">Tags</div>
+          <div className="sidebar-heading">{t("side.tags")}</div>
           {[...tagCounts.entries()].map(([tag, count]) => (
             <NavRow
               key={tag}
@@ -263,7 +267,7 @@ export function Sidebar() {
               onContextMenu={(e) =>
                 openContextMenu(e, [
                   {
-                    label: `Remove tag "${tag}" everywhere`,
+                    label: translate("menu.removeTagEverywhere", { tag }),
                     danger: true,
                     action: () => removeTagEverywhere(tag),
                   },
@@ -278,14 +282,14 @@ export function Sidebar() {
         <NavRow
           nav={{ kind: "trash" }}
           icon={<Trash2 size={15} strokeWidth={1.5} />}
-          label="Trash"
+          label={t("side.trash")}
           count={trash.length}
           index={i++}
         />
         <NavRow
           nav={{ kind: "about" }}
           icon={<Info size={15} strokeWidth={1.5} />}
-          label="About"
+          label={t("side.about")}
           index={i++}
         />
 
@@ -300,7 +304,7 @@ export function Sidebar() {
           <span className="nav-icon">
             <Keyboard size={15} strokeWidth={1.5} />
           </span>
-          <span className="nav-label">Shortcuts</span>
+          <span className="nav-label">{t("side.shortcuts")}</span>
           <kbd className="kbd nav-kbd">?</kbd>
         </motion.button>
       </div>

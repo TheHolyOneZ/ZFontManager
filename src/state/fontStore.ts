@@ -11,6 +11,14 @@ import {
 import { toast } from "../design/primitives/Toast";
 import { setSoundLevel, type SoundLevel } from "../lib/sound";
 import { applyTheme, type ThemePref } from "../lib/theme";
+import {
+  getLocalePref,
+  hydrateLocalePref,
+  isLocalePref,
+  setLocalePref as applyLocalePref,
+  t,
+  type LocalePref,
+} from "../lib/i18n";
 
 export const SIZES = [8, 14, 18, 24, 32, 48, 64, 96] as const;
 
@@ -65,6 +73,7 @@ interface FontStore {
   motionPref: MotionPref;
   soundPref: SoundLevel;
   themePref: ThemePref;
+  localePref: LocalePref;
 
   bulkTagFor: string[] | null;
 
@@ -118,6 +127,7 @@ interface FontStore {
   setMotionPref: (pref: MotionPref) => void;
   setSoundPref: (pref: SoundLevel) => void;
   setThemePref: (pref: ThemePref) => void;
+  setLocalePref: (pref: LocalePref) => void;
   startTour: () => void;
   setTourStep: (step: number) => void;
   endTour: () => void;
@@ -152,6 +162,7 @@ function persistPrefs(get: () => FontStore) {
       motionPref: s.motionPref,
       soundPref: s.soundPref,
       themePref: s.themePref,
+      localePref: s.localePref,
       onboarded: s.onboarded,
     });
   }, 600);
@@ -178,11 +189,12 @@ export const useFontStore = create<FontStore>((set, get) => ({
   motionPref: "system",
   soundPref: "off",
   themePref: "dark",
+  localePref: getLocalePref(),
   bulkTagFor: null,
   onboarded: false,
   tourStep: null,
 
-  sampleText: "The quick brown fox jumps over the lazy dog",
+  sampleText: t("preview.defaultSample"),
   sizeIndex: 3,
   viewMode: "grid",
   sort: "name",
@@ -223,8 +235,10 @@ export const useFontStore = create<FontStore>((set, get) => ({
           ? (prefs.themePref as ThemePref)
           : "dark",
         onboarded: prefs.onboarded === true,
+        localePref: isLocalePref(prefs.localePref) ? prefs.localePref : get().localePref,
       });
       setSoundLevel(get().soundPref);
+      hydrateLocalePref(get().localePref);
     } catch {
 
     }
@@ -248,10 +262,10 @@ export const useFontStore = create<FontStore>((set, get) => ({
             const after = get().fonts.length;
             if (after !== before) {
               toast.success(
-                "Library updated",
+                t("toast.libraryUpdated"),
                 after > before
-                  ? `${after - before} new font${after - before === 1 ? "" : "s"} found`
-                  : `${before - after} font${before - after === 1 ? "" : "s"} removed`,
+                  ? t("toast.newFontsFound", { count: after - before })
+                  : t("toast.fontsRemoved", { count: before - after }),
               );
             }
           });
@@ -274,7 +288,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       set({ fonts, tags, collections, favorites, notes, trash, phase: "ready" });
     } catch (e) {
       set({ phase: "error" });
-      toast.error("Couldn't scan your fonts", String(e));
+      toast.error(t("toast.couldntScan"), String(e));
     }
   },
 
@@ -296,7 +310,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
           f.family === family && f.deactivatable ? { ...f, active: !active } : f,
         ),
       });
-      toast.error(active ? "Couldn't activate font" : "Couldn't deactivate font", String(e));
+      toast.error(t(active ? "toast.couldntActivate" : "toast.couldntDeactivate"), String(e));
     }
   },
 
@@ -312,8 +326,8 @@ export const useFontStore = create<FontStore>((set, get) => ({
     try {
       await ipc.setFontsActiveSession(paths);
       toast.success(
-        `${family} active until close`,
-        "It deactivates itself when you quit ZFontManager",
+        t("toast.activeUntilClose", { family }),
+        t("toast.activeUntilCloseSub"),
         "toggle-on",
       );
     } catch (e) {
@@ -322,7 +336,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
           f.family === family && f.deactivatable ? { ...f, active: false } : f,
         ),
       });
-      toast.error("Couldn't activate font", String(e));
+      toast.error(t("toast.couldntActivate"), String(e));
     }
   },
 
@@ -333,17 +347,19 @@ export const useFontStore = create<FontStore>((set, get) => ({
         set({ fonts: [...get().fonts, ...result.installed] });
         const families = [...new Set(result.installed.map((f) => f.family))];
         toast.success(
-          `Installed ${families.length === 1 ? families[0] : `${families.length} font families`}`,
+          families.length === 1
+            ? t("toast.installedOne", { name: families[0] })
+            : t("toast.installedMany", { count: families.length }),
           undefined,
           "install",
         );
       }
-      for (const err of result.errors) toast.error("Install failed", err);
+      for (const err of result.errors) toast.error(t("toast.installFailed"), err);
       if (result.installed.length === 0 && result.errors.length === 0) {
-        toast.error("Nothing to install", "No font files found in the drop");
+        toast.error(t("toast.nothingToInstall"), t("toast.nothingToInstallSub"));
       }
     } catch (e) {
-      toast.error("Install failed", String(e));
+      toast.error(t("toast.installFailed"), String(e));
     }
   },
 
@@ -352,7 +368,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       (f) => f.family === family && f.source !== "system",
     );
     if (faces.length === 0) {
-      toast.error("Can't uninstall a system font", "System fonts are protected by the OS");
+      toast.error(t("toast.cantUninstallSystem"), t("toast.cantUninstallSystemSub"));
       return;
     }
     const paths = [...new Set(faces.map((f) => f.path))];
@@ -379,23 +395,23 @@ export const useFontStore = create<FontStore>((set, get) => ({
           void ipc.setCollection(name, next);
         }
       }
-      toast.success(`Moved ${family} to trash`, "Restore it any time from the Trash", "trash", {
-        label: "Undo",
+      toast.success(t("toast.movedToTrash", { family }), t("toast.movedToTrashSub"), "trash", {
+        label: t("toast.undo"),
         run: () => {
           void (async () => {
             try {
               for (const id of entryIds) await ipc.restoreFromTrash(id);
               set({ trash: await ipc.listTrash() });
               await get().rescan();
-              toast.success(`Restored ${family}`, undefined, "restore");
+              toast.success(t("toast.restoredFamily", { family }), undefined, "restore");
             } catch (e) {
-              toast.error("Couldn't restore font", String(e));
+              toast.error(t("toast.couldntRestore"), String(e));
             }
           })();
         },
       });
     } catch (e) {
-      toast.error("Couldn't move to trash", String(e));
+      toast.error(t("toast.couldntMoveToTrash"), String(e));
     }
   },
 
@@ -404,9 +420,9 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.restoreFromTrash(entryId);
       set({ trash: await ipc.listTrash() });
       await get().rescan();
-      toast.success("Font restored", undefined, "restore");
+      toast.success(t("toast.fontRestored"), undefined, "restore");
     } catch (e) {
-      toast.error("Couldn't restore font", String(e));
+      toast.error(t("toast.couldntRestore"), String(e));
     }
   },
 
@@ -415,7 +431,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.deleteTrashEntry(entryId);
       set({ trash: await ipc.listTrash() });
     } catch (e) {
-      toast.error("Couldn't delete font", String(e));
+      toast.error(t("toast.couldntDelete"), String(e));
     }
   },
 
@@ -423,9 +439,9 @@ export const useFontStore = create<FontStore>((set, get) => ({
     try {
       await ipc.emptyTrash();
       set({ trash: [] });
-      toast.success("Trash emptied", undefined, "trash-empty");
+      toast.success(t("toast.trashEmptied"), undefined, "trash-empty");
     } catch (e) {
-      toast.error("Couldn't empty trash", String(e));
+      toast.error(t("toast.couldntEmptyTrash"), String(e));
     }
   },
 
@@ -439,7 +455,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.setTags(family, tags);
     } catch (e) {
       set({ tags: prev });
-      toast.error("Couldn't save tags", String(e));
+      toast.error(t("toast.couldntSaveTags"), String(e));
     }
   },
 
@@ -447,7 +463,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
     const clean = name.trim();
     if (!clean) return;
     if (get().collections[clean]) {
-      toast.error("Collection already exists", `"${clean}" is already in your sidebar`);
+      toast.error(t("toast.collectionExists"), t("toast.collectionExistsSub", { name: clean }));
       return;
     }
     const prev = get().collections;
@@ -460,12 +476,12 @@ export const useFontStore = create<FontStore>((set, get) => ({
     try {
       await ipc.setCollection(clean, families);
       toast.success(
-        `Created "${clean}"`,
-        pending ? `${pending} added` : "Right-click any font to add it",
+        t("toast.createdCollection", { name: clean }),
+        pending ? t("toast.familyAdded", { name: pending }) : t("toast.rightClickToAdd"),
       );
     } catch (e) {
       set({ collections: prev });
-      toast.error("Couldn't create collection", String(e));
+      toast.error(t("toast.couldntCreateCollection"), String(e));
     }
   },
 
@@ -482,7 +498,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.deleteCollection(name);
     } catch (e) {
       set({ collections: prev });
-      toast.error("Couldn't delete collection", String(e));
+      toast.error(t("toast.couldntDeleteCollection"), String(e));
     }
   },
 
@@ -491,7 +507,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
     if (!clean || clean === from) return;
     const prev = get().collections;
     if (prev[clean]) {
-      toast.error("Name taken", `"${clean}" already exists`);
+      toast.error(t("toast.nameTaken"), t("toast.nameTakenSub", { name: clean }));
       return;
     }
     const next = { ...prev, [clean]: prev[from] ?? [] };
@@ -508,7 +524,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.renameCollection(from, clean);
     } catch (e) {
       set({ collections: prev });
-      toast.error("Couldn't rename collection", String(e));
+      toast.error(t("toast.couldntRenameCollection"), String(e));
     }
   },
 
@@ -523,7 +539,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.setCollection(collection, families);
     } catch (e) {
       set({ collections: prev });
-      toast.error("Couldn't update collection", String(e));
+      toast.error(t("toast.couldntUpdateCollection"), String(e));
     }
   },
 
@@ -535,7 +551,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.setFavorite(family, favorite);
     } catch (e) {
       set({ favorites: prev });
-      toast.error("Couldn't update favorites", String(e));
+      toast.error(t("toast.couldntUpdateFavorites"), String(e));
     }
   },
 
@@ -549,7 +565,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.setNote(family, note);
     } catch (e) {
       set({ notes: prev });
-      toast.error("Couldn't save note", String(e));
+      toast.error(t("toast.couldntSaveNote"), String(e));
     }
   },
 
@@ -571,14 +587,16 @@ export const useFontStore = create<FontStore>((set, get) => ({
     try {
       await ipc.setFontsActive(paths, active);
       toast.success(
-        `${active ? "Activated" : "Deactivated"} ${families.length} families`,
+        t(active ? "toast.activatedCount" : "toast.deactivatedCount", {
+          count: families.length,
+        }),
         undefined,
         undefined,
-        { label: "Undo", run: () => void get().setFamiliesActiveBulk(families, !active) },
+        { label: t("toast.undo"), run: () => void get().setFamiliesActiveBulk(families, !active) },
       );
     } catch (e) {
       set({ fonts: prevFonts });
-      toast.error("Bulk update failed", String(e));
+      toast.error(t("toast.bulkUpdateFailed"), String(e));
     }
   },
 
@@ -624,7 +642,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.setSettings(settings);
     } catch (e) {
       set({ settings: prev });
-      toast.error("Couldn't save settings", String(e));
+      toast.error(t("toast.couldntSaveSettings"), String(e));
     }
   },
 
@@ -642,6 +660,12 @@ export const useFontStore = create<FontStore>((set, get) => ({
   setThemePref: (themePref) => {
     set({ themePref });
     applyTheme(themePref, true);
+    persistPrefs(get);
+  },
+
+  setLocalePref: (localePref) => {
+    set({ localePref });
+    applyLocalePref(localePref);
     persistPrefs(get);
   },
 
@@ -714,9 +738,9 @@ export const useFontStore = create<FontStore>((set, get) => ({
     };
     try {
       await ipc.writeTextFile(dest, JSON.stringify(payload, null, 2));
-      toast.success("Library data exported", dest, "install");
+      toast.success(t("toast.libraryDataExported"), dest, "install");
     } catch (e) {
-      toast.error("Export failed", String(e));
+      toast.error(t("toast.exportFailed"), String(e));
     }
   },
 
@@ -732,7 +756,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
         notes: Record<string, string>;
       }>;
       if (d?.app !== "ZFontManager") {
-        toast.error("Not a ZFontManager export", "Pick a file created by Export library data");
+        toast.error(t("toast.notAnExport"), t("toast.notAnExportSub"));
         return;
       }
       let touched = 0;
@@ -775,12 +799,12 @@ export const useFontStore = create<FontStore>((set, get) => ({
         }
       }
       toast.success(
-        "Library data imported",
-        `${touched} ${touched === 1 ? "entry" : "entries"} merged in`,
+        t("toast.libraryDataImported"),
+        t("toast.entriesMerged", { count: touched }),
         "restore",
       );
     } catch (e) {
-      toast.error("Import failed", String(e));
+      toast.error(t("toast.importFailed"), String(e));
     }
   },
   setNav: (nav) => set({ nav, selectedFamily: null, selection: [] }),

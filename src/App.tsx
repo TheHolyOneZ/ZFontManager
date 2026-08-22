@@ -24,8 +24,10 @@ import { buildFamilyMenu } from "./lib/menus";
 import { Toaster } from "./design/primitives/Toast";
 import { spring } from "./design/springs";
 import { familiesFor, selectVisibleFamilies, useFontStore, type Nav } from "./state/fontStore";
+import { useT } from "./lib/i18n";
 
 function ScanSkeleton() {
+  const t = useT();
   const { done, total } = useFontStore((s) => s.scanProgress);
   return (
     <div className="scan-skeleton">
@@ -33,34 +35,34 @@ function ScanSkeleton() {
         <div key={i} className="skeleton skeleton-card" style={{ animationDelay: `${i * 0.08}s` }} />
       ))}
       <div className="scan-progress tabular">
-        {total > 0 ? `Reading ${done} of ${total} font files…` : "Finding your fonts…"}
+        {total > 0 ? t("scan.reading", { done, total }) : t("scan.finding")}
       </div>
     </div>
   );
 }
 
 function EmptyLibrary({ searching, nav }: { searching: boolean; nav: Nav }) {
+  const t = useT();
 
   let icon = <Type size={26} strokeWidth={1.5} />;
-  let title = "Your library is waiting";
-  let hint =
-    "Drag font files, folders, or .zip archives anywhere in this window to install them →";
+  let title = t("empty.library.title");
+  let hint = t("empty.library.body");
   if (searching) {
     icon = <SearchX size={26} strokeWidth={1.5} />;
-    title = "No fonts match";
-    hint = "Try a shorter search, fewer filters — or a different tag.";
+    title = t("empty.search.title");
+    hint = t("empty.search.body");
   } else if (nav.kind === "favorites") {
     icon = <Star size={26} strokeWidth={1.5} />;
-    title = "No favorites yet";
-    hint = "Open a font and click the star — favorites collect your go-to typefaces here.";
+    title = t("empty.favorites.title");
+    hint = t("empty.favorites.body");
   } else if (nav.kind === "collection") {
     icon = <FolderOpen size={26} strokeWidth={1.5} />;
-    title = "This collection is empty";
-    hint = `Right-click any font → Collections → “${nav.name}” to add it here.`;
+    title = t("empty.collection.title");
+    hint = t("empty.collection.body", { name: nav.name });
   } else if (nav.kind === "tag") {
     icon = <TagIcon size={26} strokeWidth={1.5} />;
-    title = "Nothing wears this tag";
-    hint = "Right-click a font and pick Tags to label it.";
+    title = t("empty.tag.title");
+    hint = t("empty.tag.body");
   }
   return (
     <motion.div

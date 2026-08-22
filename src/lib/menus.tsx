@@ -19,58 +19,62 @@ import { toast } from "../design/primitives/Toast";
 import { allTags, familiesFor, useFontStore, type Family } from "../state/fontStore";
 import { ipc } from "./ipc";
 import { exportSpecimen } from "./specimen";
+import { t } from "./i18n";
 
 export async function exportFamily(family: Family) {
   const dir = await open({
     directory: true,
-    title: `Export ${family.name} — choose a folder`,
+    title: t("menu.exportFamilyTitle", { name: family.name }),
   });
   if (!dir) return;
   const paths = [...new Set(family.faces.map((f) => f.path))];
   try {
     const n = await ipc.exportFonts(paths, dir);
     toast.success(
-      `Exported ${family.name}`,
-      `${n} file${n === 1 ? "" : "s"} copied to ${dir}`,
+      t("toast.exported", { name: family.name }),
+      t("toast.filesCopied", { count: n, dir }),
     );
   } catch (e) {
-    toast.error("Export failed", String(e));
+    toast.error(t("toast.exportFailed"), String(e));
   }
 }
 
 export async function exportFace(path: string, suggestedName: string) {
   const dest = await save({
     defaultPath: suggestedName,
-    title: "Export font file",
+    title: t("menu.exportFontFile"),
   });
   if (!dest) return;
   try {
     await ipc.exportFont(path, dest);
-    toast.success("Font exported", dest);
+    toast.success(t("toast.fontExported"), dest);
   } catch (e) {
-    toast.error("Export failed", String(e));
+    toast.error(t("toast.exportFailed"), String(e));
   }
 }
 
 function copyText(text: string, what: string) {
   navigator.clipboard
     .writeText(text)
-    .then(() => toast.success(`${what} copied`, undefined, "tick"))
-    .catch((e) => toast.error("Couldn't copy", String(e)));
+    .then(() => toast.success(t("toast.copied", { what }), undefined, "tick"))
+    .catch((e) => toast.error(t("toast.couldntCopy"), String(e)));
 }
 
 async function exportFamilies(families: Family[]) {
   const dir = await open({
     directory: true,
-    title: `Export ${families.length} families — choose a folder`,
+    title: t("menu.exportFamiliesTitle", { count: families.length }),
   });
   if (!dir) return;
   const paths = [...new Set(families.flatMap((f) => f.faces.map((x) => x.path)))];
   try {
     const n = await ipc.exportFonts(paths, dir);
-    toast.success(`Exported ${families.length} families`, `${n} files copied to ${dir}`);
+    toast.success(
+      t("toast.exportedFamilies", { count: families.length }),
+      t("toast.filesCopied", { count: n, dir }),
+    );
   } catch (e) {
-    toast.error("Export failed", String(e));
+    toast.error(t("toast.exportFailed"), String(e));
   }
 }
 
@@ -78,27 +82,29 @@ async function exportFamilies(families: Family[]) {
 export async function exportFontList(families: Family[], title: string) {
   const dest = await save({
     defaultPath: `${title.replace(/[^\w-]+/g, "-").toLowerCase()}-fonts.md`,
-    title: "Export font list (metadata only)",
+    title: t("menu.exportListTitle"),
   });
   if (!dest) return;
   const lines = [
-    `# ${title} — font list`,
+    `# ${t("fontlist.title", { title })}`,
     "",
-    `${families.length} families · exported by ZFontManager`,
+    t("fontlist.sub", { count: families.length }),
     "",
     ...families.flatMap((f) => [
       `## ${f.name}`,
-      `- Styles: ${f.faces.map((x) => x.style).join(", ")}`,
-      `- Format: ${f.formats.join(", ").toUpperCase()}${f.isVariable ? " (variable)" : ""}`,
-      ...(f.foundry ? [`- Foundry: ${f.foundry}`] : []),
+      `- ${t("fontlist.styles")}: ${f.faces.map((x) => x.style).join(", ")}`,
+      `- ${t("fontlist.format")}: ${f.formats.join(", ").toUpperCase()}${
+        f.isVariable ? ` (${t("fontlist.variable")})` : ""
+      }`,
+      ...(f.foundry ? [`- ${t("fontlist.foundry")}: ${f.foundry}`] : []),
       "",
     ]),
   ];
   try {
     await ipc.writeTextFile(dest, lines.join("\n"));
-    toast.success("Font list exported", dest);
+    toast.success(t("toast.fontListExported"), dest);
   } catch (e) {
-    toast.error("Export failed", String(e));
+    toast.error(t("toast.exportFailed"), String(e));
   }
 }
 
@@ -113,26 +119,26 @@ function buildBulkMenu(names: string[]): MenuItem[] {
   const n = names.length;
 
   return [
-    { kind: "heading", label: `${n} fonts selected` },
+    { kind: "heading", label: t("menu.selectedCount", { count: n }) },
     {
-      label: `Compare ${Math.min(n, 4)} fonts`,
+      label: t("menu.compareCount", { count: Math.min(n, 4) }),
       icon: <Columns2 size={14} strokeWidth={1.5} />,
       disabled: n < 2,
       action: () => s.openCompare(names),
     },
     { kind: "separator" },
     {
-      label: `Activate ${n}`,
+      label: t("menu.activateCount", { count: n }),
       icon: <Power size={14} strokeWidth={1.5} />,
       action: () => void s.setFamiliesActiveBulk(names, true),
     },
     {
-      label: `Deactivate ${n}`,
+      label: t("menu.deactivateCount", { count: n }),
       icon: <Power size={14} strokeWidth={1.5} />,
       action: () => void s.setFamiliesActiveBulk(names, false),
     },
     { kind: "separator" },
-    { kind: "heading", label: "Add all to collection" },
+    { kind: "heading", label: t("menu.addAllToCollection") },
     ...collectionNames.map(
       (name): MenuItem => ({
         kind: "check",
@@ -153,7 +159,7 @@ function buildBulkMenu(names: string[]): MenuItem[] {
       }),
     ),
     { kind: "separator" },
-    { kind: "heading", label: "Tag all" },
+    { kind: "heading", label: t("menu.tagAll") },
     ...[...allTags(s.tags).keys()].map(
       (tag): MenuItem => ({
         kind: "check",
@@ -163,23 +169,23 @@ function buildBulkMenu(names: string[]): MenuItem[] {
       }),
     ),
     {
-      label: "New tag…",
+      label: t("menu.newTag"),
       icon: <Plus size={14} strokeWidth={1.5} />,
       action: () => s.setBulkTagFor(names),
     },
     { kind: "separator" },
     {
-      label: `Export ${n} families…`,
+      label: t("menu.exportFamiliesCount", { count: n }),
       icon: <Download size={14} strokeWidth={1.5} />,
       action: () => void exportFamilies(families),
     },
     {
-      label: "Export font list (metadata)…",
+      label: t("menu.exportFontList"),
       icon: <FileText size={14} strokeWidth={1.5} />,
-      action: () => void exportFontList(families, "Selection"),
+      action: () => void exportFontList(families, t("menu.selection")),
     },
     {
-      label: `Move ${n} to Trash`,
+      label: t("menu.moveCountToTrash", { count: n }),
       icon: <Trash2 size={14} strokeWidth={1.5} />,
       danger: true,
       action: () => {
@@ -204,7 +210,7 @@ export function buildFamilyMenu(family: Family): MenuItem[] {
   const favorite = s.favorites.includes(family.name);
   const items: MenuItem[] = [
     {
-      label: family.active ? "Deactivate" : "Activate",
+      label: t(family.active ? "menu.deactivate" : "menu.activate"),
       icon: <Power size={14} strokeWidth={1.5} />,
       disabled: !family.deactivatable,
       action: () => void s.setFamilyActive(family.name, !family.active),
@@ -212,19 +218,19 @@ export function buildFamilyMenu(family: Family): MenuItem[] {
     ...(!family.active && family.deactivatable
       ? [
           {
-            label: "Activate until close",
+            label: t("menu.activateUntilClose"),
             icon: <Timer size={14} strokeWidth={1.5} />,
             action: () => void useFontStore.getState().activateFamilySession(family.name),
           } satisfies MenuItem,
         ]
       : []),
     {
-      label: favorite ? "Remove from Favorites" : "Add to Favorites",
+      label: t(favorite ? "menu.removeFromFavorites" : "menu.addToFavorites"),
       icon: <Star size={14} strokeWidth={1.5} />,
       action: () => void s.toggleFavorite(family.name),
     },
     { kind: "separator" },
-    { kind: "heading", label: "Collections" },
+    { kind: "heading", label: t("menu.collections") },
     ...collectionNames.map(
       (name): MenuItem => ({
         kind: "check",
@@ -234,37 +240,37 @@ export function buildFamilyMenu(family: Family): MenuItem[] {
       }),
     ),
     {
-      label: "New collection…",
+      label: t("menu.newCollection"),
       icon: <FolderPlus size={14} strokeWidth={1.5} />,
       action: () => useFontStore.setState({ pendingCollectionFor: family.name }),
     },
     { kind: "separator" },
     {
-      label: "Export family…",
+      label: t("menu.exportFamily"),
       icon: <Download size={14} strokeWidth={1.5} />,
       action: () => void exportFamily(family),
     },
     {
-      label: "Export specimen…",
+      label: t("menu.exportSpecimen"),
       icon: <ImageIcon size={14} strokeWidth={1.5} />,
       action: () => void exportSpecimen(family, useFontStore.getState().sampleText),
     },
     {
-      label: "Copy family name",
+      label: t("menu.copyFamilyName"),
       icon: <Copy size={14} strokeWidth={1.5} />,
-      action: () => copyText(family.name, "Family name"),
+      action: () => copyText(family.name, t("copy.familyName")),
     },
     {
-      label: "Copy file path",
+      label: t("menu.copyFilePath"),
       icon: <Copy size={14} strokeWidth={1.5} />,
-      action: () => copyText(lead.path, "File path"),
+      action: () => copyText(lead.path, t("copy.filePath")),
     },
     {
-      label: "Show in file manager",
+      label: t("menu.showInFileManager"),
       icon: <FolderOpen size={14} strokeWidth={1.5} />,
       action: () =>
         revealItemInDir(lead.path).catch((e) =>
-          toast.error("Couldn't open file manager", String(e)),
+          toast.error(t("toast.couldntOpenFileManager"), String(e)),
         ),
     },
   ];
@@ -273,7 +279,7 @@ export function buildFamilyMenu(family: Family): MenuItem[] {
     items.push(
       { kind: "separator" },
       {
-        label: "Move to Trash",
+        label: t("menu.moveToTrash"),
         icon: <Trash2 size={14} strokeWidth={1.5} />,
         danger: true,
         action: () => void s.uninstallFamily(family.name),

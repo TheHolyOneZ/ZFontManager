@@ -5,6 +5,7 @@ import { toast } from "../design/primitives/Toast";
 import { loadFaceCss } from "./fontLoader";
 import { ipc } from "./ipc";
 import type { Family } from "../state/fontStore";
+import { t } from "./i18n";
 
 const W = 1100;
 const PAD = 72;
@@ -24,17 +25,17 @@ function ellipsize(ctx: CanvasRenderingContext2D, text: string, max: number): st
 
 export async function exportSpecimen(family: Family, sampleText: string) {
   const dest = await save({
-    title: "Export specimen",
+    title: t("specimen.saveTitle"),
     defaultPath: `${family.name.replace(/[\\/:*?"<>|]/g, "-")} specimen.png`,
-    filters: [{ name: "PNG image", extensions: ["png"] }],
+    filters: [{ name: t("specimen.pngFilter"), extensions: ["png"] }],
   });
   if (!dest) return;
   try {
     const bytes = await renderSpecimenPng(family, sampleText);
     await ipc.writeBinaryFile(dest, Array.from(bytes));
-    toast.success("Specimen exported", dest, "install");
+    toast.success(t("toast.specimenExported"), dest, "install");
   } catch (e) {
-    toast.error("Couldn't export specimen", String(e));
+    toast.error(t("toast.couldntExportSpecimen"), String(e));
   }
 }
 
@@ -57,7 +58,7 @@ export async function renderSpecimenPng(
       })),
     );
 
-    const text = sampleText.trim() || "The quick brown fox jumps over the lazy dog";
+    const text = sampleText.trim() || t("preview.defaultSample");
     const inner = W - PAD * 2;
 
     // Measure style-row wrapping before sizing the canvas.
@@ -104,10 +105,10 @@ export async function renderSpecimenPng(
     ctx.fillStyle = SUB;
     ctx.font = `13px ${UI}`;
     const meta = [
-      `${family.faces.length} style${family.faces.length === 1 ? "" : "s"}`,
+      t("detail.stylesCount", { count: family.faces.length }),
       family.formats.join(" · ").toUpperCase(),
       family.foundry ?? undefined,
-      family.classification !== "unknown" ? family.classification : undefined,
+      family.classification !== "unknown" ? t(`class.${family.classification}`) : undefined,
     ]
       .filter(Boolean)
       .join("   ·   ");
@@ -149,7 +150,7 @@ export async function renderSpecimenPng(
     if (styles.length > 1) {
       ctx.fillStyle = SUB;
       ctx.font = `10px ${UI}`;
-      ctx.fillText("STYLES", PAD, y + 10);
+      ctx.fillText(t("specimen.stylesHeading"), PAD, y + 10);
       y += 34;
       let x = PAD;
       for (const s of styles) {
@@ -175,7 +176,7 @@ export async function renderSpecimenPng(
     ctx.fillStyle = SUB;
     ctx.font = `10px ${UI}`;
     ctx.fillText(new Date().toISOString().slice(0, 10), PAD, H - 30);
-    const brand = "Specimen · ZFontManager";
+    const brand = t("specimen.brand");
     ctx.fillText(brand, W - PAD - ctx.measureText(brand).width, H - 30);
 
     const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png"));

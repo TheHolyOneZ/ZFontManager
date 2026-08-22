@@ -15,14 +15,18 @@ import { useState, type CSSProperties } from "react";
 import { springSnappy, springSoft } from "../design/springs";
 import { SIZES, useFontStore, type SortMode } from "../state/fontStore";
 import type { Classification } from "../lib/ipc";
+import { useT, type TKey } from "../lib/i18n";
 
-const SORT_LABELS: Record<SortMode, string> = {
-  name: "Name",
-  styles: "Styles",
-  size: "File size",
+const SORT_MODES = ["name", "styles", "size"] as const satisfies readonly SortMode[];
+
+const SORT_KEYS: Record<SortMode, TKey> = {
+  name: "sort.name",
+  styles: "sort.styles",
+  size: "sort.size",
 };
 
 function SortMenu() {
+  const t = useT();
   const sort = useFontStore((s) => s.sort);
   const setSort = useFontStore((s) => s.setSort);
   const [open, setOpen] = useState(false);
@@ -37,7 +41,7 @@ function SortMenu() {
         whileTap={{ scale: 0.96 }}
       >
         <ArrowUpDown size={13} strokeWidth={1.5} />
-        <span>{SORT_LABELS[sort]}</span>
+        <span>{t(SORT_KEYS[sort])}</span>
       </motion.button>
       <AnimatePresence>
         {open && (
@@ -51,7 +55,7 @@ function SortMenu() {
               exit={{ opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.13 } }}
               transition={springSnappy}
             >
-              {(Object.keys(SORT_LABELS) as SortMode[]).map((mode) => (
+              {SORT_MODES.map((mode) => (
                 <li key={mode}>
                   <button
                     role="option"
@@ -62,7 +66,7 @@ function SortMenu() {
                       setOpen(false);
                     }}
                   >
-                    <span>{SORT_LABELS[mode]}</span>
+                    <span>{t(SORT_KEYS[mode])}</span>
                     {sort === mode && <Check size={13} strokeWidth={2} />}
                   </button>
                 </li>
@@ -75,28 +79,29 @@ function SortMenu() {
   );
 }
 
-const CLASS_LABELS: [Classification, string][] = [
-  ["serif", "Serif"],
-  ["sans", "Sans"],
-  ["mono", "Mono"],
-  ["display", "Display"],
-  ["script", "Script"],
-];
+const CLASS_FILTERS = [
+  "serif",
+  "sans",
+  "mono",
+  "display",
+  "script",
+] as const satisfies readonly Classification[];
 
-const SCRIPT_LABELS: [string, string][] = [
-  ["latin", "Latin"],
-  ["cyrillic", "Cyrillic"],
-  ["greek", "Greek"],
-  ["arabic", "Arabic"],
-  ["hebrew", "Hebrew"],
-  ["devanagari", "Devanagari"],
-  ["thai", "Thai"],
-  ["cjk", "CJK"],
-  ["korean", "Korean"],
-  ["vietnamese", "Vietnamese"],
-];
+const SCRIPT_FILTERS = [
+  "latin",
+  "cyrillic",
+  "greek",
+  "arabic",
+  "hebrew",
+  "devanagari",
+  "thai",
+  "cjk",
+  "korean",
+  "vietnamese",
+] as const;
 
 function FilterMenu() {
+  const t = useT();
   const classFilter = useFontStore((s) => s.classFilter);
   const toggleClassFilter = useFontStore((s) => s.toggleClassFilter);
   const scriptFilter = useFontStore((s) => s.scriptFilter);
@@ -114,7 +119,7 @@ function FilterMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label="Filter fonts"
+        aria-label={t("filter.aria")}
         whileTap={{ scale: 0.96 }}
       >
         <Filter size={13} strokeWidth={1.5} />
@@ -134,9 +139,9 @@ function FilterMenu() {
               transition={springSnappy}
             >
               <li className="filter-heading" role="none">
-                Classification
+                {t("filter.classification")}
               </li>
-              {CLASS_LABELS.map(([c, label]) => (
+              {CLASS_FILTERS.map((c) => (
                 <li key={c}>
                   <button
                     role="option"
@@ -144,16 +149,16 @@ function FilterMenu() {
                     className={classFilter.includes(c) ? "sort-item sort-active" : "sort-item"}
                     onClick={() => toggleClassFilter(c)}
                   >
-                    <span>{label}</span>
+                    <span>{t(`class.${c}`)}</span>
                     {classFilter.includes(c) && <Check size={13} strokeWidth={2} />}
                   </button>
                 </li>
               ))}
               <li className="sort-sep" role="none" />
               <li className="filter-heading" role="none">
-                Language support
+                {t("filter.languageSupport")}
               </li>
-              {SCRIPT_LABELS.map(([sc, label]) => (
+              {SCRIPT_FILTERS.map((sc) => (
                 <li key={sc}>
                   <button
                     role="option"
@@ -161,7 +166,7 @@ function FilterMenu() {
                     className={scriptFilter.includes(sc) ? "sort-item sort-active" : "sort-item"}
                     onClick={() => toggleScriptFilter(sc)}
                   >
-                    <span>{label}</span>
+                    <span>{t(`script.${sc}`)}</span>
                     {scriptFilter.includes(sc) && <Check size={13} strokeWidth={2} />}
                   </button>
                 </li>
@@ -174,7 +179,7 @@ function FilterMenu() {
                   className={variableOnly ? "sort-item sort-active" : "sort-item"}
                   onClick={() => setVariableOnly(!variableOnly)}
                 >
-                  <span>Variable only</span>
+                  <span>{t("filter.variableOnly")}</span>
                   {variableOnly && <Check size={13} strokeWidth={2} />}
                 </button>
               </li>
@@ -187,12 +192,13 @@ function FilterMenu() {
 }
 
 function RescanButton() {
+  const t = useT();
   const rescan = useFontStore((s) => s.rescan);
   const scanning = useFontStore((s) => s.phase === "scanning");
   return (
     <motion.button
       className="rescan-btn"
-      aria-label="Rescan font directories"
+      aria-label={t("top.rescan")}
       disabled={scanning}
       onClick={() => void rescan()}
       whileTap={{ scale: 0.94 }}
@@ -213,6 +219,7 @@ function RescanButton() {
 }
 
 function CompareButton() {
+  const t = useT();
   const selection = useFontStore((s) => s.selection);
   const picking = useFontStore((s) => s.comparePicking);
   const openCompare = useFontStore((s) => s.openCompare);
@@ -223,10 +230,10 @@ function CompareButton() {
       className={`compare-btn ${armed ? "compare-armed" : picking ? "compare-picking" : ""}`}
       aria-label={
         armed
-          ? `Compare ${Math.min(selection.length, 4)} selected fonts`
+          ? t("compare.ariaArmed", { count: Math.min(selection.length, 4) })
           : picking
-            ? "Cancel picking fonts to compare"
-            : "Compare fonts"
+            ? t("compare.ariaCancelPicking")
+            : t("compare.ariaIdle")
       }
       onClick={() => {
         if (armed) openCompare(selection);
@@ -238,16 +245,17 @@ function CompareButton() {
       <Columns2 size={14} strokeWidth={1.5} />
       <span>
         {armed
-          ? `Compare ${Math.min(selection.length, 4)}`
+          ? t("compare.buttonCount", { count: Math.min(selection.length, 4) })
           : picking
-            ? `Picking… ${selection.length}/4`
-            : "Compare"}
+            ? t("compare.picking", { count: selection.length })
+            : t("compare.button")}
       </span>
     </motion.button>
   );
 }
 
 export function TopBar() {
+  const t = useT();
   const sampleText = useFontStore((s) => s.sampleText);
   const setSampleText = useFontStore((s) => s.setSampleText);
   const sizeIndex = useFontStore((s) => s.sizeIndex);
@@ -271,8 +279,8 @@ export function TopBar() {
         <input
           value={sampleText}
           onChange={(e) => setSampleText(e.target.value)}
-          placeholder="Type a preview sentence…"
-          aria-label="Preview text"
+          placeholder={t("top.samplePlaceholder")}
+          aria-label={t("top.sampleAria")}
           spellCheck={false}
         />
       </div>
@@ -285,7 +293,7 @@ export function TopBar() {
           step={1}
           value={sizeIndex}
           onChange={(e) => setSizeIndex(Number(e.target.value))}
-          aria-label="Preview size"
+          aria-label={t("top.sizeAria")}
         />
         <span className="size-value tabular">{SIZES[sizeIndex]}</span>
       </div>
@@ -296,8 +304,8 @@ export function TopBar() {
           id="global-search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search…"
-          aria-label="Search fonts"
+          placeholder={t("top.searchPlaceholder")}
+          aria-label={t("top.searchAria")}
           spellCheck={false}
         />
       </div>
@@ -310,7 +318,7 @@ export function TopBar() {
 
       <RescanButton />
 
-      <div className="view-toggle" role="tablist" aria-label="View mode">
+      <div className="view-toggle" role="tablist" aria-label={t("top.viewMode")}>
         {(["grid", "list", "waterfall"] as const).map((mode) => (
           <motion.button
             key={mode}

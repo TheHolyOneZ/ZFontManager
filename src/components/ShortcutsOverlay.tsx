@@ -4,45 +4,47 @@ import { useEffect } from "react";
 import { springSoft } from "../design/springs";
 import { useFontStore } from "../state/fontStore";
 import { useFocusTrap } from "../lib/useFocusTrap";
+import { useT, type TKey } from "../lib/i18n";
 
-const SECTIONS: [string, [string[], string][]][] = [
+const SECTIONS: [TKey, [string[], TKey][]][] = [
   [
-    "Navigate",
+    "sc.navigate",
     [
-      [["Ctrl", "K"], "Command palette"],
-      [["/"], "Focus search"],
-      [["↑", "↓", "←", "→"], "Move through the library"],
-      [["Home", "End"], "First / last font"],
-      [["Tab"], "Walk every control (cards included)"],
-      [["Esc"], "Close panels, deselect"],
+      [["Ctrl", "K"], "sc.palette"],
+      [["/"], "sc.focusSearch"],
+      [["↑", "↓", "←", "→"], "sc.move"],
+      [["Home", "End"], "sc.firstLast"],
+      [["Tab"], "sc.tab"],
+      [["Esc"], "sc.esc"],
     ],
   ],
   [
-    "Select",
+    "sc.select",
     [
-      [["Enter"], "Select the focused card"],
-      [["Shift", "↑ ↓"], "Extend the selection"],
-      [["Ctrl", "Click"], "Add to selection"],
-      [["Shift", "Click"], "Select a range"],
+      [["Enter"], "sc.selectFocused"],
+      [["Shift", "↑ ↓"], "sc.extend"],
+      [["Ctrl", "Click"], "sc.addToSelection"],
+      [["Shift", "Click"], "sc.selectRange"],
     ],
   ],
   [
-    "Act on selection",
+    "sc.act",
     [
-      [["Space"], "Activate / deactivate"],
-      [["C"], "Compare selected fonts (2–4)"],
-      [["F"], "Favorite / unfavorite"],
-      [["Del"], "Move to trash (restorable)"],
-      [["Shift", "F10"], "Context menu — arrows to browse it"],
+      [["Space"], "sc.toggleActive"],
+      [["C"], "sc.compare"],
+      [["F"], "sc.favorite"],
+      [["Del"], "sc.trash"],
+      [["Shift", "F10"], "sc.contextMenu"],
     ],
   ],
   [
-    "Help",
-    [[["?"], "This overlay"]],
+    "sc.help",
+    [[["?"], "sc.thisOverlay"]],
   ],
 ];
 
 export function ShortcutsOverlay() {
+  const t = useT();
   const open = useFontStore((s) => s.helpOpen);
   const setHelpOpen = useFontStore((s) => s.setHelpOpen);
   const trapRef = useFocusTrap<HTMLDivElement>(open);
@@ -74,15 +76,15 @@ export function ShortcutsOverlay() {
             transition={springSoft}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
-            aria-label="Keyboard shortcuts"
+            aria-label={t("shortcuts.aria")}
           >
             <header className="compare-head">
               <h2 className="compare-title">
-                <Keyboard size={15} strokeWidth={1.5} /> Shortcuts
+                <Keyboard size={15} strokeWidth={1.5} /> {t("shortcuts.title")}
               </h2>
               <button
                 className="detail-close"
-                aria-label="Close shortcuts"
+                aria-label={t("shortcuts.close")}
                 onClick={() => setHelpOpen(false)}
               >
                 <X size={15} strokeWidth={1.5} />
@@ -91,18 +93,18 @@ export function ShortcutsOverlay() {
             <div className="shortcuts-body">
               {SECTIONS.map(([section, rows]) => (
                 <section key={section} className="shortcuts-section">
-                  <h3 className="shortcuts-heading">{section}</h3>
+                  <h3 className="shortcuts-heading">{t(section)}</h3>
                   <ul className="shortcuts-list">
                     {rows.map(([keys, what]) => (
                       <li key={what} className="shortcuts-row">
                         <span className="shortcuts-keys">
                           {keys.map((k) => (
                             <kbd key={k} className="kbd">
-                              {k}
+                              {k === "Click" ? t("key.click") : k}
                             </kbd>
                           ))}
                         </span>
-                        <span className="shortcuts-what">{what}</span>
+                        <span className="shortcuts-what">{t(what)}</span>
                       </li>
                     ))}
                   </ul>

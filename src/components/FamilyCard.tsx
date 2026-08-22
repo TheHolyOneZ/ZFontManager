@@ -9,6 +9,7 @@ import { openContextMenu } from "../design/primitives/ContextMenu";
 import { conflictsFor, SIZES, useFontStore, type Family } from "../state/fontStore";
 import { playStar } from "../lib/sound";
 import type { FontFace } from "../lib/ipc";
+import { useT } from "../lib/i18n";
 
 export function FormatBadge({ format, isVariable }: { format: string; isVariable: boolean }) {
   if (isVariable) return <span className="badge badge-variable">VAR</span>;
@@ -28,6 +29,7 @@ function FacePreview({
   index: number;
   synthesize: boolean;
 }) {
+  const t = useT();
   const { fontFamily, failed } = useFontCss(face);
   return (
     <motion.div
@@ -58,7 +60,7 @@ function FacePreview({
           </motion.span>
         ) : failed ? (
           <span key="failed" className="face-sample face-failed">
-            preview unavailable
+            {t("card.previewUnavailable")}
           </span>
         ) : (
           <motion.span
@@ -73,6 +75,7 @@ function FacePreview({
 }
 
 export const FamilyCard = memo(function FamilyCard({ family }: { family: Family }) {
+  const t = useT();
   const sampleText = useFontStore((s) => s.sampleText);
   const sizeIndex = useFontStore((s) => s.sizeIndex);
   const setFamilyActive = useFontStore((s) => s.setFamilyActive);
@@ -129,7 +132,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
         {family.faces.length > 1 && (
           <motion.button
             className="card-expand"
-            aria-label={expanded ? "Collapse styles" : "Expand styles"}
+            aria-label={t(expanded ? "card.collapseStyles" : "card.expandStyles")}
             aria-expanded={expanded}
             onClick={(e) => {
               e.stopPropagation();
@@ -146,7 +149,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
               <ChevronRight size={13} strokeWidth={1.5} />
             </motion.span>
             <span className="tabular">
-              {family.faces.length} styles
+              {t("card.stylesCount", { count: family.faces.length })}
             </span>
           </motion.button>
         )}
@@ -155,14 +158,14 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
           <span
             className="conflict-badge"
             title=""
-            aria-label="Name conflict with another installed font"
+            aria-label={t("card.conflict")}
           >
             <AlertTriangle size={13} strokeWidth={1.5} />
           </span>
         )}
         <motion.button
           className={`star-btn ${favorite ? "star-on" : ""}`}
-          aria-label={favorite ? `Unfavorite ${family.name}` : `Favorite ${family.name}`}
+          aria-label={t(favorite ? "card.unfavorite" : "card.favorite", { name: family.name })}
           aria-pressed={favorite}
           onClick={(e) => {
             e.stopPropagation();
@@ -177,7 +180,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
           on={family.active}
           disabled={!family.deactivatable}
           onChange={(on) => void setFamilyActive(family.name, on)}
-          label={`${family.active ? "Deactivate" : "Activate"} ${family.name}`}
+          label={t(family.active ? "card.deactivate" : "card.activate", { name: family.name })}
         />
       </header>
 
@@ -200,7 +203,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
             </motion.p>
           ) : failed ? (
             <p key="failed" className="preview-text preview-failed">
-              This format can't be previewed yet
+              {t("card.noPreview")}
             </p>
           ) : (
             <motion.span

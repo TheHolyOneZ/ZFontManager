@@ -70,7 +70,9 @@
   --fs-40: 40px;
   --fs-56: 56px;
 
-  --font-ui: "Inter Variable", "Inter", system-ui, sans-serif;
+  --font-ui: "Inter Variable", "Inter", system-ui, "Segoe UI", "Microsoft YaHei",
+    "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Noto Sans SC",
+    "Source Han Sans SC", "WenQuanYi Micro Hei", sans-serif;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", monospace;
 
 
@@ -146,6 +148,19 @@ body,
 
 html.theme-switching body {
   transition: background var(--t-state) ease, color var(--t-state) ease;
+}
+
+
+:root[lang="ja"] {
+  --font-ui: "Inter Variable", "Inter", system-ui, "Segoe UI", "Yu Gothic UI",
+    "Yu Gothic", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans CJK JP",
+    "Noto Sans JP", "Meiryo", sans-serif;
+}
+
+:root[lang="zh-TW"] {
+  --font-ui: "Inter Variable", "Inter", system-ui, "Segoe UI", "Microsoft JhengHei",
+    "PingFang TC", "Noto Sans CJK TC", "Noto Sans TC", "Source Han Sans TC",
+    sans-serif;
 }
 
 body {

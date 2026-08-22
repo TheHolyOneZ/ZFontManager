@@ -12,8 +12,9 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.1.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.2.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
+[![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
 
 <br>
@@ -53,8 +54,10 @@ from one clean, fast, native app. Your fonts never leave your machine.
   - [Export a specimen sheet](#export-a-specimen-sheet)
   - [The command palette](#the-command-palette)
   - [Themes, sound &amp; motion](#themes-sound--motion)
+  - [Your language](#your-language)
   - [Back up your curation](#back-up-your-curation)
 - [Keyboard shortcuts](#-keyboard-shortcuts)
+- [Translations](#-translations)
 - [Getting ZFontManager](#-getting-zfontmanager)
 - [Platform notes](#-platform-notes)
 - [Privacy](#-privacy)
@@ -77,11 +80,14 @@ ZFontManager is the answer to both:
 - **One app, three platforms.** The same clean interface on Linux, Windows and macOS.
 - **Native and fast.** Not a website in a box — it starts quickly, scrolls
   smoothly through hundreds of families, and feels at home on your desktop.
+- **Speaks your language.** Nine languages, picked up from your system
+  automatically — English, Deutsch, Español, Français, Português (Brasil),
+  Русский, 日本語, 简体中文 and 繁體中文.
 - **Yours.** Free, open source (GPL-3.0), no account, no cloud, no telemetry.
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.1.0**. It's already very usable
+> ZFontManager is currently at **version 0.2.0**. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
 
@@ -256,6 +262,16 @@ browser, it works exactly the way you expect.
 
 </div>
 
+### Your language
+
+ZFontManager follows your desktop language on first launch, and you can
+override it any time in **Settings → Language** (or from the command palette).
+
+Available now: **English**, **Deutsch**, **Español**, **Français**,
+**Português (Brasil)**, **Русский**, **日本語**, **简体中文**, **繁體中文**.
+
+More are welcome — see [Translations](#-translations).
+
 ### Back up your curation
 
 Your tags, collections, favorites and notes are the real work — the fonts
@@ -313,6 +329,29 @@ same list in a pretty overlay.
 | <kbd>?</kbd> | Show the shortcuts overlay |
 
 </details>
+
+---
+
+## 🌍 Translations
+
+Every piece of interface text lives in one JSON file per language under
+[`src/locales/`](src/locales). Adding a language, or fixing a single phrase that
+reads awkwardly, is a small pull request — no Rust, no TypeScript, no build
+tooling required.
+
+- **[docs/TRANSLATING.md](docs/TRANSLATING.md)** — how to add a language or fix wording
+- `pnpm i18n:check` — reports coverage, unknown keys and placeholder mistakes
+
+Two ways to help, both fine:
+
+- **Send a pull request** with a new or corrected language file.
+- **Just ask.** Open an issue naming the language you want and it gets added —
+  no git required. Reviewing a draft as a native speaker counts too, and is
+  often the part that's actually missing.
+
+Partial translations are welcome: anything not yet translated falls back to
+English, so a half-finished language file still ships something useful. Plural
+rules are handled per language — the checker tells you which forms yours needs.
 
 ---
 

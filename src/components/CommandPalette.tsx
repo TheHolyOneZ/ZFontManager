@@ -5,6 +5,7 @@ import {
   FolderOpen,
   Info,
   Keyboard,
+  Languages,
   LayoutGrid,
   Library,
   List,
@@ -21,6 +22,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { springSnappy } from "../design/springs";
 import { familiesFor, useFontStore } from "../state/fontStore";
 import { useFocusTrap } from "../lib/useFocusTrap";
+import { LOCALES, useLocalePref, useT, type LocalePref } from "../lib/i18n";
 
 const IS_MAC = navigator.platform.toUpperCase().includes("MAC");
 
@@ -41,6 +43,8 @@ function score(label: string, q: string): number {
 }
 
 export function CommandPalette() {
+  const t = useT();
+  const localePref = useLocalePref();
   const open = useFontStore((s) => s.paletteOpen);
   const setOpen = useFontStore((s) => s.setPaletteOpen);
   const [query, setQuery] = useState("");
@@ -65,25 +69,25 @@ export function CommandPalette() {
     const base: Cmd[] = [
       {
         id: "nav-library",
-        label: "Go to Library",
+        label: t("palette.goLibrary"),
         icon: <Library size={14} strokeWidth={1.5} />,
         run: () => s.setNav({ kind: "library" }),
       },
       {
         id: "nav-favorites",
-        label: "Go to Favorites",
+        label: t("palette.goFavorites"),
         icon: <Star size={14} strokeWidth={1.5} />,
         run: () => s.setNav({ kind: "favorites" }),
       },
       {
         id: "nav-trash",
-        label: "Go to Trash",
+        label: t("palette.goTrash"),
         icon: <Trash2 size={14} strokeWidth={1.5} />,
         run: () => s.setNav({ kind: "trash" }),
       },
       {
         id: "nav-about",
-        label: "About ZFontManager",
+        label: t("palette.about"),
         icon: <Info size={14} strokeWidth={1.5} />,
         run: () => s.setNav({ kind: "about" }),
       },
@@ -92,42 +96,55 @@ export function CommandPalette() {
         .map(
           (name): Cmd => ({
             id: `nav-col-${name}`,
-            label: `Open collection: ${name}`,
+            label: t("palette.openCollection", { name }),
             icon: <FolderOpen size={14} strokeWidth={1.5} />,
             run: () => s.setNav({ kind: "collection", name }),
           }),
         ),
       {
         id: "view-grid",
-        label: "View as grid",
+        label: t("palette.viewGrid"),
         icon: <LayoutGrid size={14} strokeWidth={1.5} />,
         run: () => s.setViewMode("grid"),
       },
       {
         id: "view-list",
-        label: "View as list",
+        label: t("palette.viewList"),
         icon: <List size={14} strokeWidth={1.5} />,
         run: () => s.setViewMode("list"),
       },
       {
         id: "view-waterfall",
-        label: "View as waterfall",
+        label: t("palette.viewWaterfall"),
         icon: <Rows3 size={14} strokeWidth={1.5} />,
         run: () => s.setViewMode("waterfall"),
       },
       ...(["dark", "light", "system"] as const).map(
-        (t): Cmd => ({
-          id: `theme-${t}`,
-          label: `Theme: ${t[0].toUpperCase()}${t.slice(1)}`,
+        (mode): Cmd => ({
+          id: `theme-${mode}`,
+          label: t("palette.theme", { name: t(`theme.${mode}`) }),
           icon: <SunMoon size={14} strokeWidth={1.5} />,
-          run: () => s.setThemePref(t),
+          run: () => s.setThemePref(mode),
+        }),
+      ),
+      ...(["system", ...LOCALES.map((l) => l.code)] as LocalePref[]).map(
+        (code): Cmd => ({
+          id: `lang-${code}`,
+          label: t("palette.language", {
+            name:
+              code === "system"
+                ? t("settings.languageSystem")
+                : (LOCALES.find((l) => l.code === code)?.name ?? code),
+          }),
+          icon: <Languages size={14} strokeWidth={1.5} />,
+          run: () => s.setLocalePref(code),
         }),
       ),
       ...(s.selection.length >= 2
         ? [
             {
               id: "compare-selected",
-              label: `Compare ${Math.min(s.selection.length, 4)} selected fonts`,
+              label: t("palette.compareSelected", { count: Math.min(s.selection.length, 4) }),
               icon: <Columns2 size={14} strokeWidth={1.5} />,
               run: () => s.openCompare(s.selection),
             } satisfies Cmd,
@@ -135,19 +152,19 @@ export function CommandPalette() {
         : []),
       {
         id: "rescan",
-        label: "Rescan font folders",
+        label: t("palette.rescan"),
         icon: <RefreshCw size={14} strokeWidth={1.5} />,
         run: () => void s.rescan(),
       },
       {
         id: "settings",
-        label: "Open Settings",
+        label: t("palette.settings"),
         icon: <Settings size={14} strokeWidth={1.5} />,
         run: () => s.setSettingsOpen(true),
       },
       {
         id: "shortcuts",
-        label: "Keyboard shortcuts",
+        label: t("palette.shortcuts"),
         icon: <Keyboard size={14} strokeWidth={1.5} />,
         run: () => s.setHelpOpen(true),
       },
@@ -173,7 +190,7 @@ export function CommandPalette() {
             .map(({ f }) => ({
               id: `font-${f.name}`,
               label: f.name,
-              hint: `${f.faces.length} style${f.faces.length === 1 ? "" : "s"}`,
+              hint: t("detail.stylesCount", { count: f.faces.length }),
               icon: <Type size={14} strokeWidth={1.5} />,
               run: () => {
                 close();
@@ -184,7 +201,7 @@ export function CommandPalette() {
         : [];
 
     return [...ranked, ...fonts].slice(0, 12);
-  }, [open, query, setOpen]);
+  }, [open, query, setOpen, t, localePref]);
 
   useEffect(() => {
     setCursor(0);
@@ -232,7 +249,7 @@ export function CommandPalette() {
             transition={springSnappy}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
-            aria-label="Command palette"
+            aria-label={t("palette.aria")}
             onKeyDown={onKey}
           >
             <div className="palette-input">
@@ -241,8 +258,8 @@ export function CommandPalette() {
                 ref={inputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Jump to a font or run a command…"
-                aria-label="Command palette search"
+                placeholder={t("palette.placeholder")}
+                aria-label={t("palette.searchAria")}
                 spellCheck={false}
               />
               <span className="palette-hint">
@@ -267,7 +284,7 @@ export function CommandPalette() {
                 </li>
               ))}
               {commands.length === 0 && (
-                <li className="palette-empty">Nothing matches — try fewer letters.</li>
+                <li className="palette-empty">{t("palette.empty")}</li>
               )}
             </ul>
           </motion.div>

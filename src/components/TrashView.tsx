@@ -3,8 +3,10 @@ import { ArchiveRestore, Trash2 } from "lucide-react";
 import { spring, staggerDelay } from "../design/springs";
 import { openContextMenu } from "../design/primitives/ContextMenu";
 import { useFontStore } from "../state/fontStore";
+import { useT } from "../lib/i18n";
 
 export function TrashView() {
+  const t = useT();
   const trash = useFontStore((s) => s.trash);
   const restoreTrash = useFontStore((s) => s.restoreTrash);
   const deleteTrashEntry = useFontStore((s) => s.deleteTrashEntry);
@@ -19,8 +21,8 @@ export function TrashView() {
         transition={spring}
       >
         <span className="empty-tile"><Trash2 size={26} strokeWidth={1.5} /></span>
-        <h2>Trash is empty</h2>
-        <p>Fonts you remove land here first — nothing is ever silently deleted.</p>
+        <h2>{t("trash.emptyTitle")}</h2>
+        <p>{t("trash.emptyBody")}</p>
       </motion.div>
     );
   }
@@ -29,7 +31,7 @@ export function TrashView() {
     <div className="trash-view">
       <div className="trash-bar">
         <span className="tabular">
-          {trash.length} font file{trash.length === 1 ? "" : "s"} in trash
+          {t("trash.count", { count: trash.length })}
         </span>
         <motion.button
           className="trash-empty-btn"
@@ -37,7 +39,7 @@ export function TrashView() {
           whileHover={{ y: -1 }}
           whileTap={{ scale: 0.97 }}
         >
-          Empty Trash
+          {t("trash.empty")}
         </motion.button>
       </div>
       <div className="trash-list">
@@ -53,10 +55,10 @@ export function TrashView() {
               layout
               onContextMenu={(e) =>
                 openContextMenu(e, [
-                  { label: "Restore", action: () => void restoreTrash(entry.id) },
+                  { label: t("trash.restore"), action: () => void restoreTrash(entry.id) },
                   { kind: "separator" },
                   {
-                    label: "Delete permanently",
+                    label: t("trash.deletePermanently"),
                     danger: true,
                     action: () => void deleteTrashEntry(entry.id),
                   },
@@ -74,7 +76,7 @@ export function TrashView() {
                 whileTap={{ scale: 0.95 }}
               >
                 <ArchiveRestore size={14} strokeWidth={1.5} />
-                Restore
+                {t("trash.restore")}
               </motion.button>
               <motion.button
                 className="trash-action trash-delete"
@@ -83,7 +85,7 @@ export function TrashView() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Trash2 size={14} strokeWidth={1.5} />
-                Delete
+                {t("trash.delete")}
               </motion.button>
             </motion.div>
           ))}

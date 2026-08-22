@@ -1,22 +1,37 @@
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { AnimatePresence, motion } from "motion/react";
 import {
+  ArrowUpRight,
+  BookOpen,
   DatabaseBackup,
   Eye,
   FolderDown,
   FolderOpen,
   FolderPlus,
+  Languages,
+  MessageSquarePlus,
   SunMoon,
   Volume2,
   X,
 } from "lucide-react";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { springSoft } from "../design/springs";
 import { useFontStore } from "../state/fontStore";
 import { useFocusTrap } from "../lib/useFocusTrap";
+import { useT } from "../lib/i18n";
+import { LanguageSelect } from "./LanguageSelect";
+import { APP_LICENSE, APP_VERSION } from "../lib/version";
+
+const TRANSLATE_GUIDE_URL =
+  "https://github.com/TheHolyOneZ/ZFontManager/blob/main/docs/TRANSLATING.md";
+
+const REQUEST_LANGUAGE_URL =
+  "https://github.com/TheHolyOneZ/ZFontManager/issues/new?title=Language%20request%3A%20";
 
 export function SettingsOverlay() {
+  const t = useT();
   const openState = useFontStore((s) => s.settingsOpen);
   const setSettingsOpen = useFontStore((s) => s.setSettingsOpen);
   const settings = useFontStore((s) => s.settings);
@@ -37,14 +52,14 @@ export function SettingsOverlay() {
   }, [openState, setSettingsOpen]);
 
   const addFolder = async () => {
-    const dir = await open({ directory: true, title: "Add a folder to scan" });
+    const dir = await open({ directory: true, title: t("settings.addFolderTitle") });
     if (!dir || settings.extraDirs.includes(dir)) return;
     void updateSettings({ ...settings, extraDirs: [...settings.extraDirs, dir] });
   };
 
   const exportData = async () => {
     const dest = await save({
-      title: "Export library data",
+      title: t("settings.exportDataTitle"),
       defaultPath: "zfontmanager-library.json",
       filters: [{ name: "JSON", extensions: ["json"] }],
     });
@@ -53,7 +68,7 @@ export function SettingsOverlay() {
 
   const importData = async () => {
     const src = await open({
-      title: "Import library data",
+      title: t("settings.importDataTitle"),
       multiple: false,
       filters: [{ name: "JSON", extensions: ["json"] }],
     });
@@ -80,14 +95,14 @@ export function SettingsOverlay() {
             transition={springSoft}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
-            aria-label="Settings"
+            aria-label={t("settings.title")}
           >
             <div className="settings-scroll">
             <header className="compare-head">
-              <h2 className="compare-title">Settings</h2>
+              <h2 className="compare-title">{t("settings.title")}</h2>
               <button
                 className="detail-close"
-                aria-label="Close settings"
+                aria-label={t("settings.close")}
                 onClick={() => setSettingsOpen(false)}
               >
                 <X size={15} strokeWidth={1.5} />
@@ -95,30 +110,63 @@ export function SettingsOverlay() {
             </header>
 
             <section className="settings-section">
-              <div className="detail-heading">Library</div>
+              <div className="detail-heading">{t("settings.language")}</div>
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">
+                    <Languages size={13} strokeWidth={1.5} /> {t("settings.language")}
+                  </div>
+                  <div className="settings-sub">{t("settings.languageSub")}</div>
+                </div>
+                <LanguageSelect />
+              </div>
+              <div className="settings-translate">
+                <div className="settings-translate-text">
+                  <div className="settings-translate-title">{t("settings.translateTitle")}</div>
+                  <div className="settings-sub">{t("settings.translateSub")}</div>
+                </div>
+                <div className="settings-data-actions">
+                  <button
+                    className="settings-data-btn"
+                    onClick={() => void openUrl(TRANSLATE_GUIDE_URL).catch(() => {})}
+                  >
+                    <BookOpen size={13} strokeWidth={1.5} />
+                    {t("settings.translateGuide")}
+                    <ArrowUpRight size={12} strokeWidth={1.5} className="settings-btn-arrow" />
+                  </button>
+                  <button
+                    className="settings-data-btn"
+                    onClick={() => void openUrl(REQUEST_LANGUAGE_URL).catch(() => {})}
+                  >
+                    <MessageSquarePlus size={13} strokeWidth={1.5} />
+                    {t("settings.requestLanguage")}
+                    <ArrowUpRight size={12} strokeWidth={1.5} className="settings-btn-arrow" />
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section className="settings-section">
+              <div className="detail-heading">{t("settings.library")}</div>
 
               <div className="settings-row">
                 <div>
-                  <div className="settings-label">Watch for new fonts</div>
-                  <div className="settings-sub">
-                    Rescan automatically when fonts appear in scanned folders
-                  </div>
+                  <div className="settings-label">{t("settings.watch")}</div>
+                  <div className="settings-sub">{t("settings.watchSub")}</div>
                 </div>
                 <PillToggle
                   on={settings.watchEnabled}
                   onChange={(on) =>
                     void updateSettings({ ...settings, watchEnabled: on })
                   }
-                  label="Watch for new fonts"
+                  label={t("settings.watch")}
                 />
               </div>
 
               <div className="settings-row settings-col">
                 <div>
-                  <div className="settings-label">Watched folders</div>
-                  <div className="settings-sub">
-                    Scanned in addition to your system font directories
-                  </div>
+                  <div className="settings-label">{t("settings.watchedFolders")}</div>
+                  <div className="settings-sub">{t("settings.watchedFoldersSub")}</div>
                 </div>
                 <div className="settings-folders">
                   {settings.extraDirs.map((dir) => (
@@ -126,7 +174,7 @@ export function SettingsOverlay() {
                       <FolderOpen size={13} strokeWidth={1.5} />
                       <span className="detail-mono settings-folder-path">{dir}</span>
                       <button
-                        aria-label={`Remove ${dir}`}
+                        aria-label={t("settings.removeFolder", { dir })}
                         onClick={() =>
                           void updateSettings({
                             ...settings,
@@ -140,57 +188,57 @@ export function SettingsOverlay() {
                   ))}
                   <button className="settings-add-folder" onClick={() => void addFolder()}>
                     <FolderPlus size={13} strokeWidth={1.5} />
-                    Add folder…
+                    {t("settings.addFolder")}
                   </button>
                 </div>
               </div>
             </section>
 
             <section className="settings-section">
-              <div className="detail-heading">Library data</div>
+              <div className="detail-heading">{t("settings.libraryData")}</div>
               <div className="settings-row">
                 <div>
                   <div className="settings-label">
-                    <DatabaseBackup size={13} strokeWidth={1.5} /> Tags, collections & notes
+                    <DatabaseBackup size={13} strokeWidth={1.5} /> {t("settings.curation")}
                   </div>
-                  <div className="settings-sub">
-                    Back up your curation to a file, or merge one in from another machine
-                  </div>
+                  <div className="settings-sub">{t("settings.curationSub")}</div>
                 </div>
                 <div className="settings-data-actions">
                   <button className="settings-data-btn" onClick={() => void exportData()}>
                     <FolderDown size={13} strokeWidth={1.5} />
-                    Export…
+                    {t("settings.export")}
                   </button>
                   <button className="settings-data-btn" onClick={() => void importData()}>
                     <FolderOpen size={13} strokeWidth={1.5} />
-                    Import…
+                    {t("settings.import")}
                   </button>
                 </div>
               </div>
             </section>
 
             <section className="settings-section">
-              <div className="detail-heading">Appearance</div>
+              <div className="detail-heading">{t("settings.appearance")}</div>
               <div className="settings-row">
                 <div>
                   <div className="settings-label">
-                    <SunMoon size={13} strokeWidth={1.5} /> Theme
+                    <SunMoon size={13} strokeWidth={1.5} /> {t("settings.theme")}
                   </div>
-                  <div className="settings-sub">
-                    Same glass, different light — System follows your desktop
-                  </div>
+                  <div className="settings-sub">{t("settings.themeSub")}</div>
                 </div>
-                <div className="view-toggle sound-toggle" role="radiogroup" aria-label="Theme">
-                  {(["dark", "light", "system"] as const).map((t) => (
+                <div
+                  className="view-toggle sound-toggle"
+                  role="radiogroup"
+                  aria-label={t("settings.theme")}
+                >
+                  {(["dark", "light", "system"] as const).map((mode) => (
                     <button
-                      key={t}
+                      key={mode}
                       role="radio"
-                      aria-checked={themePref === t}
-                      className={`view-btn sound-btn ${themePref === t ? "view-btn-active" : ""}`}
-                      onClick={() => setThemePref(t)}
+                      aria-checked={themePref === mode}
+                      className={`view-btn sound-btn ${themePref === mode ? "view-btn-active" : ""}`}
+                      onClick={() => setThemePref(mode)}
                     >
-                      {t === "dark" ? "Dark" : t === "light" ? "Light" : "System"}
+                      {t(`theme.${mode}`)}
                     </button>
                   ))}
                 </div>
@@ -198,32 +246,32 @@ export function SettingsOverlay() {
               <div className="settings-row">
                 <div>
                   <div className="settings-label">
-                    <Eye size={13} strokeWidth={1.5} /> Reduce motion
+                    <Eye size={13} strokeWidth={1.5} /> {t("settings.reduceMotion")}
                   </div>
-                  <div className="settings-sub">
-                    Replace springs with quick fades, regardless of system setting
-                  </div>
+                  <div className="settings-sub">{t("settings.reduceMotionSub")}</div>
                 </div>
                 <PillToggle
                   on={motionPref === "reduced"}
                   onChange={(on) => setMotionPref(on ? "reduced" : "system")}
-                  label="Reduce motion"
+                  label={t("settings.reduceMotion")}
                 />
               </div>
             </section>
 
             <section className="settings-section">
-              <div className="detail-heading">Sound</div>
+              <div className="detail-heading">{t("settings.sound")}</div>
               <div className="settings-row">
                 <div>
                   <div className="settings-label">
-                    <Volume2 size={13} strokeWidth={1.5} /> Interface sounds
+                    <Volume2 size={13} strokeWidth={1.5} /> {t("settings.interfaceSounds")}
                   </div>
-                  <div className="settings-sub">
-                    Soft synthesized feedback for toggles and notifications
-                  </div>
+                  <div className="settings-sub">{t("settings.interfaceSoundsSub")}</div>
                 </div>
-                <div className="view-toggle sound-toggle" role="radiogroup" aria-label="Sound level">
+                <div
+                  className="view-toggle sound-toggle"
+                  role="radiogroup"
+                  aria-label={t("settings.soundLevelAria")}
+                >
                   {(["off", "subtle", "on"] as const).map((lvl) => (
                     <button
                       key={lvl}
@@ -232,7 +280,7 @@ export function SettingsOverlay() {
                       className={`view-btn sound-btn ${soundPref === lvl ? "view-btn-active" : ""}`}
                       onClick={() => setSoundPref(lvl)}
                     >
-                      {lvl === "off" ? "Off" : lvl === "subtle" ? "Subtle" : "On"}
+                      {t(`sound.${lvl}`)}
                     </button>
                   ))}
                 </div>
@@ -241,7 +289,7 @@ export function SettingsOverlay() {
 
             <footer className="settings-footer tabular">
               <img className="settings-footer-icon" src="/favicon.png" alt="" draggable={false} />
-              ZFontManager 0.1.0 · GPL-3.0 · fonts stay on your machine ·{" "}
+              ZFontManager {APP_VERSION} · {APP_LICENSE} · {t("settings.footerNote")} ·{" "}
               <button
                 className="settings-replay"
                 onClick={() => {
@@ -249,7 +297,7 @@ export function SettingsOverlay() {
                   useFontStore.getState().startTour();
                 }}
               >
-                replay tour
+                {t("settings.replayTour")}
               </button>
             </footer>
             </div>

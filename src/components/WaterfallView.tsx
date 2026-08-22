@@ -3,11 +3,13 @@ import { Rows3 } from "lucide-react";
 import { spring, staggerDelay } from "../design/springs";
 import { useFontCss } from "../lib/fontLoader";
 import { useFontStore, type Family } from "../state/fontStore";
+import { useT } from "../lib/i18n";
 
 const WATERFALL_SIZES = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 40, 48, 56, 64, 80, 96];
 
 
 export function WaterfallView({ families }: { families: Family[] }) {
+  const t = useT();
   const selectedFamily = useFontStore((s) => s.selectedFamily);
   const sampleText = useFontStore((s) => s.sampleText);
 
@@ -28,8 +30,8 @@ export function WaterfallView({ families }: { families: Family[] }) {
         <span className="empty-tile">
           <Rows3 size={26} strokeWidth={1.5} />
         </span>
-        <h2>Nothing to cascade</h2>
-        <p>Select a font in grid or list view, then come back to the waterfall.</p>
+        <h2>{t("waterfall.emptyTitle")}</h2>
+        <p>{t("waterfall.emptyBody")}</p>
       </motion.div>
     );
   }

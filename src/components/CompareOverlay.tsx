@@ -6,10 +6,12 @@ import { useFontCss } from "../lib/fontLoader";
 import { familiesFor, useFontStore, type Family } from "../state/fontStore";
 import { useFocusTrap } from "../lib/useFocusTrap";
 import { FormatBadge } from "./FamilyCard";
+import { useT } from "../lib/i18n";
 
 const COMPARE_SIZES = [14, 24, 40];
 
 function CompareColumn({ family, onRemove }: { family: Family; onRemove: () => void }) {
+  const t = useT();
   const sampleText = useFontStore((s) => s.sampleText);
   const lead = family.faces.find((f) => f.style === "Regular") ?? family.faces[0];
   const { fontFamily } = useFontCss(lead);
@@ -20,7 +22,7 @@ function CompareColumn({ family, onRemove }: { family: Family; onRemove: () => v
       <header className="compare-col-head">
         <FormatBadge format={family.formats[0]} isVariable={family.isVariable} />
         <span className="compare-col-name">{family.name}</span>
-        <button className="detail-close" aria-label={`Remove ${family.name}`} onClick={onRemove}>
+        <button className="detail-close" aria-label={t("compare.remove", { name: family.name })} onClick={onRemove}>
           <X size={13} strokeWidth={1.5} />
         </button>
       </header>
@@ -47,7 +49,8 @@ function CompareColumn({ family, onRemove }: { family: Family; onRemove: () => v
         </p>
       ))}
       <div className="compare-meta tabular">
-        {family.faces.length} styles · {family.formats.join(", ").toUpperCase()}
+        {t("detail.stylesCount", { count: family.faces.length })} ·{" "}
+        {family.formats.join(", ").toUpperCase()}
       </div>
     </div>
   );
@@ -55,6 +58,7 @@ function CompareColumn({ family, onRemove }: { family: Family; onRemove: () => v
 
 
 export function CompareOverlay() {
+  const t = useT();
   const compare = useFontStore((s) => s.compare);
   const closeCompare = useFontStore((s) => s.closeCompare);
   const openCompare = useFontStore((s) => s.openCompare);
@@ -94,11 +98,11 @@ export function CompareOverlay() {
             transition={springSoft}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
-            aria-label="Compare fonts"
+            aria-label={t("compare.dialogAria")}
           >
             <header className="compare-head">
-              <h2 className="compare-title">Compare</h2>
-              <button className="detail-close" aria-label="Close compare" onClick={closeCompare}>
+              <h2 className="compare-title">{t("compare.title")}</h2>
+              <button className="detail-close" aria-label={t("compare.close")} onClick={closeCompare}>
                 <X size={15} strokeWidth={1.5} />
               </button>
             </header>

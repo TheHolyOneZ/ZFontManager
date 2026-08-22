@@ -3,6 +3,7 @@ import { Minus, Square, X } from "lucide-react";
 import { useFontStore } from "../state/fontStore";
 import { motion } from "motion/react";
 import { springSoft } from "../design/springs";
+import { useT } from "../lib/i18n";
 
 
 function SettingsGlyph({ size = 15 }: { size?: number }) {
@@ -29,6 +30,7 @@ function SettingsGlyph({ size = 15 }: { size?: number }) {
 
 
 export function Titlebar() {
+  const t = useT();
   const win = getCurrentWindow();
   const setSettingsOpen = useFontStore((s) => s.setSettingsOpen);
   return (
@@ -46,17 +48,21 @@ export function Titlebar() {
         </span>
       </div>
       <div className="titlebar-controls">
-        <button aria-label="Settings" onClick={() => setSettingsOpen(true)}>
+        <button
+          data-tour="settings"
+          aria-label={t("titlebar.settings")}
+          onClick={() => setSettingsOpen(true)}
+        >
           <SettingsGlyph />
         </button>
         <span className="titlebar-sep" />
-        <button aria-label="Minimize" onClick={() => void win.minimize()}>
+        <button aria-label={t("titlebar.minimize")} onClick={() => void win.minimize()}>
           <Minus size={13} strokeWidth={1.5} />
         </button>
-        <button aria-label="Maximize" onClick={() => void win.toggleMaximize()}>
+        <button aria-label={t("titlebar.maximize")} onClick={() => void win.toggleMaximize()}>
           <Square size={10} strokeWidth={1.5} />
         </button>
-        <button className="tc-close" aria-label="Close" onClick={() => void win.close()}>
+        <button className="tc-close" aria-label={t("titlebar.close")} onClick={() => void win.close()}>
           <X size={13} strokeWidth={1.5} />
         </button>
       </div>

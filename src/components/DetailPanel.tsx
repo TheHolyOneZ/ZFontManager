@@ -12,6 +12,7 @@ import { exportFace, exportFamily } from "../lib/menus";
 import { openUrl, revealItemInDir } from "@tauri-apps/plugin-opener";
 import { classifyLicense } from "../lib/license";
 import { playStar, playTag } from "../lib/sound";
+import { t as translate, useT, type TKey } from "../lib/i18n";
 
 const WATERFALL = [14, 20, 28, 40, 56];
 
@@ -29,6 +30,7 @@ function StyleRow({
   onSelect: () => void;
   synthesize: boolean;
 }) {
+  const t = useT();
   const { fontFamily } = useFontCss(face);
   return (
     <motion.button
@@ -52,7 +54,7 @@ function StyleRow({
         role="button"
         tabIndex={0}
         className="style-export"
-        aria-label={`Export ${family} ${face.style}`}
+        aria-label={t("detail.exportFace", { family, style: face.style })}
         onClick={(e) => {
           e.stopPropagation();
           void exportFace(face.path, pathBasename(face.path));
@@ -72,34 +74,39 @@ function StyleRow({
 }
 
 
-const FEATURE_NAMES: Record<string, string> = {
-  liga: "Ligatures",
-  dlig: "Discretionary ligatures",
-  calt: "Contextual alternates",
-  smcp: "Small caps",
-  c2sc: "Caps to small caps",
-  onum: "Oldstyle figures",
-  lnum: "Lining figures",
-  tnum: "Tabular figures",
-  pnum: "Proportional figures",
-  frac: "Fractions",
-  ordn: "Ordinals",
-  sups: "Superscript",
-  subs: "Subscript",
-  zero: "Slashed zero",
-  salt: "Stylistic alternates",
-  swsh: "Swashes",
-  titl: "Titling",
-  hist: "Historical forms",
-};
+const FEATURE_TAGS = [
+  "liga",
+  "dlig",
+  "calt",
+  "smcp",
+  "c2sc",
+  "onum",
+  "lnum",
+  "tnum",
+  "pnum",
+  "frac",
+  "ordn",
+  "sups",
+  "subs",
+  "zero",
+  "salt",
+  "swsh",
+  "titl",
+  "hist",
+] as const;
+
+const FEATURE_KEYS = new Map<string, TKey>(
+  FEATURE_TAGS.map((tag) => [tag, `feat.${tag}`] as const),
+);
 
 
 const DEFAULT_ON = new Set(["liga", "calt"]);
 
 function featureLabel(tag: string): string | null {
-  if (FEATURE_NAMES[tag]) return FEATURE_NAMES[tag];
+  const key = FEATURE_KEYS.get(tag);
+  if (key) return translate(key);
   const ss = /^ss(\d\d)$/.exec(tag);
-  if (ss) return `Stylistic set ${Number(ss[1])}`;
+  if (ss) return translate("feat.stylisticSet", { n: Number(ss[1]) });
   return null;
 }
 
@@ -114,6 +121,7 @@ function FeatureChips({
   onToggle: (tag: string) => void;
   onReset: () => void;
 }) {
+  const t = useT();
   const dirty = Object.keys(overrides).length > 0;
   return (
     <div className="feat-wrap">
@@ -136,21 +144,45 @@ function FeatureChips({
       </div>
       {dirty && (
         <button className="feat-reset" onClick={onReset}>
-          <RotateCcw size={11} strokeWidth={1.5} /> Reset
+          <RotateCcw size={11} strokeWidth={1.5} /> {t("detail.reset")}
         </button>
       )}
     </div>
   );
 }
 
-const AXIS_NAMES: Record<string, string> = {
-  wght: "Weight",
-  wdth: "Width",
-  slnt: "Slant",
-  ital: "Italic",
-  opsz: "Optical size",
-  GRAD: "Grade",
-};
+const AXIS_TAGS = ["wght", "wdth", "slnt", "ital", "opsz", "GRAD"] as const;
+
+const AXIS_KEYS = new Map<string, TKey>(
+  AXIS_TAGS.map((tag) => [tag, `axis.${tag}`] as const),
+);
+
+function axisName(tag: string): string {
+  const key = AXIS_KEYS.get(tag);
+  return key ? translate(key) : tag;
+}
+
+const SCRIPT_KEYS = new Map<string, TKey>(
+  (
+    [
+      "latin",
+      "cyrillic",
+      "greek",
+      "arabic",
+      "hebrew",
+      "devanagari",
+      "thai",
+      "cjk",
+      "korean",
+      "vietnamese",
+    ] as const
+  ).map((code) => [code, `script.${code}`] as const),
+);
+
+function scriptLabel(code: string): string {
+  const key = SCRIPT_KEYS.get(code);
+  return key ? translate(key) : code;
+}
 
 
 function AxisSliders({
@@ -164,6 +196,7 @@ function AxisSliders({
   onChange: (tag: string, v: number) => void;
   onReset: () => void;
 }) {
+  const t = useT();
   const dirty = axes.some((a) => (values[a.tag] ?? a.default) !== a.default);
   return (
     <div className="axis-list">
@@ -172,7 +205,7 @@ function AxisSliders({
         const fill = a.max > a.min ? ((v - a.min) / (a.max - a.min)) * 100 : 0;
         return (
           <div key={a.tag} className="axis-row" style={{ "--fill": `${fill}%` } as React.CSSProperties}>
-            <span className="axis-name">{AXIS_NAMES[a.tag] ?? a.tag}</span>
+            <span className="axis-name">{axisName(a.tag)}</span>
             <input
               type="range"
               min={a.min}
@@ -180,7 +213,7 @@ function AxisSliders({
               step={(a.max - a.min) / 200 || 1}
               value={v}
               onChange={(e) => onChange(a.tag, Number(e.target.value))}
-              aria-label={`${AXIS_NAMES[a.tag] ?? a.tag} axis`}
+              aria-label={t("detail.axisAria", { name: axisName(a.tag) })}
             />
             <span className="axis-value tabular">{Math.round(v)}</span>
           </div>
@@ -189,7 +222,7 @@ function AxisSliders({
       {dirty && (
         <button className="detail-heading-action axis-reset" onClick={onReset}>
           <RotateCcw size={11} strokeWidth={1.5} />
-          Reset
+          {t("detail.reset")}
         </button>
       )}
     </div>
@@ -209,6 +242,7 @@ function GlyphMap({
   fontFamily: string | null;
   variation?: string;
 }) {
+  const t = useT();
   const [cps, setCps] = useState<number[] | null>(charsetCache.get(face.id) ?? null);
   const [showAll, setShowAll] = useState(false);
 
@@ -236,7 +270,7 @@ function GlyphMap({
     return <div className="skeleton glyph-skeleton" />;
   }
   if (cps.length === 0) {
-    return <div className="glyph-empty">No character map available</div>;
+    return <div className="glyph-empty">{t("glyph.none")}</div>;
   }
 
   const visible = showAll ? cps : cps.slice(0, GLYPH_LIMIT);
@@ -251,7 +285,7 @@ function GlyphMap({
               key={cp}
               className="glyph-cell"
               data-cp={`U+${hex}`}
-              aria-label={`Copy character U+${hex}`}
+              aria-label={t("glyph.copyAria", { cp: `U+${hex}` })}
               style={{
                 fontFamily: fontFamily ?? undefined,
                 fontVariationSettings: variation,
@@ -259,8 +293,8 @@ function GlyphMap({
               onClick={() =>
                 navigator.clipboard
                   .writeText(ch)
-                  .then(() => toast.success(`Copied "${ch}"`, `U+${hex}`, "tick"))
-                  .catch(() => toast.error("Couldn't copy"))
+                  .then(() => toast.success(t("glyph.copied", { ch }), `U+${hex}`, "tick"))
+                  .catch(() => toast.error(t("toast.couldntCopy")))
               }
             >
               {ch}
@@ -270,7 +304,7 @@ function GlyphMap({
       </div>
       {cps.length > GLYPH_LIMIT && !showAll && (
         <button className="glyph-more" onClick={() => setShowAll(true)}>
-          Show all {cps.length} glyphs
+          {t("glyph.showAll", { count: cps.length })}
         </button>
       )}
     </>
@@ -279,6 +313,7 @@ function GlyphMap({
 
 
 function NoteEditor({ family }: { family: string }) {
+  const t = useT();
   const saved = useFontStore((s) => s.notes[family] ?? "");
   const setFamilyNote = useFontStore((s) => s.setFamilyNote);
   const [draft, setDraft] = useState(saved);
@@ -290,8 +325,8 @@ function NoteEditor({ family }: { family: string }) {
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => draft !== saved && void setFamilyNote(family, draft)}
-      placeholder="Notes — e.g. licensed for Client X only…"
-      aria-label="Font notes"
+      placeholder={t("note.placeholder")}
+      aria-label={t("note.aria")}
       rows={2}
       spellCheck={false}
     />
@@ -299,11 +334,11 @@ function NoteEditor({ family }: { family: string }) {
 }
 
 function LicenseSection({ license, licenseUrl }: { license: string | null; licenseUrl: string | null }) {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
   if (!license && !licenseUrl) return null;
   const cls = classifyLicense(license);
-  const label =
-    cls === "open" ? "Likely open license" : cls === "restrictive" ? "Possibly restrictive" : "License unclassified";
+  const label = t(`license.${cls}`);
   return (
     <div className={`license-box license-${cls}`}>
       <div className="license-head">
@@ -312,8 +347,8 @@ function LicenseSection({ license, licenseUrl }: { license: string | null; licen
         {licenseUrl && (
           <button
             className="license-link"
-            aria-label="Open license page"
-            onClick={() => void openUrl(licenseUrl).catch(() => toast.error("Couldn't open link"))}
+            aria-label={t("license.openPage")}
+            onClick={() => void openUrl(licenseUrl).catch(() => toast.error(t("toast.couldntOpenLink")))}
           >
             <ExternalLink size={12} strokeWidth={1.5} />
           </button>
@@ -323,24 +358,25 @@ function LicenseSection({ license, licenseUrl }: { license: string | null; licen
         <button className="license-text" onClick={() => setExpanded((v) => !v)}>
           {expanded || license.length <= 180 ? license : `${license.slice(0, 180)}… `}
           {license.length > 180 && (
-            <span className="license-more">{expanded ? "less" : "more"}</span>
+            <span className="license-more">{t(expanded ? "license.less" : "license.more")}</span>
           )}
         </button>
       )}
-      <div className="license-disclaimer">Best-effort reading of embedded metadata — not legal advice</div>
+      <div className="license-disclaimer">{t("license.disclaimer")}</div>
     </div>
   );
 }
 
 function TagEditor({ family, tags }: { family: string; tags: string[] }) {
+  const t = useT();
   const setFamilyTags = useFontStore((s) => s.setFamilyTags);
   const [draft, setDraft] = useState("");
 
   const add = () => {
-    const t = draft.trim().toLowerCase();
-    if (t && !tags.includes(t)) {
+    const next = draft.trim().toLowerCase();
+    if (next && !tags.includes(next)) {
       playTag(true);
-      void setFamilyTags(family, [...tags, t]);
+      void setFamilyTags(family, [...tags, next]);
     }
     setDraft("");
   };
@@ -348,9 +384,9 @@ function TagEditor({ family, tags }: { family: string; tags: string[] }) {
   return (
     <div className="tag-editor">
       <AnimatePresence>
-        {tags.map((t) => (
+        {tags.map((tag) => (
           <motion.span
-            key={t}
+            key={tag}
             className="tag-chip"
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -358,12 +394,12 @@ function TagEditor({ family, tags }: { family: string; tags: string[] }) {
             transition={spring}
             layout
           >
-            {t}
+            {tag}
             <button
-              aria-label={`Remove tag ${t}`}
+              aria-label={t("tag.removeAria", { tag })}
               onClick={() => {
                 playTag(false);
-                void setFamilyTags(family, tags.filter((x) => x !== t));
+                void setFamilyTags(family, tags.filter((x) => x !== tag));
               }}
             >
               <X size={11} strokeWidth={1.5} />
@@ -376,11 +412,11 @@ function TagEditor({ family, tags }: { family: string; tags: string[] }) {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()}
-          placeholder="Add tag…"
-          aria-label="Add tag"
+          placeholder={t("tag.addPlaceholder")}
+          aria-label={t("tag.addAria")}
           spellCheck={false}
         />
-        <button aria-label="Add tag" onClick={add} disabled={!draft.trim()}>
+        <button aria-label={t("tag.addAria")} onClick={add} disabled={!draft.trim()}>
           <Plus size={13} strokeWidth={1.5} />
         </button>
       </div>
@@ -389,6 +425,7 @@ function TagEditor({ family, tags }: { family: string; tags: string[] }) {
 }
 
 export function DetailPanel() {
+  const t = useT();
   const selectedFamily = useFontStore((s) => s.selectedFamily);
   const fonts = useFontStore((s) => s.fonts);
   const tags = useFontStore((s) => s.tags);
@@ -496,7 +533,7 @@ export function DetailPanel() {
             className="detail-resize"
             role="separator"
             aria-orientation="vertical"
-            aria-label="Resize panel"
+            aria-label={t("detail.resize")}
             onPointerDown={onResizeDown}
             onDoubleClick={() => setPanelWidth(348)}
           >
@@ -519,7 +556,7 @@ export function DetailPanel() {
               <h2 className="detail-title">{family.name}</h2>
               <motion.button
                 className={`star-btn ${favorite ? "star-on" : ""}`}
-                aria-label={favorite ? "Unfavorite" : "Favorite"}
+                aria-label={t(favorite ? "detail.unfavorite" : "detail.favorite")}
                 aria-pressed={favorite}
                 onClick={() => {
                   playStar(!favorite);
@@ -529,7 +566,7 @@ export function DetailPanel() {
               >
                 <Star size={15} strokeWidth={1.5} />
               </motion.button>
-              <button className="detail-close" aria-label="Close details" onClick={() => select(null)}>
+              <button className="detail-close" aria-label={t("detail.close")} onClick={() => select(null)}>
                 <X size={15} strokeWidth={1.5} />
               </button>
             </motion.header>
@@ -551,7 +588,7 @@ export function DetailPanel() {
               <span className="specimen-meta">
                 <span className="specimen-style">{lead.style}</span>
                 <span className="specimen-sub tabular">
-                  {family.faces.length} style{family.faces.length === 1 ? "" : "s"} ·{" "}
+                  {t("detail.stylesCount", { count: family.faces.length })} ·{" "}
                   {family.formats.join(" · ").toUpperCase()}
                 </span>
               </span>
@@ -574,18 +611,16 @@ export function DetailPanel() {
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
             >
               <div>
-                <div className="activate-label">{family.active ? "Active" : "Inactive"}</div>
+                <div className="activate-label">{t(family.active ? "detail.active" : "detail.inactive")}</div>
                 <div className="activate-sub">
-                  {family.deactivatable
-                    ? "Visible in other apps' font pickers"
-                    : "System font — managed by the OS"}
+                  {t(family.deactivatable ? "detail.visibleElsewhere" : "detail.systemFont")}
                 </div>
               </div>
               <PillToggle
                 on={family.active}
                 disabled={!family.deactivatable}
                 onChange={(on) => void setFamilyActive(family.name, on)}
-                label={`${family.active ? "Deactivate" : "Activate"} ${family.name}`}
+                label={t(family.active ? "card.deactivate" : "card.activate", { name: family.name })}
                 size="lg"
               />
             </motion.section>
@@ -616,7 +651,7 @@ export function DetailPanel() {
               <motion.section
                 variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
               >
-                <div className="detail-heading">Variable axes</div>
+                <div className="detail-heading">{t("detail.variableAxes")}</div>
                 <AxisSliders
                   axes={lead.axes}
                   values={axisValues}
@@ -630,7 +665,7 @@ export function DetailPanel() {
               <motion.section
                 variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
               >
-                <div className="detail-heading">OpenType features</div>
+                <div className="detail-heading">{t("detail.openTypeFeatures")}</div>
                 <FeatureChips
                   features={features}
                   overrides={featureOverrides}
@@ -654,45 +689,41 @@ export function DetailPanel() {
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
             >
               <dl>
-                <dt>Styles</dt>
+                <dt>{t("detail.styles")}</dt>
                 <dd className="tabular">{family.faces.length}</dd>
-                <dt>Format</dt>
+                <dt>{t("detail.format")}</dt>
                 <dd>{family.formats.join(", ").toUpperCase()}</dd>
                 {family.classification !== "unknown" && (
                   <>
-                    <dt>Class</dt>
-                    <dd style={{ textTransform: "capitalize" }}>{family.classification}</dd>
+                    <dt>{t("detail.class")}</dt>
+                    <dd>{t(`class.${family.classification}`)}</dd>
                   </>
                 )}
                 {family.scripts.length > 0 && (
                   <>
-                    <dt>Scripts</dt>
-                    <dd>
-                      {family.scripts
-                        .map((s) => (s === "cjk" ? "CJK" : s[0].toUpperCase() + s.slice(1)))
-                        .join(", ")}
-                    </dd>
+                    <dt>{t("detail.scripts")}</dt>
+                    <dd>{family.scripts.map(scriptLabel).join(", ")}</dd>
                   </>
                 )}
-                <dt>File size</dt>
+                <dt>{t("detail.fileSize")}</dt>
                 <dd className="tabular">{formatBytes(family.totalSize)}</dd>
                 {family.foundry && (
                   <>
-                    <dt>Foundry</dt>
+                    <dt>{t("detail.foundry")}</dt>
                     <dd>{family.foundry}</dd>
                   </>
                 )}
                 {lead.postscriptName && (
                   <>
-                    <dt>PostScript</dt>
+                    <dt>{t("detail.postscript")}</dt>
                     <dd className="detail-mono">{lead.postscriptName}</dd>
                   </>
                 )}
-                <dt>Location</dt>
+                <dt>{t("detail.location")}</dt>
                 <dd className="detail-mono detail-path">{lead.path}</dd>
                 {family.isVariable && lead.axes.length > 0 && (
                   <>
-                    <dt>Axes</dt>
+                    <dt>{t("detail.axes")}</dt>
                     <dd>
                       {lead.axes
                         .map((a) => `${a.tag} ${a.min}–${a.max}`)
@@ -707,13 +738,13 @@ export function DetailPanel() {
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
             >
               <div className="detail-heading detail-heading-row">
-                <span>Styles</span>
+                <span>{t("detail.styles")}</span>
                 <button
                   className="detail-heading-action"
                   onClick={() => void exportFamily(family)}
                 >
                   <Download size={12} strokeWidth={1.5} />
-                  Export all
+                  {t("detail.exportAll")}
                 </button>
               </div>
               <div className="style-list">
@@ -737,12 +768,9 @@ export function DetailPanel() {
               >
                 <div className="conflict-title">
                   <AlertTriangle size={13} strokeWidth={1.5} />
-                  Name conflict
+                  {t("detail.conflictTitle")}
                 </div>
-                <p className="conflict-sub">
-                  Multiple installed files claim the same identity. Apps may pick
-                  either one unpredictably.
-                </p>
+                <p className="conflict-sub">{t("detail.conflictBody")}</p>
                 {conflicts.map((c) => (
                   <div key={c.key} className="conflict-group">
                     <span className="conflict-key detail-mono">{c.key}</span>
@@ -751,7 +779,7 @@ export function DetailPanel() {
                         key={p}
                         className="conflict-path detail-mono"
                         onClick={() =>
-                          revealItemInDir(p).catch(() => toast.error("Couldn't open file manager"))
+                          revealItemInDir(p).catch(() => toast.error(t("toast.couldntOpenFileManager")))
                         }
                       >
                         <FolderOpen size={11} strokeWidth={1.5} />
@@ -767,9 +795,9 @@ export function DetailPanel() {
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
             >
               <div className="detail-heading detail-heading-row">
-                <span>Glyphs</span>
+                <span>{t("detail.glyphs")}</span>
                 <span className="detail-heading-note">
-                  <Copy size={10} strokeWidth={1.5} /> click to copy
+                  <Copy size={10} strokeWidth={1.5} /> {t("detail.clickToCopy")}
                 </span>
               </div>
               <GlyphMap face={lead} fontFamily={fontFamily} variation={variation} />
@@ -779,7 +807,7 @@ export function DetailPanel() {
               <motion.section
                 variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
               >
-                <div className="detail-heading">License</div>
+                <div className="detail-heading">{t("detail.license")}</div>
                 <LicenseSection license={lead.license} licenseUrl={lead.licenseUrl} />
               </motion.section>
             )}
@@ -787,14 +815,14 @@ export function DetailPanel() {
             <motion.section
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
             >
-              <div className="detail-heading">Tags</div>
+              <div className="detail-heading">{t("detail.tags")}</div>
               <TagEditor family={family.name} tags={family.tags} />
             </motion.section>
 
             <motion.section
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
             >
-              <div className="detail-heading">Notes</div>
+              <div className="detail-heading">{t("detail.notes")}</div>
               <NoteEditor family={family.name} />
             </motion.section>
 
@@ -807,7 +835,7 @@ export function DetailPanel() {
                 whileTap={{ scale: 0.97 }}
               >
                 <Trash2 size={14} strokeWidth={1.5} />
-                Move to Trash
+                {t("detail.moveToTrash")}
               </motion.button>
             )}
           </motion.div>

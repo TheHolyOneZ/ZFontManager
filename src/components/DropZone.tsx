@@ -6,9 +6,11 @@ import { useEffect, useState } from "react";
 import { springSoft, springSnappy } from "../design/springs";
 import type { InstallProgress } from "../lib/ipc";
 import { useFontStore } from "../state/fontStore";
+import { useT } from "../lib/i18n";
 
 
 export function DropZone() {
+  const t = useT();
   const [dragging, setDragging] = useState(false);
   const [progress, setProgress] = useState<InstallProgress | null>(null);
   const installPaths = useFontStore((s) => s.installPaths);
@@ -60,8 +62,8 @@ export function DropZone() {
               >
                 <Download size={28} strokeWidth={2} />
               </motion.span>
-              <div className="dropzone-title">Drop to install</div>
-              <div className="dropzone-sub">Font files, folders, or .zip archives</div>
+              <div className="dropzone-title">{t("drop.title")}</div>
+              <div className="dropzone-sub">{t("drop.sub")}</div>
             </motion.div>
           </motion.div>
         )}
@@ -78,7 +80,7 @@ export function DropZone() {
           >
             <div className="install-head">
               <span className="install-title">
-                Installing {progress.total} font{progress.total === 1 ? "" : "s"}…
+                {t("drop.installing", { count: progress.total })}
               </span>
               <span className="install-count tabular">
                 {progress.done} / {progress.total}

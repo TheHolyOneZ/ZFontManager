@@ -12,7 +12,7 @@
     "url": "https://github.com/TheHolyOneZ/ZFontManager/issues"
   },
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "engines": {
@@ -22,7 +22,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "i18n:check": "node check-locales.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

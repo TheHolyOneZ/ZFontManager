@@ -3,6 +3,8 @@ import { motion } from "motion/react";
 import { ArrowUpRight, Download, Globe } from "lucide-react";
 import { spring, springSoft, staggerDelay } from "../design/springs";
 import { toast } from "../design/primitives/Toast";
+import { t as translate, useT, type TKey } from "../lib/i18n";
+import { APP_LICENSE, APP_VERSION } from "../lib/version";
 
 
 function GithubGlyph({ size = 16 }: { size?: number }) {
@@ -15,30 +17,30 @@ function GithubGlyph({ size = 16 }: { size?: number }) {
 
 
 function openUrl(url: string) {
-  invoke("open_url", { url }).catch((e) => toast.error("Couldn't open link", String(e)));
+  invoke("open_url", { url }).catch((e) => toast.error(translate("toast.couldntOpenLink"), String(e)));
 }
 
-const LINKS = [
+const LINKS: { key: TKey; sub: string; url: string; icon: React.ReactNode }[] = [
   {
-    label: "TheHolyOneZ on GitHub",
+    key: "about.githubUser",
     sub: "github.com/TheHolyOneZ",
     url: "https://github.com/TheHolyOneZ",
     icon: <GithubGlyph />,
   },
   {
-    label: "More projects",
+    key: "about.moreProjects",
     sub: "zsync.eu",
     url: "https://zsync.eu",
     icon: <Globe size={16} strokeWidth={1.5} />,
   },
   {
-    label: "Landing & download page",
+    key: "about.landing",
     sub: "zsync.eu/zfontmanager",
     url: "https://zsync.eu/zfontmanager/",
     icon: <Download size={16} strokeWidth={1.5} />,
   },
   {
-    label: "ZFontManager source",
+    key: "about.source",
     sub: "github.com/TheHolyOneZ/ZFontManager",
     url: "https://github.com/TheHolyOneZ/ZFontManager",
     icon: <GithubGlyph />,
@@ -48,6 +50,7 @@ const LINKS = [
 const STACK = ["Tauri v2", "Rust", "React 19", "TypeScript", "Vite", "pnpm"];
 
 export function AboutView() {
+  const t = useT();
   return (
     <motion.div
       className="about-view"
@@ -57,14 +60,12 @@ export function AboutView() {
     >
       <img className="about-icon" src="/icon-512.png" alt="" draggable={false} />
       <h1 className="about-name">ZFontManager</h1>
-      <div className="about-version tabular">Version 0.1.0 · GPL-3.0</div>
-      <p className="about-desc">
-        The font manager Linux never got and Windows/macOS have to pay for. Preview, tag,
-        activate and deactivate, and install fonts across all three OSes from one clean
-        native app — your fonts never leave your machine.
-      </p>
+      <div className="about-version tabular">
+        {t("about.version", { version: APP_VERSION, license: APP_LICENSE })}
+      </div>
+      <p className="about-desc">{t("about.desc")}</p>
 
-      <div className="about-stack" aria-label="Tech stack">
+      <div className="about-stack" aria-label={t("about.stackAria")}>
         {STACK.map((t) => (
           <span key={t} className="about-chip tabular">
             {t}
@@ -86,7 +87,7 @@ export function AboutView() {
           >
             <span className="about-link-icon">{l.icon}</span>
             <span className="about-link-text">
-              <span className="about-link-label">{l.label}</span>
+              <span className="about-link-label">{t(l.key)}</span>
               <span className="about-link-sub detail-mono">{l.sub}</span>
             </span>
             <ArrowUpRight size={14} strokeWidth={1.5} className="about-link-arrow" />

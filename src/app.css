@@ -3224,3 +3224,199 @@
 .settings-replay:hover {
   color: var(--text-primary);
 }
+
+
+.lang-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 172px;
+  max-width: 260px;
+  padding: 7px 9px 7px 13px;
+  border-radius: 7px;
+  font-size: var(--fs-13);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--e1);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  transition: background var(--t-quick) ease, color var(--t-quick) ease,
+    border-color var(--t-quick) ease, box-shadow var(--t-quick) ease;
+}
+.lang-trigger:hover {
+  background: var(--e2);
+  color: var(--text-primary);
+  border-color: rgba(var(--ink-rgb), 0.14);
+}
+.lang-trigger-open {
+  background: var(--e2);
+  color: var(--text-primary);
+  border-color: var(--accent-glow);
+  box-shadow: 0 0 0 3px var(--accent-glow-soft);
+}
+.lang-trigger-label {
+  flex-shrink: 0;
+}
+.lang-trigger-hint {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  font-size: var(--fs-11);
+  font-weight: 400;
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lang-trigger-chevron {
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+  color: var(--text-tertiary);
+  transition: color var(--t-quick) ease;
+}
+.lang-trigger-hint + .lang-trigger-chevron {
+  margin-left: 0;
+}
+.lang-trigger:hover .lang-trigger-chevron,
+.lang-trigger-open .lang-trigger-chevron {
+  color: var(--text-secondary);
+}
+
+.lang-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+.lang-menu {
+  position: fixed;
+  z-index: 91;
+  max-height: 344px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 9px;
+  padding: 5px;
+}
+.lang-menu ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+.lang-sep {
+  display: block;
+  height: 1px;
+  margin: 4px 8px;
+  background: rgba(var(--ink-rgb), 0.08);
+}
+.lang-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 9px 7px 12px;
+  border-radius: 6px;
+  text-align: left;
+  color: var(--text-secondary);
+  transition: background var(--t-quick) ease, color var(--t-quick) ease;
+}
+.lang-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+.lang-option-label {
+  font-size: var(--fs-13);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lang-option-hint {
+  font-size: var(--fs-10);
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lang-option-active {
+  background: var(--e2);
+  color: var(--text-primary);
+}
+.lang-option-selected .lang-option-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.lang-option-selected.lang-option-active {
+  background: color-mix(in srgb, var(--accent-a) 13%, transparent);
+}
+.lang-option-selected::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  translate: 0 -50%;
+  width: 2px;
+  height: 17px;
+  border-radius: 1px;
+  background: var(--accent-gradient);
+}
+.lang-option-check {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  color: var(--accent-a);
+}
+
+.lang-menu::-webkit-scrollbar {
+  width: 9px;
+}
+.lang-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+.lang-menu::-webkit-scrollbar-thumb {
+  background: rgba(var(--ink-rgb), 0.16);
+  border: 3px solid transparent;
+  border-radius: 5px;
+  background-clip: padding-box;
+}
+.lang-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--ink-rgb), 0.26);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.settings-translate {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px dashed rgba(var(--ink-rgb), 0.12);
+  border-radius: 8px;
+  background: rgba(var(--scrim-rgb), 0.08);
+}
+.settings-translate-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.settings-translate .settings-data-actions {
+  flex-wrap: wrap;
+}
+.settings-translate-title {
+  font-size: var(--fs-13);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.settings-translate .settings-data-btn {
+  white-space: nowrap;
+}
+.settings-btn-arrow {
+  opacity: 0.5;
+}
+.settings-data-btn:hover .settings-btn-arrow {
+  opacity: 1;
+}

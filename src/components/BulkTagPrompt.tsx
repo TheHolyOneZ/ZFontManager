@@ -5,9 +5,11 @@ import { springSoft } from "../design/springs";
 import { useFontStore } from "../state/fontStore";
 import { useFocusTrap } from "../lib/useFocusTrap";
 import { playTag } from "../lib/sound";
+import { useT } from "../lib/i18n";
 
 
 export function BulkTagPrompt() {
+  const t = useT();
   const bulkTagFor = useFontStore((s) => s.bulkTagFor);
   const setBulkTagFor = useFontStore((s) => s.setBulkTagFor);
   const applyTagToFamilies = useFontStore((s) => s.applyTagToFamilies);
@@ -51,16 +53,16 @@ export function BulkTagPrompt() {
             transition={springSoft}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
-            aria-label="Tag selected fonts"
+            aria-label={t("bulk.aria")}
           >
             <header className="compare-head">
               <h2 className="bulktag-title">
                 <Tag size={15} strokeWidth={1.5} />
-                Tag {bulkTagFor.length} fonts
+                {t("bulk.title", { count: bulkTagFor.length })}
               </h2>
               <button
                 className="detail-close"
-                aria-label="Cancel"
+                aria-label={t("bulk.cancel")}
                 onClick={() => setBulkTagFor(null)}
               >
                 <X size={15} strokeWidth={1.5} />
@@ -75,8 +77,8 @@ export function BulkTagPrompt() {
                   if (e.key === "Enter") apply();
                   if (e.key === "Escape") setBulkTagFor(null);
                 }}
-                placeholder="Tag name…"
-                aria-label="Tag name"
+                placeholder={t("bulk.placeholder")}
+                aria-label={t("bulk.tagNameAria")}
                 spellCheck={false}
               />
             </div>
@@ -87,7 +89,7 @@ export function BulkTagPrompt() {
               whileHover={{ y: -1 }}
               whileTap={{ scale: 0.97 }}
             >
-              Apply to {bulkTagFor.length} fonts
+              {t("bulk.apply", { count: bulkTagFor.length })}
             </motion.button>
           </motion.div>
         </motion.div>

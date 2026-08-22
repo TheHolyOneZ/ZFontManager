@@ -2,9 +2,11 @@ import { AnimatePresence, motion } from "motion/react";
 import { Columns2, MousePointerClick, X } from "lucide-react";
 import { springSoft } from "../design/springs";
 import { useFontStore } from "../state/fontStore";
+import { useT } from "../lib/i18n";
 
 
 export function SelectionBar() {
+  const t = useT();
   const selection = useFontStore((s) => s.selection);
   const picking = useFontStore((s) => s.comparePicking);
   const compare = useFontStore((s) => s.compare);
@@ -28,22 +30,22 @@ export function SelectionBar() {
           exit={{ opacity: 0, y: 16, scale: 0.98 }}
           transition={springSoft}
           role="toolbar"
-          aria-label="Selection actions"
+          aria-label={t("sel.aria")}
         >
           {picking ? (
             <>
               <span className="selection-step">
                 <MousePointerClick size={15} strokeWidth={1.5} />
                 {ready
-                  ? "Ready — hit Compare!"
+                  ? t("sel.ready")
                   : selection.length === 1
-                    ? "Pick at least one more font"
-                    : "Click 2–4 fonts in the list"}
+                    ? t("sel.pickMore")
+                    : t("sel.pickHint")}
               </span>
               <span className="selection-count tabular">{selection.length} / 4</span>
             </>
           ) : (
-            <span className="selection-count tabular">{selection.length} selected</span>
+            <span className="selection-count tabular">{t("sel.count", { count: selection.length })}</span>
           )}
           <motion.button
             className={`selection-compare ${ready ? "" : "selection-compare-off"}`}
@@ -59,13 +61,13 @@ export function SelectionBar() {
             }
           >
             <Columns2 size={14} strokeWidth={1.5} />
-            Compare{ready ? ` ${Math.min(selection.length, 4)}` : ""}
+            {ready ? t("compare.buttonCount", { count: Math.min(selection.length, 4) }) : t("compare.button")}
             <kbd className="kbd selection-kbd">C</kbd>
           </motion.button>
-          {!picking && <span className="selection-hint">right-click for more</span>}
+          {!picking && <span className="selection-hint">{t("sel.rightClick")}</span>}
           <button
             className="detail-close"
-            aria-label={picking ? "Cancel comparing" : "Clear selection"}
+            aria-label={picking ? t("sel.cancelCompare") : t("sel.clear")}
             onClick={dismiss}
           >
             <X size={14} strokeWidth={1.5} />

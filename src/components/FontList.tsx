@@ -6,8 +6,10 @@ import { useFontStore, type Family } from "../state/fontStore";
 import { FormatBadge } from "./FamilyCard";
 import { buildFamilyMenu } from "../lib/menus";
 import { openContextMenu } from "../design/primitives/ContextMenu";
+import { useT } from "../lib/i18n";
 
 export function FontList({ families }: { families: Family[] }) {
+  const t = useT();
   const parentRef = useRef<HTMLDivElement>(null);
   const setFamilyActive = useFontStore((s) => s.setFamilyActive);
   const selectWith = useFontStore((s) => s.selectWith);
@@ -32,11 +34,11 @@ export function FontList({ families }: { families: Family[] }) {
   return (
     <div className="list-wrap">
       <div className="list-header">
-        <span>Family</span>
-        <span className="col-styles">Styles</span>
-        <span className="col-format">Format</span>
-        <span className="col-size">Size</span>
-        <span className="col-status">Active</span>
+        <span>{t("list.family")}</span>
+        <span className="col-styles">{t("list.styles")}</span>
+        <span className="col-format">{t("list.format")}</span>
+        <span className="col-size">{t("list.size")}</span>
+        <span className="col-status">{t("list.active")}</span>
       </div>
       <div ref={parentRef} className="list-scroll">
         <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
@@ -82,7 +84,7 @@ export function FontList({ families }: { families: Family[] }) {
                     on={fam.active}
                     disabled={!fam.deactivatable}
                     onChange={(on) => void setFamilyActive(fam.name, on)}
-                    label={`${fam.active ? "Deactivate" : "Activate"} ${fam.name}`}
+                    label={t(fam.active ? "card.deactivate" : "card.activate", { name: fam.name })}
                   />
                 </span>
               </button>

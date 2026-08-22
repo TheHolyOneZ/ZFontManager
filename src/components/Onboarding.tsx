@@ -3,52 +3,53 @@ import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { spring, springSoft } from "../design/springs";
 import { useFontStore } from "../state/fontStore";
+import { t as translate, useT, type TKey } from "../lib/i18n";
 
 interface TourStep {
 
   target?: string;
-  title: string;
-  body: string;
+  title: TKey;
+  body: TKey;
 
   onEnter?: () => void;
 }
 
 const STEPS: TourStep[] = [
   {
-    title: "Welcome to ZFontManager",
-    body: "Every font on this machine, in one place — preview, organize, activate, and install. This tour takes about a minute.",
+    title: "tour.welcome.title",
+    body: "tour.welcome.body",
   },
   {
     target: ".topbar-sample",
-    title: "Your words, every font",
-    body: "Type anything here and the whole library re-renders in it. Try your brand name or that headline you're setting.",
+    title: "tour.sample.title",
+    body: "tour.sample.body",
   },
   {
     target: ".topbar-size",
-    title: "Preview size",
-    body: "Drag from caption-small to poster-huge. The scale is stepped so useful sizes are easy to hit.",
+    title: "tour.size.title",
+    body: "tour.size.body",
   },
   {
     target: ".topbar-search",
-    title: "Find anything",
-    body: "Search by name, tag, format, foundry — even your own notes. Press / from anywhere to jump here.",
+    title: "tour.search.title",
+    body: "tour.search.body",
   },
   {
     target: ".view-toggle",
-    title: "Three ways to look",
-    body: "Grid for browsing, list for managing, waterfall to study one typeface across every size.",
+    title: "tour.views.title",
+    body: "tour.views.body",
     onEnter: () => useFontStore.setState({ viewMode: "grid" }),
   },
   {
     target: ".family-card",
-    title: "A font family",
-    body: "The pill switch activates or deactivates it system-wide — deactivated fonts vanish from other apps' pickers but stay in your library. Star favorites, right-click for everything else.",
+    title: "tour.card.title",
+    body: "tour.card.body",
     onEnter: () => useFontStore.setState({ viewMode: "grid" }),
   },
   {
     target: ".detail",
-    title: "The inspector",
-    body: "Click any font to open this panel: switch styles, drag variable axes, browse every glyph, export files, read the license. Drag its edge to resize.",
+    title: "tour.inspector.title",
+    body: "tour.inspector.body",
     onEnter: () => {
       const st = useFontStore.getState();
       if (!st.selectedFamily && st.visibleOrder.length > 0) {
@@ -58,23 +59,23 @@ const STEPS: TourStep[] = [
   },
   {
     target: ".sidebar-heading-row",
-    title: "Collections",
-    body: "Group fonts per project or client — \"Client X\", \"Personal brand\". Create one here, then right-click any font to add it.",
+    title: "tour.collections.title",
+    body: "tour.collections.body",
     onEnter: () => useFontStore.getState().select(null),
   },
   {
     target: ".sidebar-footer",
-    title: "Nothing is ever lost",
-    body: "Uninstalled fonts land in the trash, not the void. Restore them any time.",
+    title: "tour.trash.title",
+    body: "tour.trash.body",
   },
   {
-    target: '[aria-label="Settings"]',
-    title: "Settings",
-    body: "Watch folders for new fonts, add extra scan locations, tune motion and sounds.",
+    target: '[data-tour="settings"]',
+    title: "tour.settings.title",
+    body: "tour.settings.body",
   },
   {
-    title: "One last thing",
-    body: "Drag font files, folders, or zip archives anywhere onto this window to install them. That's it — enjoy your library.",
+    title: "tour.last.title",
+    body: "tour.last.body",
   },
 ];
 
@@ -148,6 +149,7 @@ function cardPosition(rect: DOMRect | null, cardH: number): React.CSSProperties 
 }
 
 export function Onboarding() {
+  const t = useT();
   const phase = useFontStore((s) => s.phase);
   const onboarded = useFontStore((s) => s.onboarded);
   const tourStep = useFontStore((s) => s.tourStep);
@@ -203,12 +205,12 @@ export function Onboarding() {
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={springSoft}
             role="dialog"
-            aria-label="Welcome"
+            aria-label={t("tour.inviteAria")}
           >
             <img className="tour-invite-icon" src="/icon.png" alt="" draggable={false} />
             <div className="tour-invite-text">
-              <div className="tour-invite-title">New here?</div>
-              <div className="tour-invite-sub">A one-minute tour of your new font library.</div>
+              <div className="tour-invite-title">{t("tour.inviteTitle")}</div>
+              <div className="tour-invite-sub">{t("tour.inviteSub")}</div>
             </div>
             <motion.button
               className="tour-start"
@@ -216,9 +218,9 @@ export function Onboarding() {
               whileHover={{ y: -1 }}
               whileTap={{ scale: 0.97 }}
             >
-              Take the tour
+              {t("tour.take")}
             </motion.button>
-            <button className="detail-close" aria-label="Skip tour" onClick={endTour}>
+            <button className="detail-close" aria-label={t("tour.skipAria")} onClick={endTour}>
               <X size={14} strokeWidth={1.5} />
             </button>
           </motion.div>
@@ -266,10 +268,10 @@ export function Onboarding() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={springSoft}
               role="dialog"
-              aria-label={step.title}
+              aria-label={translate(step.title)}
             >
-              <div className="tour-card-title">{step.title}</div>
-              <div className="tour-card-body">{step.body}</div>
+              <div className="tour-card-title">{t(step.title)}</div>
+              <div className="tour-card-body">{t(step.body)}</div>
               <div className="tour-card-foot">
                 <div className="tour-dots" aria-hidden="true">
                   {STEPS.map((_, i) => (
@@ -278,12 +280,12 @@ export function Onboarding() {
                 </div>
                 <div className="tour-nav">
                   <button className="tour-skip" onClick={endTour}>
-                    Skip
+                    {t("tour.skip")}
                   </button>
                   {tourStep! > 0 && (
                     <motion.button
                       className="tour-btn"
-                      aria-label="Back"
+                      aria-label={t("tour.back")}
                       onClick={() => setTourStep(tourStep! - 1)}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -296,7 +298,7 @@ export function Onboarding() {
                     whileHover={{ y: -1 }}
                     whileTap={{ scale: 0.97 }}
                   >
-                    {last ? "Finish" : "Next"}
+                    {t(last ? "tour.finish" : "tour.next")}
                     {!last && <ArrowRight size={14} strokeWidth={1.5} />}
                   </motion.button>
                 </div>

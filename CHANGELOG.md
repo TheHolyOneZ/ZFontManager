@@ -17,6 +17,9 @@ All notable changes to ZFontManager are documented here. The format follows
   close" first, so auditioning never installs anything permanently. Every
   outcome is reported in a toast (applied with layer count, layer created,
   app not running, no open document, app hasn't refreshed its font list yet).
+  **Not yet verified against a real Photoshop/Illustrator** — the app-side
+  plumbing and scripts are tested up to the Adobe boundary only. Feedback
+  welcome.
 - Adding or removing a watched folder now indexes the library immediately,
   shows the progress inline in Settings, and reports what changed
   ("3 new fonts found", "4 fonts removed", or that no font files were found).

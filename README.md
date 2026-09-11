@@ -161,6 +161,14 @@ layer or text frame switches to it, and if nothing is selected, a new text
 layer is added with the family name as its sample. A sleeping font is woken
 "until close" first, so auditioning never installs anything permanently.
 
+> [!NOTE]
+> This integration is new in 0.3.0 and could not be tested against a real
+> Photoshop or Illustrator before release. It fails safely (every problem
+> shows up as a toast, nothing is changed in your document), but if it
+> misbehaves for you, please
+> [open an issue](https://github.com/TheHolyOneZ/ZFontManager/issues) with the
+> app version and what the toast said.
+
 ### Installing fonts
 
 Drag anything into the window:
@@ -535,15 +543,12 @@ For a live development window instead, use `pnpm tauri dev`.
 1. Bump the version in `package.json`, `src-tauri/Cargo.toml`,
    `src-tauri/tauri.conf.json` and `src/lib/version.ts`, and add a section to
    `CHANGELOG.md`.
-2. Run `node strip-comments.mjs` (release sources ship without comments),
-   `node check-locales.mjs`, and push. The GitHub Actions workflow builds all
-   seven installers — Windows `.exe`/`.msi`, macOS Apple Silicon and Intel
-   `.dmg`, Linux AppImage/`.deb`/`.rpm` — and opens a draft release with them
-   attached.
-3. Download the assets and run `node prepare-release.mjs --from <folder>`.
-   It copies them into `zfontmanager/releases/`, writes `SHA256SUMS.txt`
-   and updates the download page. Upload `zfontmanager/` to the webspace,
-   paste the changelog section into the draft, publish.
+2. Push. The GitHub Actions workflow builds all seven installers — Windows
+   `.exe`/`.msi`, macOS Apple Silicon and Intel `.dmg`, Linux
+   AppImage/`.deb`/`.rpm` — and opens a draft release with them attached.
+3. Download the assets, refresh the download page and checksums on
+   [zsync.eu/zfontmanager](https://zsync.eu/zfontmanager/), paste the
+   changelog section into the draft, publish.
 
 </details>
 

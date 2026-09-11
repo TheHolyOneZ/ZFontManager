@@ -18,7 +18,6 @@ pub enum FontFormat {
     Unknown,
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum FontSource {
@@ -29,7 +28,6 @@ pub enum FontSource {
 
     Managed,
 }
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -48,6 +46,8 @@ pub struct FontFace {
 
     pub id: String,
     pub path: String,
+
+    pub preview_path: Option<String>,
     pub face_index: u32,
     pub family: String,
     pub style: String,

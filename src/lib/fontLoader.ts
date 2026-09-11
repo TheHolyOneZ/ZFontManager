@@ -24,7 +24,7 @@ function ensureLoaded(face: ZFontFace): void {
   if (cache.has(name)) return;
   cache.set(name, "loading");
 
-  const url = convertFileSrc(face.path);
+  const url = convertFileSrc(face.previewPath ?? face.path);
   const ff = new FontFace(name, `url("${url}")`);
   ff.load()
     .then(() => {
@@ -39,7 +39,6 @@ function ensureLoaded(face: ZFontFace): void {
       listeners.delete(name);
     });
 }
-
 
 export function useFontCss(face: ZFontFace | null): {
   fontFamily: string | null;
@@ -69,7 +68,6 @@ export function useFontCss(face: ZFontFace | null): {
   };
 }
 
-
 export function loadFaceCss(face: ZFontFace): Promise<string> {
   const name = cssName(face);
   ensureLoaded(face);
@@ -85,7 +83,6 @@ export function loadFaceCss(face: ZFontFace): Promise<string> {
     listeners.set(name, set);
   });
 }
-
 
 export function pathBasename(path: string): string {
   return path.split(/[\\/]/).pop() ?? path;

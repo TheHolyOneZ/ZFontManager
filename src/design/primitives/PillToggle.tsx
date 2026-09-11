@@ -11,7 +11,6 @@ interface Props {
   size?: "sm" | "lg";
 }
 
-
 export function PillToggle({ on, disabled, onChange, label, size = "sm" }: Props) {
   const [pressed, setPressed] = useState(false);
 

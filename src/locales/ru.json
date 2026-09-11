@@ -1,9 +1,7 @@
 {
   "lang.name": "Русский",
-
   "scan.reading": "Прочитано {done} из {total} файлов шрифтов…",
   "scan.finding": "Ищем ваши шрифты…",
-
   "empty.library.title": "Библиотека вас ждёт",
   "empty.library.body": "Перетащите файлы шрифтов, папки или .zip-архивы в любое место этого окна, чтобы установить их →",
   "empty.search.title": "Ничего не найдено",
@@ -14,28 +12,23 @@
   "empty.collection.body": "Правый клик по шрифту → Коллекции → «{name}», чтобы добавить его сюда.",
   "empty.tag.title": "С этим тегом ничего нет",
   "empty.tag.body": "Нажмите правой кнопкой на шрифт и выберите «Теги», чтобы пометить его.",
-
   "titlebar.settings": "Настройки",
   "titlebar.minimize": "Свернуть",
   "titlebar.maximize": "Развернуть",
   "titlebar.close": "Закрыть",
-
   "sort.name": "Имя",
   "sort.styles": "Начертания",
   "sort.size": "Размер файла",
-
   "filter.aria": "Фильтровать шрифты",
   "filter.classification": "Классификация",
   "filter.languageSupport": "Поддержка языков",
   "filter.variableOnly": "Только вариативные",
-
   "class.serif": "С засечками",
   "class.sans": "Без засечек",
   "class.mono": "Моноширинный",
   "class.display": "Акцидентный",
   "class.script": "Рукописный",
   "class.unknown": "Неизвестно",
-
   "script.latin": "Латиница",
   "script.cyrillic": "Кириллица",
   "script.greek": "Греческий",
@@ -46,7 +39,6 @@
   "script.cjk": "CJK",
   "script.korean": "Корейский",
   "script.vietnamese": "Вьетнамский",
-
   "top.rescan": "Пересканировать папки шрифтов",
   "top.samplePlaceholder": "Введите текст для примера…",
   "top.sampleAria": "Текст предпросмотра",
@@ -54,7 +46,6 @@
   "top.searchPlaceholder": "Поиск…",
   "top.searchAria": "Поиск шрифтов",
   "top.viewMode": "Режим просмотра",
-
   "compare.ariaArmed": "Сравнить выбранные шрифты ({count})",
   "compare.ariaCancelPicking": "Отменить выбор для сравнения",
   "compare.ariaIdle": "Сравнить шрифты",
@@ -65,7 +56,6 @@
   "compare.close": "Закрыть сравнение",
   "compare.dialogAria": "Сравнение шрифтов",
   "compare.remove": "Убрать {name}",
-
   "side.browse": "Обзор",
   "side.library": "Библиотека",
   "side.favorites": "Избранное",
@@ -79,7 +69,6 @@
   "side.trash": "Корзина",
   "side.about": "О программе",
   "side.shortcuts": "Горячие клавиши",
-
   "sel.aria": "Действия с выбранным",
   "sel.ready": "Готово — нажмите «Сравнить»!",
   "sel.pickMore": "Выберите ещё хотя бы один шрифт",
@@ -88,13 +77,11 @@
   "sel.rightClick": "правый клик — больше действий",
   "sel.cancelCompare": "Отменить сравнение",
   "sel.clear": "Снять выделение",
-
   "list.family": "Семейство",
   "list.styles": "Начертания",
   "list.format": "Формат",
   "list.size": "Размер",
   "list.active": "Активен",
-
   "card.collapseStyles": "Свернуть начертания",
   "card.expandStyles": "Развернуть начертания",
   "card.stylesCount_one": "{count} начертание",
@@ -108,10 +95,8 @@
   "card.activate": "Активировать {name}",
   "card.previewUnavailable": "предпросмотр недоступен",
   "card.noPreview": "Этот формат пока нельзя показать",
-
   "waterfall.emptyTitle": "Нечего показать каскадом",
   "waterfall.emptyBody": "Выберите шрифт в виде сетки или списка, затем вернитесь к каскаду.",
-
   "trash.emptyTitle": "Корзина пуста",
   "trash.emptyBody": "Удалённые шрифты сначала попадают сюда — ничего не удаляется молча.",
   "trash.count_one": "{count} файл шрифта в корзине",
@@ -122,7 +107,6 @@
   "trash.restore": "Восстановить",
   "trash.delete": "Удалить",
   "trash.deletePermanently": "Удалить безвозвратно",
-
   "about.version": "Версия {version} · {license}",
   "about.desc": "Менеджер шрифтов, которого никогда не было у Linux и за который приходится платить в Windows и macOS. Предпросмотр, теги, включение и отключение, установка шрифтов на всех трёх системах — в одном аккуратном нативном приложении. Ваши шрифты никогда не покидают компьютер.",
   "about.stackAria": "Технологии",
@@ -130,14 +114,12 @@
   "about.moreProjects": "Другие проекты",
   "about.landing": "Страница проекта и загрузки",
   "about.source": "Исходный код ZFontManager",
-
   "drop.title": "Отпустите, чтобы установить",
   "drop.sub": "Файлы шрифтов, папки или .zip-архивы",
   "drop.installing_one": "Установка {count} шрифта…",
   "drop.installing_few": "Установка {count} шрифтов…",
   "drop.installing_many": "Установка {count} шрифтов…",
   "drop.installing_other": "Установка {count} шрифтов…",
-
   "detail.exportFace": "Экспортировать {family} {style}",
   "detail.reset": "Сбросить",
   "detail.axisAria": "Ось {name}",
@@ -173,7 +155,6 @@
   "detail.tags": "Теги",
   "detail.notes": "Заметки",
   "detail.moveToTrash": "В корзину",
-
   "feat.liga": "Лигатуры",
   "feat.dlig": "Дискреционные лигатуры",
   "feat.calt": "Контекстные альтернативы",
@@ -193,22 +174,18 @@
   "feat.titl": "Титульные прописные",
   "feat.hist": "Исторические формы",
   "feat.stylisticSet": "Стилистический набор {n}",
-
   "axis.wght": "Насыщенность",
   "axis.wdth": "Ширина",
   "axis.slnt": "Наклон",
   "axis.ital": "Курсив",
   "axis.opsz": "Оптический размер",
   "axis.GRAD": "Градация",
-
   "glyph.none": "Таблица символов недоступна",
   "glyph.copyAria": "Скопировать символ {cp}",
   "glyph.copied": "«{ch}» скопирован",
   "glyph.showAll": "Показать все глифы ({count})",
-
   "note.placeholder": "Заметки — например: лицензия только для клиента X…",
   "note.aria": "Заметки о шрифте",
-
   "license.open": "Вероятно, свободная лицензия",
   "license.restrictive": "Возможны ограничения",
   "license.unknown": "Лицензия не определена",
@@ -216,11 +193,9 @@
   "license.more": "ещё",
   "license.less": "свернуть",
   "license.disclaimer": "Приблизительное чтение встроенных метаданных — не является юридической консультацией",
-
   "tag.removeAria": "Убрать тег {tag}",
   "tag.addPlaceholder": "Добавить тег…",
   "tag.addAria": "Добавить тег",
-
   "settings.title": "Настройки",
   "settings.close": "Закрыть настройки",
   "settings.addFolderTitle": "Добавить папку для сканирования",
@@ -233,6 +208,7 @@
   "settings.watchedFoldersSub": "Сканируются в дополнение к системным папкам шрифтов",
   "settings.removeFolder": "Убрать {dir}",
   "settings.addFolder": "Добавить папку…",
+  "settings.scanningFolders": "Индексация шрифтов…",
   "settings.libraryData": "Данные библиотеки",
   "settings.curation": "Теги, коллекции и заметки",
   "settings.curationSub": "Сохраните свою систематизацию в файл или объедините её с другой машины",
@@ -256,19 +232,15 @@
   "settings.soundLevelAria": "Громкость звуков",
   "settings.footerNote": "шрифты остаются на вашем компьютере",
   "settings.replayTour": "повторить тур",
-
   "theme.dark": "Тёмная",
   "theme.light": "Светлая",
   "theme.system": "Системная",
-
   "sound.off": "Выкл.",
   "sound.subtle": "Тихо",
   "sound.on": "Вкл.",
-
   "shortcuts.title": "Горячие клавиши",
   "shortcuts.close": "Закрыть горячие клавиши",
   "shortcuts.aria": "Горячие клавиши",
-
   "sc.navigate": "Навигация",
   "sc.palette": "Палитра команд",
   "sc.focusSearch": "Перейти к поиску",
@@ -289,9 +261,7 @@
   "sc.contextMenu": "Контекстное меню — стрелки для перемещения",
   "sc.help": "Справка",
   "sc.thisOverlay": "Это окно",
-
   "key.click": "Клик",
-
   "palette.goLibrary": "Перейти в Библиотеку",
   "palette.goFavorites": "Перейти в Избранное",
   "palette.goTrash": "Перейти в Корзину",
@@ -304,20 +274,19 @@
   "palette.language": "Язык: {name}",
   "palette.compareSelected": "Сравнить выбранные шрифты ({count})",
   "palette.rescan": "Пересканировать папки шрифтов",
+  "palette.applyInApp": "Применить {family} в {app}",
   "palette.settings": "Открыть настройки",
   "palette.shortcuts": "Горячие клавиши",
   "palette.placeholder": "Перейти к шрифту или выполнить команду…",
   "palette.aria": "Палитра команд",
   "palette.searchAria": "Поиск в палитре команд",
   "palette.empty": "Ничего не найдено — попробуйте меньше букв.",
-
   "bulk.aria": "Проставить теги выбранным шрифтам",
   "bulk.title": "Теги для {count} шрифтов",
   "bulk.cancel": "Отмена",
   "bulk.placeholder": "Название тега…",
   "bulk.tagNameAria": "Название тега",
   "bulk.apply": "Применить к {count} шрифтам",
-
   "tour.inviteAria": "Добро пожаловать",
   "tour.inviteTitle": "Впервые здесь?",
   "tour.inviteSub": "Минутная экскурсия по вашей новой библиотеке шрифтов.",
@@ -349,7 +318,6 @@
   "tour.settings.body": "Выберите язык, следите за появлением новых шрифтов в папках, добавьте другие места сканирования, настройте анимацию и звуки.",
   "tour.last.title": "И последнее",
   "tour.last.body": "Перетащите файлы шрифтов, папки или zip-архивы в любое место этого окна, чтобы установить их. Вот и всё — приятной работы с библиотекой.",
-
   "menu.rename": "Переименовать",
   "menu.exportFontList": "Экспортировать список шрифтов (метаданные)…",
   "menu.deleteCollection": "Удалить коллекцию",
@@ -377,28 +345,26 @@
   "menu.newCollection": "Новая коллекция…",
   "menu.exportFamily": "Экспортировать семейство…",
   "menu.exportSpecimen": "Экспортировать образец…",
+  "menu.applyInApp": "Применить в {app}…",
+  "adobe.photoshop": "Photoshop",
+  "adobe.illustrator": "Illustrator",
   "menu.copyFamilyName": "Скопировать имя семейства",
   "menu.copyFilePath": "Скопировать путь к файлу",
   "menu.showInFileManager": "Показать в файловом менеджере",
   "menu.moveToTrash": "В корзину",
-
   "copy.familyName": "Имя семейства",
   "copy.filePath": "Путь к файлу",
-
   "fontlist.title": "{title} — список шрифтов",
   "fontlist.sub": "Семейств: {count} · экспортировано ZFontManager",
   "fontlist.styles": "Начертания",
   "fontlist.format": "Формат",
   "fontlist.foundry": "Производитель",
   "fontlist.variable": "вариативный",
-
   "specimen.saveTitle": "Экспорт образца",
   "specimen.pngFilter": "Изображение PNG",
   "specimen.stylesHeading": "НАЧЕРТАНИЯ",
   "specimen.brand": "Образец · ZFontManager",
-
   "preview.defaultSample": "The quick brown fox jumps over the lazy dog",
-
   "toast.libraryUpdated": "Библиотека обновлена",
   "toast.newFontsFound_one": "Найден {count} новый шрифт",
   "toast.newFontsFound_few": "Найдено {count} новых шрифта",
@@ -408,8 +374,26 @@
   "toast.fontsRemoved_few": "Удалено {count} шрифта",
   "toast.fontsRemoved_many": "Удалено {count} шрифтов",
   "toast.fontsRemoved_other": "Удалено {count} шрифтов",
+  "toast.noFontsInFolder": "В этой папке не найдено файлов шрифтов",
+  "toast.libraryUnchanged": "Ничего не изменилось",
   "toast.couldntScan": "Не удалось просканировать шрифты",
   "toast.couldntActivate": "Не удалось активировать шрифт",
+  "toast.appliedInApp": "{family} применён в {app}",
+  "toast.appliedLayers_one": "Обновлён {count} текстовый слой",
+  "toast.appliedLayers_few": "Обновлено {count} текстовых слоя",
+  "toast.appliedLayers_many": "Обновлено {count} текстовых слоёв",
+  "toast.appliedLayers_other": "Обновлено {count} текстовых слоя",
+  "toast.createdInApp": "В {app} добавлен текстовый слой",
+  "toast.createdInAppSub": "Текст не был выделен, поэтому {family} помещён на новый слой",
+  "toast.appNotRunning": "{app} не запущен",
+  "toast.appNotRunningSub": "Сначала откройте его с документом, затем повторите",
+  "toast.noDocumentInApp": "В {app} нет открытого документа",
+  "toast.noDocumentInAppSub": "Откройте или создайте документ, затем повторите",
+  "toast.fontUnknownToApp": "{app} пока не видит {family}",
+  "toast.fontUnknownToAppSub": "Подождите, пока обновится список шрифтов, и повторите",
+  "toast.couldntApplyIn": "Не удалось применить в {app}",
+  "toast.noPostScriptName": "У этого шрифта нет имени PostScript",
+  "toast.noPostScriptNameSub": "{app} требует его для выбора шрифта",
   "toast.couldntDeactivate": "Не удалось деактивировать шрифт",
   "toast.activeUntilClose": "{family} активен до выхода",
   "toast.activeUntilCloseSub": "Он отключится сам, когда вы закроете ZFontManager",

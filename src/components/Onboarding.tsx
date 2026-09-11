@@ -119,7 +119,6 @@ const PAD = 8;
 const CARD_W = 340;
 const MARGIN = 12;
 
-
 function cardPosition(rect: DOMRect | null, cardH: number): React.CSSProperties {
   if (!rect) {
     return { left: "50%", top: "50%", translate: "-50% -50%" };
@@ -135,7 +134,6 @@ function cardPosition(rect: DOMRect | null, cardH: number): React.CSSProperties 
 
   if (fitsBelow) return { left: centeredX, top: rect.bottom + PAD + MARGIN };
   if (fitsAbove) return { left: centeredX, top: rect.top - PAD - MARGIN - cardH };
-
 
   const sideY = clampY(rect.top + rect.height / 2 - cardH / 2);
   if (rect.left - PAD - MARGIN - CARD_W >= 0) {
@@ -163,16 +161,13 @@ export function Onboarding() {
   const cardRef = useRef<HTMLDivElement>(null);
   const [cardH, setCardH] = useState(180);
 
-
   useLayoutEffect(() => {
     if (cardRef.current) setCardH(cardRef.current.offsetHeight);
   }, [tourStep, rect]);
 
-
   useEffect(() => {
     if (tourStep !== null) STEPS[tourStep]?.onEnter?.();
   }, [tourStep]);
-
 
   useEffect(() => {
     if (tourStep === null) return;
@@ -226,7 +221,6 @@ export function Onboarding() {
           </motion.div>
         )}
       </AnimatePresence>
-
 
       <AnimatePresence>
         {step && (

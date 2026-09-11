@@ -1,9 +1,7 @@
 {
   "lang.name": "简体中文",
-
   "scan.reading": "正在读取第 {done} / {total} 个字体文件…",
   "scan.finding": "正在查找你的字体…",
-
   "empty.library.title": "你的字体库还空着",
   "empty.library.body": "把字体文件、文件夹或 .zip 压缩包拖到窗口任意位置即可安装 →",
   "empty.search.title": "没有匹配的字体",
@@ -14,28 +12,23 @@
   "empty.collection.body": "右键点击任意字体 → 分组 → “{name}”，即可把它加进来。",
   "empty.tag.title": "还没有字体带这个标签",
   "empty.tag.body": "右键点击字体并选择“标签”来给它做标记。",
-
   "titlebar.settings": "设置",
   "titlebar.minimize": "最小化",
   "titlebar.maximize": "最大化",
   "titlebar.close": "关闭",
-
   "sort.name": "名称",
   "sort.styles": "样式数",
   "sort.size": "文件大小",
-
   "filter.aria": "筛选字体",
   "filter.classification": "分类",
   "filter.languageSupport": "语言支持",
   "filter.variableOnly": "仅可变字体",
-
   "class.serif": "衬线",
   "class.sans": "无衬线",
   "class.mono": "等宽",
   "class.display": "展示",
   "class.script": "手写",
   "class.unknown": "未知",
-
   "script.latin": "拉丁文",
   "script.cyrillic": "西里尔文",
   "script.greek": "希腊文",
@@ -46,7 +39,6 @@
   "script.cjk": "中日韩",
   "script.korean": "韩文",
   "script.vietnamese": "越南文",
-
   "top.rescan": "重新扫描字体目录",
   "top.samplePlaceholder": "输入一句预览文字…",
   "top.sampleAria": "预览文字",
@@ -54,7 +46,6 @@
   "top.searchPlaceholder": "搜索…",
   "top.searchAria": "搜索字体",
   "top.viewMode": "视图模式",
-
   "compare.ariaArmed": "对比选中的 {count} 个字体",
   "compare.ariaCancelPicking": "取消挑选要对比的字体",
   "compare.ariaIdle": "对比字体",
@@ -65,7 +56,6 @@
   "compare.close": "关闭对比",
   "compare.dialogAria": "对比字体",
   "compare.remove": "移除 {name}",
-
   "side.browse": "浏览",
   "side.library": "字体库",
   "side.favorites": "收藏",
@@ -79,7 +69,6 @@
   "side.trash": "回收站",
   "side.about": "关于",
   "side.shortcuts": "快捷键",
-
   "sel.aria": "选中项操作",
   "sel.ready": "准备好了——点击“对比”！",
   "sel.pickMore": "至少再选一个字体",
@@ -88,13 +77,11 @@
   "sel.rightClick": "右键查看更多",
   "sel.cancelCompare": "取消对比",
   "sel.clear": "清除选择",
-
   "list.family": "字体家族",
   "list.styles": "样式",
   "list.format": "格式",
   "list.size": "大小",
   "list.active": "已启用",
-
   "card.collapseStyles": "收起样式",
   "card.expandStyles": "展开样式",
   "card.stylesCount_one": "{count} 种样式",
@@ -106,10 +93,8 @@
   "card.activate": "启用 {name}",
   "card.previewUnavailable": "无法预览",
   "card.noPreview": "这种格式暂时无法预览",
-
   "waterfall.emptyTitle": "没有可展示的字体",
   "waterfall.emptyBody": "先在网格或列表视图中选择一个字体，再回到瀑布视图。",
-
   "trash.emptyTitle": "回收站是空的",
   "trash.emptyBody": "你移除的字体会先来到这里——不会有任何字体被悄悄删除。",
   "trash.count_one": "回收站中有 {count} 个字体文件",
@@ -118,7 +103,6 @@
   "trash.restore": "恢复",
   "trash.delete": "删除",
   "trash.deletePermanently": "永久删除",
-
   "about.version": "版本 {version} · {license}",
   "about.desc": "Linux 一直缺席、Windows 与 macOS 却要付费的字体管理器。在一个干净的原生应用里预览、加标签、启用与停用、安装字体，三大系统通用——你的字体永远不会离开这台机器。",
   "about.stackAria": "技术栈",
@@ -126,12 +110,10 @@
   "about.moreProjects": "更多项目",
   "about.landing": "介绍与下载页",
   "about.source": "ZFontManager 源代码",
-
   "drop.title": "拖放以安装",
   "drop.sub": "字体文件、文件夹或 .zip 压缩包",
   "drop.installing_one": "正在安装 {count} 个字体…",
   "drop.installing_other": "正在安装 {count} 个字体…",
-
   "detail.exportFace": "导出 {family} {style}",
   "detail.reset": "重置",
   "detail.axisAria": "{name} 轴",
@@ -165,7 +147,6 @@
   "detail.tags": "标签",
   "detail.notes": "备注",
   "detail.moveToTrash": "移到回收站",
-
   "feat.liga": "连字",
   "feat.dlig": "自由连字",
   "feat.calt": "上下文替代",
@@ -185,22 +166,18 @@
   "feat.titl": "标题字形",
   "feat.hist": "古体字形",
   "feat.stylisticSet": "风格集 {n}",
-
   "axis.wght": "字重",
   "axis.wdth": "字宽",
   "axis.slnt": "倾斜",
   "axis.ital": "斜体",
   "axis.opsz": "光学字号",
   "axis.GRAD": "灰度等级",
-
   "glyph.none": "没有可用的字符表",
   "glyph.copyAria": "复制字符 {cp}",
   "glyph.copied": "已复制“{ch}”",
   "glyph.showAll": "显示全部 {count} 个字形",
-
   "note.placeholder": "备注——例如：仅授权给客户 X 使用…",
   "note.aria": "字体备注",
-
   "license.open": "可能是开放许可",
   "license.restrictive": "可能有使用限制",
   "license.unknown": "许可未识别",
@@ -208,11 +185,9 @@
   "license.more": "展开",
   "license.less": "收起",
   "license.disclaimer": "基于内嵌元数据的尽力解读，不构成法律意见",
-
   "tag.removeAria": "移除标签 {tag}",
   "tag.addPlaceholder": "添加标签…",
   "tag.addAria": "添加标签",
-
   "settings.title": "设置",
   "settings.close": "关闭设置",
   "settings.addFolderTitle": "添加要扫描的文件夹",
@@ -225,6 +200,7 @@
   "settings.watchedFoldersSub": "在系统字体目录之外额外扫描这些位置",
   "settings.removeFolder": "移除 {dir}",
   "settings.addFolder": "添加文件夹…",
+  "settings.scanningFolders": "正在索引字体…",
   "settings.libraryData": "库数据",
   "settings.curation": "标签、分组与备注",
   "settings.curationSub": "把你的整理成果备份到文件，或从另一台机器合并进来",
@@ -248,19 +224,15 @@
   "settings.soundLevelAria": "音效强度",
   "settings.footerNote": "字体始终留在你的电脑上",
   "settings.replayTour": "重看导览",
-
   "theme.dark": "深色",
   "theme.light": "浅色",
   "theme.system": "系统",
-
   "sound.off": "关闭",
   "sound.subtle": "轻微",
   "sound.on": "开启",
-
   "shortcuts.title": "快捷键",
   "shortcuts.close": "关闭快捷键面板",
   "shortcuts.aria": "键盘快捷键",
-
   "sc.navigate": "导航",
   "sc.palette": "命令面板",
   "sc.focusSearch": "聚焦搜索框",
@@ -281,9 +253,7 @@
   "sc.contextMenu": "右键菜单——用方向键浏览",
   "sc.help": "帮助",
   "sc.thisOverlay": "本面板",
-
   "key.click": "点击",
-
   "palette.goLibrary": "前往字体库",
   "palette.goFavorites": "前往收藏",
   "palette.goTrash": "前往回收站",
@@ -296,20 +266,19 @@
   "palette.language": "语言：{name}",
   "palette.compareSelected": "对比选中的 {count} 个字体",
   "palette.rescan": "重新扫描字体文件夹",
+  "palette.applyInApp": "在 {app} 中应用 {family}",
   "palette.settings": "打开设置",
   "palette.shortcuts": "键盘快捷键",
   "palette.placeholder": "跳转到某个字体，或执行命令…",
   "palette.aria": "命令面板",
   "palette.searchAria": "命令面板搜索",
   "palette.empty": "没有匹配项——试试少输入几个字。",
-
   "bulk.aria": "为选中的字体加标签",
   "bulk.title": "为 {count} 个字体加标签",
   "bulk.cancel": "取消",
   "bulk.placeholder": "标签名称…",
   "bulk.tagNameAria": "标签名称",
   "bulk.apply": "应用到 {count} 个字体",
-
   "tour.inviteAria": "欢迎",
   "tour.inviteTitle": "第一次使用？",
   "tour.inviteSub": "用一分钟了解你的新字体库。",
@@ -341,7 +310,6 @@
   "tour.settings.body": "选择界面语言、监视文件夹中的新字体、添加额外的扫描位置、调整动效与音效。",
   "tour.last.title": "最后一件事",
   "tour.last.body": "把字体文件、文件夹或 zip 压缩包拖到这个窗口的任意位置即可安装。就这些——享受你的字体库吧。",
-
   "menu.rename": "重命名",
   "menu.exportFontList": "导出字体清单（元数据）…",
   "menu.deleteCollection": "删除分组",
@@ -369,35 +337,48 @@
   "menu.newCollection": "新建分组…",
   "menu.exportFamily": "导出字体家族…",
   "menu.exportSpecimen": "导出字体样张…",
+  "menu.applyInApp": "在 {app} 中应用…",
+  "adobe.photoshop": "Photoshop",
+  "adobe.illustrator": "Illustrator",
   "menu.copyFamilyName": "复制字体家族名",
   "menu.copyFilePath": "复制文件路径",
   "menu.showInFileManager": "在文件管理器中显示",
   "menu.moveToTrash": "移到回收站",
-
   "copy.familyName": "字体家族名",
   "copy.filePath": "文件路径",
-
   "fontlist.title": "{title} —— 字体清单",
   "fontlist.sub": "{count} 个字体家族 · 由 ZFontManager 导出",
   "fontlist.styles": "样式",
   "fontlist.format": "格式",
   "fontlist.foundry": "字体厂商",
   "fontlist.variable": "可变",
-
   "specimen.saveTitle": "导出字体样张",
   "specimen.pngFilter": "PNG 图片",
   "specimen.stylesHeading": "样式",
   "specimen.brand": "字体样张 · ZFontManager",
-
   "preview.defaultSample": "The quick brown fox jumps over the lazy dog",
-
   "toast.libraryUpdated": "字体库已更新",
   "toast.newFontsFound_one": "发现 {count} 个新字体",
   "toast.newFontsFound_other": "发现 {count} 个新字体",
   "toast.fontsRemoved_one": "移除了 {count} 个字体",
   "toast.fontsRemoved_other": "移除了 {count} 个字体",
+  "toast.noFontsInFolder": "在该文件夹中未找到字体文件",
+  "toast.libraryUnchanged": "没有变化",
   "toast.couldntScan": "无法扫描你的字体",
   "toast.couldntActivate": "无法启用字体",
+  "toast.appliedInApp": "已在 {app} 中应用 {family}",
+  "toast.appliedLayers_other": "已更新 {count} 个文本图层",
+  "toast.createdInApp": "已在 {app} 中添加文本图层",
+  "toast.createdInAppSub": "未选中文本，因此 {family} 已放到新图层上",
+  "toast.appNotRunning": "{app} 未运行",
+  "toast.appNotRunningSub": "请先打开它并载入文档，然后重试",
+  "toast.noDocumentInApp": "{app} 中没有打开的文档",
+  "toast.noDocumentInAppSub": "请打开或新建文档后重试",
+  "toast.fontUnknownToApp": "{app} 暂时还看不到 {family}",
+  "toast.fontUnknownToAppSub": "请稍等片刻让它刷新字体列表，然后重试",
+  "toast.couldntApplyIn": "无法在 {app} 中应用",
+  "toast.noPostScriptName": "此字体没有 PostScript 名称",
+  "toast.noPostScriptNameSub": "{app} 需要它才能选择字体",
   "toast.couldntDeactivate": "无法停用字体",
   "toast.activeUntilClose": "{family} 已启用至退出",
   "toast.activeUntilCloseSub": "退出 ZFontManager 后会自动停用",

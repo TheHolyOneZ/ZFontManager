@@ -49,7 +49,6 @@ export async function renderSpecimenPng(
     const css = await loadFaceCss(lead);
     await document.fonts.load(`16px "${css}"`);
 
-    // Style names, each in its own face when it loads (best effort).
     const styles = await Promise.all(
       family.faces.slice(0, 12).map(async (f) => ({
         label: f.style,
@@ -61,7 +60,6 @@ export async function renderSpecimenPng(
     const text = sampleText.trim() || t("preview.defaultSample");
     const inner = W - PAD * 2;
 
-    // Measure style-row wrapping before sizing the canvas.
     const meter = document.createElement("canvas").getContext("2d");
     if (!meter) throw new Error("canvas unavailable");
     let styleLines = 1;
@@ -97,7 +95,6 @@ export async function renderSpecimenPng(
 
     let y = PAD;
 
-    // Header: the family name set in itself
     ctx.fillStyle = INK;
     ctx.font = `44px "${css}"`;
     ctx.fillText(ellipsize(ctx, family.name, inner), PAD, y + 44);
@@ -121,7 +118,6 @@ export async function renderSpecimenPng(
     ctx.stroke();
     y += 30;
 
-    // Alphabet strips
     ctx.fillStyle = INK;
     ctx.font = `22px "${css}"`;
     for (const strip of [
@@ -134,7 +130,6 @@ export async function renderSpecimenPng(
     }
     y += 24;
 
-    // Waterfall
     for (const px of WATERFALL) {
       ctx.fillStyle = SUB;
       ctx.font = `10px ${UI}`;
@@ -146,7 +141,6 @@ export async function renderSpecimenPng(
     }
     y += 24;
 
-    // Styles, each in its own face
     if (styles.length > 1) {
       ctx.fillStyle = SUB;
       ctx.font = `10px ${UI}`;
@@ -167,7 +161,6 @@ export async function renderSpecimenPng(
       y += 30;
     }
 
-    // Footer
     ctx.strokeStyle = FAINT;
     ctx.beginPath();
     ctx.moveTo(PAD, H - 52);

@@ -7,7 +7,6 @@ import { useT } from "../lib/i18n";
 
 const WATERFALL_SIZES = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 40, 48, 56, 64, 80, 96];
 
-
 export function WaterfallView({ families }: { families: Family[] }) {
   const t = useT();
   const selectedFamily = useFontStore((s) => s.selectedFamily);

@@ -140,7 +140,6 @@ export function Sidebar() {
   const [creating, setCreating] = useState(false);
   const [renaming, setRenaming] = useState<string | null>(null);
 
-
   useEffect(() => {
     if (pendingCollectionFor) setCreating(true);
   }, [pendingCollectionFor]);

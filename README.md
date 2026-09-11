@@ -12,7 +12,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.2.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.3.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -44,6 +44,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
   - [Your whole library, rendered live](#your-whole-library-rendered-live)
   - [Activate &amp; deactivate — the killer feature](#activate--deactivate--the-killer-feature)
   - [Try a font before committing](#try-a-font-before-committing)
+  - [Apply a font in Photoshop or Illustrator](#apply-a-font-in-photoshop-or-illustrator)
   - [Installing fonts](#installing-fonts)
   - [A trash can, not a shredder](#a-trash-can-not-a-shredder)
   - [Organize: tags, collections, favorites, notes](#organize-tags-collections-favorites-notes)
@@ -87,7 +88,8 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.2.0**. It's already very usable
+> ZFontManager is currently at **version 0.3.0** — see the
+> [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
 
@@ -149,6 +151,15 @@ Not sure you want that font cluttering your menus permanently? Right-click →
 **"Activate until close"** wakes a font up *for this session only*. When you
 quit ZFontManager, it's automatically put back to sleep. Perfect for
 auditioning a typeface in your design app without any cleanup afterwards.
+
+### Apply a font in Photoshop or Illustrator
+
+On Windows and macOS, right-click a family → **"Apply in Photoshop…"** or
+**"Apply in Illustrator…"** (also in the command palette for the selected
+family). ZFontManager hands the font to the running app: every selected text
+layer or text frame switches to it, and if nothing is selected, a new text
+layer is added with the family name as its sample. A sleeping font is woken
+"until close" first, so auditioning never installs anything permanently.
 
 ### Installing fonts
 
@@ -386,9 +397,12 @@ offering it. Nothing is moved or deleted.</td>
 </tr>
 <tr>
 <td><b>🪟 Windows</b></td>
-<td>Uses the per-user font registration Windows itself uses. Deactivating a
-font unregisters it for your user account; the file stays put. No admin
-rights needed for your own fonts.</td>
+<td>Uses the per-user font registration Windows itself uses. The toggle
+reflects what Windows actually lists: fonts in a folder you added show up
+<i>inactive</i> until you switch them on, which registers them for your user
+account right where they are — an external drive is fine. Deactivating
+unregisters the font; the file stays put. No admin rights needed for your own
+fonts.</td>
 </tr>
 <tr>
 <td><b>🍎 macOS</b></td>
@@ -466,7 +480,9 @@ certainly manage it.
 <br>
 Most likely the app was already running and only reads the font list at
 startup. Restart the app and the font will be there. (Some apps also have
-their own "refresh font list" command.)
+their own "refresh font list" command.) For Photoshop and Illustrator you
+can skip the font menu entirely: right-click the family → <i>Apply in
+Photoshop…</i> / <i>Apply in Illustrator…</i>.
 </details>
 
 <details>
@@ -511,6 +527,25 @@ pnpm tauri build
 
 The finished installer/bundle lands in `src-tauri/target/release/bundle/`.
 For a live development window instead, use `pnpm tauri dev`.
+
+<details>
+<summary>For maintainers: cutting a release</summary>
+<br>
+
+1. Bump the version in `package.json`, `src-tauri/Cargo.toml`,
+   `src-tauri/tauri.conf.json` and `src/lib/version.ts`, and add a section to
+   `CHANGELOG.md`.
+2. Run `node strip-comments.mjs` (release sources ship without comments),
+   `node check-locales.mjs`, and push. The GitHub Actions workflow builds all
+   seven installers — Windows `.exe`/`.msi`, macOS Apple Silicon and Intel
+   `.dmg`, Linux AppImage/`.deb`/`.rpm` — and opens a draft release with them
+   attached.
+3. Download the assets and run `node prepare-release.mjs --from <folder>`.
+   It copies them into `zfontmanager/releases/`, writes `SHA256SUMS.txt`
+   and updates the download page. Upload `zfontmanager/` to the webspace,
+   paste the changelog section into the draft, publish.
+
+</details>
 
 <details>
 <summary>For the curious: what it's made of</summary>

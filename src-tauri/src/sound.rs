@@ -7,7 +7,6 @@ use std::sync::OnceLock;
 
 const SAMPLE_RATE: u32 = 44_100;
 
-
 fn tone(freq: f32, dur_ms: u32, vol: f32) -> Vec<f32> {
     let n = (SAMPLE_RATE * dur_ms / 1000) as usize;
     let attack = (SAMPLE_RATE as usize * 8) / 1000;
@@ -33,7 +32,6 @@ fn seq(parts: &[(f32, u32, f32)]) -> Vec<f32> {
     out
 }
 
-
 fn samples_for(kind: &str, vol: f32) -> Vec<f32> {
     match kind {
         "toggle-on" => tone(660.0, 70, vol),
@@ -56,7 +54,6 @@ fn samples_for(kind: &str, vol: f32) -> Vec<f32> {
         _ => Vec::new(),
     }
 }
-
 
 fn sender() -> &'static Sender<(String, f32)> {
     static TX: OnceLock<Sender<(String, f32)>> = OnceLock::new();

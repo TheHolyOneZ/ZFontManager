@@ -1,9 +1,7 @@
 {
   "lang.name": "Français",
-
   "scan.reading": "Lecture de {done} fichiers de police sur {total}…",
   "scan.finding": "Recherche de vos polices…",
-
   "empty.library.title": "Votre bibliothèque vous attend",
   "empty.library.body": "Glissez des fichiers de police, des dossiers ou des archives .zip n’importe où dans cette fenêtre pour les installer →",
   "empty.search.title": "Aucune police ne correspond",
@@ -14,28 +12,23 @@
   "empty.collection.body": "Clic droit sur une police → Collections → « {name} » pour l’ajouter ici.",
   "empty.tag.title": "Rien ne porte cette étiquette",
   "empty.tag.body": "Clic droit sur une police, puis Étiquettes, pour la marquer.",
-
   "titlebar.settings": "Réglages",
   "titlebar.minimize": "Réduire",
   "titlebar.maximize": "Agrandir",
   "titlebar.close": "Fermer",
-
   "sort.name": "Nom",
   "sort.styles": "Styles",
   "sort.size": "Taille du fichier",
-
   "filter.aria": "Filtrer les polices",
   "filter.classification": "Classification",
   "filter.languageSupport": "Langues prises en charge",
   "filter.variableOnly": "Variables uniquement",
-
   "class.serif": "Serif",
   "class.sans": "Sans serif",
   "class.mono": "Mono",
   "class.display": "Display",
   "class.script": "Scripte",
   "class.unknown": "Inconnue",
-
   "script.latin": "Latin",
   "script.cyrillic": "Cyrillique",
   "script.greek": "Grec",
@@ -46,7 +39,6 @@
   "script.cjk": "CJC",
   "script.korean": "Coréen",
   "script.vietnamese": "Vietnamien",
-
   "top.rescan": "Réanalyser les dossiers de polices",
   "top.samplePlaceholder": "Saisissez un texte d’aperçu…",
   "top.sampleAria": "Texte d’aperçu",
@@ -54,7 +46,6 @@
   "top.searchPlaceholder": "Rechercher…",
   "top.searchAria": "Rechercher des polices",
   "top.viewMode": "Mode d’affichage",
-
   "compare.ariaArmed": "Comparer les {count} polices sélectionnées",
   "compare.ariaCancelPicking": "Annuler la sélection à comparer",
   "compare.ariaIdle": "Comparer des polices",
@@ -65,7 +56,6 @@
   "compare.close": "Fermer la comparaison",
   "compare.dialogAria": "Comparer des polices",
   "compare.remove": "Retirer {name}",
-
   "side.browse": "Parcourir",
   "side.library": "Bibliothèque",
   "side.favorites": "Favoris",
@@ -79,7 +69,6 @@
   "side.trash": "Corbeille",
   "side.about": "À propos",
   "side.shortcuts": "Raccourcis",
-
   "sel.aria": "Actions sur la sélection",
   "sel.ready": "C’est prêt — cliquez sur Comparer !",
   "sel.pickMore": "Choisissez au moins une police de plus",
@@ -88,13 +77,11 @@
   "sel.rightClick": "clic droit pour plus",
   "sel.cancelCompare": "Annuler la comparaison",
   "sel.clear": "Effacer la sélection",
-
   "list.family": "Famille",
   "list.styles": "Styles",
   "list.format": "Format",
   "list.size": "Taille",
   "list.active": "Active",
-
   "card.collapseStyles": "Replier les styles",
   "card.expandStyles": "Déplier les styles",
   "card.stylesCount_one": "{count} style",
@@ -107,10 +94,8 @@
   "card.activate": "Activer {name}",
   "card.previewUnavailable": "aperçu indisponible",
   "card.noPreview": "Ce format ne peut pas encore être prévisualisé",
-
   "waterfall.emptyTitle": "Rien à faire cascader",
   "waterfall.emptyBody": "Choisissez une police en vue grille ou liste, puis revenez à la cascade.",
-
   "trash.emptyTitle": "La corbeille est vide",
   "trash.emptyBody": "Les polices que vous retirez atterrissent ici d’abord — rien n’est jamais supprimé en silence.",
   "trash.count_one": "{count} fichier de police dans la corbeille",
@@ -120,7 +105,6 @@
   "trash.restore": "Restaurer",
   "trash.delete": "Supprimer",
   "trash.deletePermanently": "Supprimer définitivement",
-
   "about.version": "Version {version} · {license}",
   "about.desc": "Le gestionnaire de polices que Linux n’a jamais eu et qu’il faut payer sous Windows et macOS. Prévisualisez, étiquetez, activez et désactivez, installez vos polices sur les trois systèmes depuis une seule application native et sobre — vos polices ne quittent jamais votre machine.",
   "about.stackAria": "Technologies",
@@ -128,13 +112,11 @@
   "about.moreProjects": "Autres projets",
   "about.landing": "Page de présentation et téléchargement",
   "about.source": "Code source de ZFontManager",
-
   "drop.title": "Déposez pour installer",
   "drop.sub": "Fichiers de police, dossiers ou archives .zip",
   "drop.installing_one": "Installation de {count} police…",
   "drop.installing_other": "Installation de {count} polices…",
   "drop.installing_many": "Installation de {count} polices…",
-
   "detail.exportFace": "Exporter {family} {style}",
   "detail.reset": "Réinitialiser",
   "detail.axisAria": "Axe {name}",
@@ -169,7 +151,6 @@
   "detail.tags": "Étiquettes",
   "detail.notes": "Notes",
   "detail.moveToTrash": "Mettre à la corbeille",
-
   "feat.liga": "Ligatures",
   "feat.dlig": "Ligatures discrétionnaires",
   "feat.calt": "Variantes contextuelles",
@@ -189,22 +170,18 @@
   "feat.titl": "Capitales de titrage",
   "feat.hist": "Formes historiques",
   "feat.stylisticSet": "Jeu stylistique {n}",
-
   "axis.wght": "Graisse",
   "axis.wdth": "Chasse",
   "axis.slnt": "Inclinaison",
   "axis.ital": "Italique",
   "axis.opsz": "Taille optique",
   "axis.GRAD": "Grade",
-
   "glyph.none": "Aucune table de caractères disponible",
   "glyph.copyAria": "Copier le caractère {cp}",
   "glyph.copied": "« {ch} » copié",
   "glyph.showAll": "Afficher les {count} glyphes",
-
   "note.placeholder": "Notes — p. ex. sous licence pour le client X uniquement…",
   "note.aria": "Notes sur la police",
-
   "license.open": "Licence probablement libre",
   "license.restrictive": "Peut-être restrictive",
   "license.unknown": "Licence non classée",
@@ -212,11 +189,9 @@
   "license.more": "plus",
   "license.less": "moins",
   "license.disclaimer": "Lecture au mieux des métadonnées intégrées — ceci n’est pas un avis juridique",
-
   "tag.removeAria": "Retirer l’étiquette {tag}",
   "tag.addPlaceholder": "Ajouter une étiquette…",
   "tag.addAria": "Ajouter une étiquette",
-
   "settings.title": "Réglages",
   "settings.close": "Fermer les réglages",
   "settings.addFolderTitle": "Ajouter un dossier à analyser",
@@ -229,6 +204,7 @@
   "settings.watchedFoldersSub": "Analysés en plus des dossiers de polices du système",
   "settings.removeFolder": "Retirer {dir}",
   "settings.addFolder": "Ajouter un dossier…",
+  "settings.scanningFolders": "Indexation de vos polices…",
   "settings.libraryData": "Données de la bibliothèque",
   "settings.curation": "Étiquettes, collections et notes",
   "settings.curationSub": "Sauvegardez votre organisation dans un fichier, ou fusionnez celle d’une autre machine",
@@ -252,19 +228,15 @@
   "settings.soundLevelAria": "Niveau sonore",
   "settings.footerNote": "vos polices restent sur votre machine",
   "settings.replayTour": "revoir la visite",
-
   "theme.dark": "Sombre",
   "theme.light": "Clair",
   "theme.system": "Système",
-
   "sound.off": "Désactivé",
   "sound.subtle": "Discret",
   "sound.on": "Activé",
-
   "shortcuts.title": "Raccourcis",
   "shortcuts.close": "Fermer les raccourcis",
   "shortcuts.aria": "Raccourcis clavier",
-
   "sc.navigate": "Naviguer",
   "sc.palette": "Palette de commandes",
   "sc.focusSearch": "Aller à la recherche",
@@ -285,9 +257,7 @@
   "sc.contextMenu": "Menu contextuel — flèches pour le parcourir",
   "sc.help": "Aide",
   "sc.thisOverlay": "Ce panneau",
-
   "key.click": "Clic",
-
   "palette.goLibrary": "Aller à la Bibliothèque",
   "palette.goFavorites": "Aller aux Favoris",
   "palette.goTrash": "Aller à la Corbeille",
@@ -300,20 +270,19 @@
   "palette.language": "Langue : {name}",
   "palette.compareSelected": "Comparer les {count} polices sélectionnées",
   "palette.rescan": "Réanalyser les dossiers de polices",
+  "palette.applyInApp": "Appliquer {family} dans {app}",
   "palette.settings": "Ouvrir les réglages",
   "palette.shortcuts": "Raccourcis clavier",
   "palette.placeholder": "Aller à une police ou lancer une commande…",
   "palette.aria": "Palette de commandes",
   "palette.searchAria": "Recherche dans la palette de commandes",
   "palette.empty": "Aucun résultat — essayez avec moins de lettres.",
-
   "bulk.aria": "Étiqueter les polices sélectionnées",
   "bulk.title": "Étiqueter {count} polices",
   "bulk.cancel": "Annuler",
   "bulk.placeholder": "Nom de l’étiquette…",
   "bulk.tagNameAria": "Nom de l’étiquette",
   "bulk.apply": "Appliquer à {count} polices",
-
   "tour.inviteAria": "Bienvenue",
   "tour.inviteTitle": "C’est votre première fois ?",
   "tour.inviteSub": "Une minute de visite dans votre nouvelle bibliothèque de polices.",
@@ -345,7 +314,6 @@
   "tour.settings.body": "Choisissez votre langue, surveillez des dossiers, ajoutez des emplacements à analyser, réglez les animations et les sons.",
   "tour.last.title": "Une dernière chose",
   "tour.last.body": "Glissez des fichiers de police, des dossiers ou des archives zip n’importe où sur cette fenêtre pour les installer. Voilà — profitez de votre bibliothèque.",
-
   "menu.rename": "Renommer",
   "menu.exportFontList": "Exporter la liste des polices (métadonnées)…",
   "menu.deleteCollection": "Supprimer la collection",
@@ -373,37 +341,52 @@
   "menu.newCollection": "Nouvelle collection…",
   "menu.exportFamily": "Exporter la famille…",
   "menu.exportSpecimen": "Exporter un spécimen…",
+  "menu.applyInApp": "Appliquer dans {app}…",
+  "adobe.photoshop": "Photoshop",
+  "adobe.illustrator": "Illustrator",
   "menu.copyFamilyName": "Copier le nom de la famille",
   "menu.copyFilePath": "Copier le chemin du fichier",
   "menu.showInFileManager": "Afficher dans le gestionnaire de fichiers",
   "menu.moveToTrash": "Mettre à la corbeille",
-
   "copy.familyName": "Nom de la famille",
   "copy.filePath": "Chemin du fichier",
-
   "fontlist.title": "{title} — liste des polices",
   "fontlist.sub": "{count} familles · exporté par ZFontManager",
   "fontlist.styles": "Styles",
   "fontlist.format": "Format",
   "fontlist.foundry": "Fonderie",
   "fontlist.variable": "variable",
-
   "specimen.saveTitle": "Exporter le spécimen",
   "specimen.pngFilter": "Image PNG",
   "specimen.stylesHeading": "STYLES",
   "specimen.brand": "Spécimen · ZFontManager",
-
   "preview.defaultSample": "Portez ce vieux whisky au juge blond qui fume",
-
   "toast.libraryUpdated": "Bibliothèque mise à jour",
   "toast.newFontsFound_one": "{count} nouvelle police trouvée",
   "toast.newFontsFound_other": "{count} nouvelles polices trouvées",
   "toast.newFontsFound_many": "{count} nouvelles polices trouvées",
   "toast.fontsRemoved_one": "{count} police retirée",
   "toast.fontsRemoved_other": "{count} polices retirées",
+  "toast.noFontsInFolder": "Aucun fichier de police trouvé dans ce dossier",
+  "toast.libraryUnchanged": "Aucun changement",
   "toast.fontsRemoved_many": "{count} polices retirées",
   "toast.couldntScan": "Impossible d’analyser vos polices",
   "toast.couldntActivate": "Impossible d’activer la police",
+  "toast.appliedInApp": "{family} appliquée dans {app}",
+  "toast.appliedLayers_one": "{count} calque de texte mis à jour",
+  "toast.appliedLayers_other": "{count} calques de texte mis à jour",
+  "toast.appliedLayers_many": "{count} calques de texte mis à jour",
+  "toast.createdInApp": "Calque de texte ajouté dans {app}",
+  "toast.createdInAppSub": "Aucun texte n'était sélectionné, {family} a donc été placée sur un nouveau calque",
+  "toast.appNotRunning": "{app} n'est pas lancé",
+  "toast.appNotRunningSub": "Ouvrez-le avec un document, puis réessayez",
+  "toast.noDocumentInApp": "Aucun document ouvert dans {app}",
+  "toast.noDocumentInAppSub": "Ouvrez ou créez un document, puis réessayez",
+  "toast.fontUnknownToApp": "{app} ne voit pas encore {family}",
+  "toast.fontUnknownToAppSub": "Laissez-lui un instant pour rafraîchir sa liste de polices, puis réessayez",
+  "toast.couldntApplyIn": "Impossible d'appliquer dans {app}",
+  "toast.noPostScriptName": "Cette police n'a pas de nom PostScript",
+  "toast.noPostScriptNameSub": "{app} en a besoin pour sélectionner une police",
   "toast.couldntDeactivate": "Impossible de désactiver la police",
   "toast.activeUntilClose": "{family} active jusqu’à la fermeture",
   "toast.activeUntilCloseSub": "Elle se désactive toute seule quand vous quittez ZFontManager",

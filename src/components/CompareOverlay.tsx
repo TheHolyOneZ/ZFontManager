@@ -56,7 +56,6 @@ function CompareColumn({ family, onRemove }: { family: Family; onRemove: () => v
   );
 }
 
-
 export function CompareOverlay() {
   const t = useT();
   const compare = useFontStore((s) => s.compare);

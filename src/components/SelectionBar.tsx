@@ -4,7 +4,6 @@ import { springSoft } from "../design/springs";
 import { useFontStore } from "../state/fontStore";
 import { useT } from "../lib/i18n";
 
-
 export function SelectionBar() {
   const t = useT();
   const selection = useFontStore((s) => s.selection);

@@ -42,7 +42,6 @@ fn name_string(face: &ttf_parser::Face, id: u16) -> Option<String> {
         .find_map(|n| n.to_string())
 }
 
-
 const SCRIPT_PROBES: &[(&str, &[u32])] = &[
     ("latin", &[0x0041, 0x007A]),
     ("cyrillic", &[0x0410, 0x044F]),
@@ -67,7 +66,6 @@ fn script_coverage(face: &ttf_parser::Face) -> Vec<String> {
         .map(|(name, _)| (*name).to_string())
         .collect()
 }
-
 
 fn classify(face: &ttf_parser::Face, family: &str) -> Classification {
     if face.is_monospaced() {
@@ -156,6 +154,7 @@ fn parse_face(
     Some(FontFace {
         id: format!("{}#{}", path_str, index),
         path: path_str,
+        preview_path: None,
         face_index: index,
         family,
         style,
@@ -184,7 +183,6 @@ fn fallback_family(path: &Path) -> String {
         .unwrap_or_else(|| "Unknown".to_string())
 }
 
-
 pub fn parse_font_file(path: &Path, source: FontSource) -> Vec<FontFace> {
     let Ok(data) = fs::read(path) else {
         return Vec::new();
@@ -197,6 +195,7 @@ pub fn parse_font_file(path: &Path, source: FontSource) -> Vec<FontFace> {
         return vec![FontFace {
             id: format!("{}#0", path_str),
             path: path_str,
+            preview_path: None,
             face_index: 0,
             family: fallback_family(path),
             style: "Regular".to_string(),

@@ -62,7 +62,6 @@ export function FontList({ families }: { families: Family[] }) {
                 onClick={(e) => {
                   const st = useFontStore.getState();
 
-
                   if (st.comparePicking) {
                     st.togglePick(fam.name);
                     return;

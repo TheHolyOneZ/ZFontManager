@@ -6,7 +6,6 @@ import { toast } from "../design/primitives/Toast";
 import { t as translate, useT, type TKey } from "../lib/i18n";
 import { APP_LICENSE, APP_VERSION } from "../lib/version";
 
-
 function GithubGlyph({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -14,7 +13,6 @@ function GithubGlyph({ size = 16 }: { size?: number }) {
     </svg>
   );
 }
-
 
 function openUrl(url: string) {
   invoke("open_url", { url }).catch((e) => toast.error(translate("toast.couldntOpenLink"), String(e)));

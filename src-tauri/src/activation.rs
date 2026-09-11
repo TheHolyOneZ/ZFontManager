@@ -1,7 +1,6 @@
 use crate::font_types::FontSource;
 use crate::store::AppState;
 
-
 pub fn can_deactivate(source: FontSource) -> bool {
     #[cfg(target_os = "linux")]
     {
@@ -20,7 +19,6 @@ pub fn can_deactivate(source: FontSource) -> bool {
         source != FontSource::System
     }
 }
-
 
 pub fn sync(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
     if active {
@@ -64,12 +62,10 @@ fn apply(state: &mut AppState, _path: &str, _active: bool) -> Result<(), String>
              <fontconfig>\n  <selectfont>\n    <rejectfont>\n{globs}    </rejectfont>\n  </selectfont>\n</fontconfig>\n"
         );
 
-
         let tmp = file.with_extension("conf.tmp");
         fs::write(&tmp, xml).map_err(|e| e.to_string())?;
         fs::rename(&tmp, &file).map_err(|e| e.to_string())?;
     }
-
 
     if let Ok(mut child) = std::process::Command::new("fc-cache").spawn() {
         std::thread::spawn(move || {
@@ -122,106 +118,100 @@ fn apply(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
     Ok(())
 }
 
-
-#[cfg(target_os = "windows")]
-pub fn hidden_reg() -> std::process::Command {
-    use std::os::windows::process::CommandExt;
-    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-    let mut cmd = std::process::Command::new("reg");
-    cmd.creation_flags(CREATE_NO_WINDOW);
-    cmd
-}
-
 #[cfg(target_os = "windows")]
 fn apply(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
+    use crate::registry;
 
-
-    let key = r"HKCU\Software\Microsoft\Windows NT\CurrentVersion\Fonts";
     if active {
-        let value_name = state
+
+        let remembered = state
             .registry_backup
             .iter()
             .find(|(_, v)| v.as_str() == path)
-            .map(|(k, _)| k.clone())
-            .ok_or_else(|| format!("no registry backup recorded for {path}"))?;
-        let out = hidden_reg()
-            .args(["add", key, "/v", &value_name, "/t", "REG_SZ", "/d", path, "/f"])
-            .output()
-            .map_err(|e| e.to_string())?;
-        if !out.status.success() {
-            return Err(String::from_utf8_lossy(&out.stderr).into_owned());
+            .map(|(k, _)| k.clone());
+        let name = match remembered {
+            Some(name) => name,
+            None => registry::unique_user_name(&registry::value_name_for(path), path),
+        };
+        if registry::user_entries_for(path).is_empty() {
+            registry::set_user_entry(&name, path)?;
         }
-        state.registry_backup.remove(&value_name);
-        broadcast_font_change(path, true);
+        state.registry_backup.remove(&name);
+        registry::add_font_resource(path);
     } else {
-
-        let out = hidden_reg()
-            .args(["query", key])
-            .output()
-            .map_err(|e| e.to_string())?;
-        let text = String::from_utf8_lossy(&out.stdout).into_owned();
-        let value_name = text
-            .lines()
-            .filter_map(|l| {
-                let l = l.trim();
-                let (name, rest) = l.split_once("REG_SZ")?;
-                (rest.trim().eq_ignore_ascii_case(path)).then(|| name.trim().to_string())
-            })
-            .next()
-            .ok_or_else(|| format!("font not found in per-user registry: {path}"))?;
-        let del = hidden_reg()
-            .args(["delete", key, "/v", &value_name, "/f"])
-            .output()
-            .map_err(|e| e.to_string())?;
-        if !del.status.success() {
-            return Err(String::from_utf8_lossy(&del.stderr).into_owned());
+        if registry::is_machine_registered(path) {
+            return Err(format!(
+                "this font is installed for all users; deactivating it needs administrator rights: {path}"
+            ));
         }
-        state
-            .registry_backup
-            .insert(value_name, path.to_string());
-        broadcast_font_change(path, false);
+
+        let names = registry::user_entries_for(path);
+        for name in &names {
+            registry::delete_user_entry(name)?;
+        }
+        if let Some(first) = names.into_iter().next() {
+            state.registry_backup.insert(first, path.to_string());
+        }
+        registry::remove_font_resource(path);
     }
+    registry::broadcast_font_change();
     Ok(())
 }
-
-#[cfg(target_os = "windows")]
-fn broadcast_font_change(path: &str, add: bool) {
-    use windows_sys::Win32::Graphics::Gdi::{AddFontResourceW, RemoveFontResourceW};
-    use windows_sys::Win32::UI::WindowsAndMessaging::{
-        SendNotifyMessageW, HWND_BROADCAST, WM_FONTCHANGE,
-    };
-
-    let wide: Vec<u16> = path.encode_utf16().chain(std::iter::once(0)).collect();
-    unsafe {
-        if add {
-            AddFontResourceW(wide.as_ptr());
-        } else {
-            RemoveFontResourceW(wide.as_ptr());
-        }
-        SendNotifyMessageW(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-    }
-}
-
 
 #[cfg(target_os = "linux")]
 pub fn reconcile(state: &mut AppState) {
 
-
     let _ = apply(state, "", true);
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(target_os = "windows")]
+pub fn reconcile(_state: &mut AppState) {
+
+    std::thread::spawn(|| {
+        crate::registry::load_registered_outside(&crate::scanner::managed_font_dir());
+    });
+}
+
+#[cfg(target_os = "macos")]
 pub fn reconcile(_state: &mut AppState) {}
 
+pub struct Probe {
+    #[cfg(target_os = "windows")]
+    registered: std::collections::HashSet<String>,
+}
 
-pub fn is_active(state: &AppState, path: &str) -> bool {
+pub fn probe() -> Probe {
+    Probe {
+        #[cfg(target_os = "windows")]
+        registered: crate::registry::registered_paths(),
+    }
+}
+
+pub fn is_active(probe: &Probe, state: &AppState, face: &crate::font_types::FontFace) -> bool {
+    #[cfg(target_os = "windows")]
+    {
+        let _ = state;
+
+        face.source == FontSource::System
+            || probe
+                .registered
+                .contains(&crate::registry::normalize(&face.path))
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = probe;
+        is_active_path(state, &face.path)
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn is_active_path(state: &AppState, path: &str) -> bool {
     !state.deactivated.contains(path) && !state.parked.contains_key(path)
 }
 
 #[cfg(all(test, target_os = "linux"))]
 mod tests {
     use super::*;
-
 
     #[test]
     fn fragment_lifecycle() {
@@ -244,7 +234,7 @@ mod tests {
         assert!(!state.deactivated.contains(font));
         assert!(!fragment.exists(), "fragment should be removed when nothing is deactivated");
 
-        assert!(is_active(&state, font));
+        assert!(is_active_path(&state, font));
         let _ = std::fs::remove_dir_all(&tmp);
     }
 }

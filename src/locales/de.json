@@ -1,9 +1,7 @@
 {
   "lang.name": "Deutsch",
-
   "scan.reading": "Lese {done} von {total} Schriftdateien…",
   "scan.finding": "Suche deine Schriften…",
-
   "empty.library.title": "Deine Bibliothek wartet",
   "empty.library.body": "Zieh Schriftdateien, Ordner oder .zip-Archive irgendwo in dieses Fenster, um sie zu installieren →",
   "empty.search.title": "Keine Schrift passt",
@@ -14,28 +12,23 @@
   "empty.collection.body": "Rechtsklick auf eine Schrift → Sammlungen → „{name}“, um sie hinzuzufügen.",
   "empty.tag.title": "Nichts trägt dieses Tag",
   "empty.tag.body": "Rechtsklick auf eine Schrift und „Tags“ wählen, um sie zu beschriften.",
-
   "titlebar.settings": "Einstellungen",
   "titlebar.minimize": "Minimieren",
   "titlebar.maximize": "Maximieren",
   "titlebar.close": "Schließen",
-
   "sort.name": "Name",
   "sort.styles": "Schnitte",
   "sort.size": "Dateigröße",
-
   "filter.aria": "Schriften filtern",
   "filter.classification": "Klassifikation",
   "filter.languageSupport": "Sprachunterstützung",
   "filter.variableOnly": "Nur variable",
-
   "class.serif": "Serif",
   "class.sans": "Serifenlos",
   "class.mono": "Monospace",
   "class.display": "Display",
   "class.script": "Schreibschrift",
   "class.unknown": "Unbekannt",
-
   "script.latin": "Lateinisch",
   "script.cyrillic": "Kyrillisch",
   "script.greek": "Griechisch",
@@ -46,7 +39,6 @@
   "script.cjk": "CJK",
   "script.korean": "Koreanisch",
   "script.vietnamese": "Vietnamesisch",
-
   "top.rescan": "Schriftordner neu einlesen",
   "top.samplePlaceholder": "Vorschautext eingeben…",
   "top.sampleAria": "Vorschautext",
@@ -54,7 +46,6 @@
   "top.searchPlaceholder": "Suchen…",
   "top.searchAria": "Schriften suchen",
   "top.viewMode": "Ansicht",
-
   "compare.ariaArmed": "{count} ausgewählte Schriften vergleichen",
   "compare.ariaCancelPicking": "Auswahl zum Vergleichen abbrechen",
   "compare.ariaIdle": "Schriften vergleichen",
@@ -65,7 +56,6 @@
   "compare.close": "Vergleich schließen",
   "compare.dialogAria": "Schriften vergleichen",
   "compare.remove": "{name} entfernen",
-
   "side.browse": "Stöbern",
   "side.library": "Bibliothek",
   "side.favorites": "Favoriten",
@@ -79,7 +69,6 @@
   "side.trash": "Papierkorb",
   "side.about": "Über",
   "side.shortcuts": "Tastenkürzel",
-
   "sel.aria": "Aktionen für die Auswahl",
   "sel.ready": "Bereit — auf Vergleichen klicken!",
   "sel.pickMore": "Wähl mindestens eine weitere Schrift",
@@ -88,13 +77,11 @@
   "sel.rightClick": "Rechtsklick für mehr",
   "sel.cancelCompare": "Vergleich abbrechen",
   "sel.clear": "Auswahl aufheben",
-
   "list.family": "Familie",
   "list.styles": "Schnitte",
   "list.format": "Format",
   "list.size": "Größe",
   "list.active": "Aktiv",
-
   "card.collapseStyles": "Schnitte einklappen",
   "card.expandStyles": "Schnitte ausklappen",
   "card.stylesCount_one": "{count} Schnitt",
@@ -106,10 +93,8 @@
   "card.activate": "{name} aktivieren",
   "card.previewUnavailable": "Vorschau nicht verfügbar",
   "card.noPreview": "Dieses Format lässt sich noch nicht anzeigen",
-
   "waterfall.emptyTitle": "Nichts zum Staffeln",
   "waterfall.emptyBody": "Wähl eine Schrift in der Raster- oder Listenansicht und komm dann zum Wasserfall zurück.",
-
   "trash.emptyTitle": "Papierkorb ist leer",
   "trash.emptyBody": "Entfernte Schriften landen zuerst hier — nichts wird stillschweigend gelöscht.",
   "trash.count_one": "{count} Schriftdatei im Papierkorb",
@@ -118,7 +103,6 @@
   "trash.restore": "Wiederherstellen",
   "trash.delete": "Löschen",
   "trash.deletePermanently": "Endgültig löschen",
-
   "about.version": "Version {version} · {license}",
   "about.desc": "Der Schriftmanager, den Linux nie bekommen hat und für den man unter Windows/macOS bezahlt. Vorschau, Tags, Aktivieren und Deaktivieren, Installieren — auf allen drei Systemen, in einer schlanken nativen App. Deine Schriften verlassen deinen Rechner nie.",
   "about.stackAria": "Technik",
@@ -126,12 +110,10 @@
   "about.moreProjects": "Weitere Projekte",
   "about.landing": "Projekt- und Downloadseite",
   "about.source": "ZFontManager-Quellcode",
-
   "drop.title": "Loslassen zum Installieren",
   "drop.sub": "Schriftdateien, Ordner oder .zip-Archive",
   "drop.installing_one": "Installiere {count} Schrift…",
   "drop.installing_other": "Installiere {count} Schriften…",
-
   "detail.exportFace": "{family} {style} exportieren",
   "detail.reset": "Zurücksetzen",
   "detail.axisAria": "Achse {name}",
@@ -165,7 +147,6 @@
   "detail.tags": "Tags",
   "detail.notes": "Notizen",
   "detail.moveToTrash": "In den Papierkorb",
-
   "feat.liga": "Ligaturen",
   "feat.dlig": "Zierligaturen",
   "feat.calt": "Kontextbedingte Alternativen",
@@ -185,22 +166,18 @@
   "feat.titl": "Titelversalien",
   "feat.hist": "Historische Formen",
   "feat.stylisticSet": "Stilistischer Satz {n}",
-
   "axis.wght": "Stärke",
   "axis.wdth": "Breite",
   "axis.slnt": "Neigung",
   "axis.ital": "Kursiv",
   "axis.opsz": "Optische Größe",
   "axis.GRAD": "Grad",
-
   "glyph.none": "Keine Zeichentabelle verfügbar",
   "glyph.copyAria": "Zeichen {cp} kopieren",
   "glyph.copied": "„{ch}“ kopiert",
   "glyph.showAll": "Alle {count} Glyphen anzeigen",
-
   "note.placeholder": "Notizen — z. B. nur für Kunde X lizenziert…",
   "note.aria": "Notizen zur Schrift",
-
   "license.open": "Vermutlich freie Lizenz",
   "license.restrictive": "Möglicherweise eingeschränkt",
   "license.unknown": "Lizenz nicht eingeordnet",
@@ -208,11 +185,9 @@
   "license.more": "mehr",
   "license.less": "weniger",
   "license.disclaimer": "Bestmögliche Auswertung der eingebetteten Metadaten — keine Rechtsberatung",
-
   "tag.removeAria": "Tag {tag} entfernen",
   "tag.addPlaceholder": "Tag hinzufügen…",
   "tag.addAria": "Tag hinzufügen",
-
   "settings.title": "Einstellungen",
   "settings.close": "Einstellungen schließen",
   "settings.addFolderTitle": "Ordner zum Einlesen hinzufügen",
@@ -225,6 +200,7 @@
   "settings.watchedFoldersSub": "Zusätzlich zu deinen System-Schriftordnern eingelesen",
   "settings.removeFolder": "{dir} entfernen",
   "settings.addFolder": "Ordner hinzufügen…",
+  "settings.scanningFolders": "Schriften werden indexiert…",
   "settings.libraryData": "Bibliotheksdaten",
   "settings.curation": "Tags, Sammlungen & Notizen",
   "settings.curationSub": "Sichere deine Ordnung in einer Datei oder führ eine von einem anderen Rechner zusammen",
@@ -248,19 +224,15 @@
   "settings.soundLevelAria": "Tonstärke",
   "settings.footerNote": "Schriften bleiben auf deinem Rechner",
   "settings.replayTour": "Tour wiederholen",
-
   "theme.dark": "Dunkel",
   "theme.light": "Hell",
   "theme.system": "System",
-
   "sound.off": "Aus",
   "sound.subtle": "Dezent",
   "sound.on": "An",
-
   "shortcuts.title": "Tastenkürzel",
   "shortcuts.close": "Tastenkürzel schließen",
   "shortcuts.aria": "Tastenkürzel",
-
   "sc.navigate": "Navigieren",
   "sc.palette": "Befehlspalette",
   "sc.focusSearch": "Suche fokussieren",
@@ -281,9 +253,7 @@
   "sc.contextMenu": "Kontextmenü — mit Pfeiltasten durchgehen",
   "sc.help": "Hilfe",
   "sc.thisOverlay": "Dieses Fenster",
-
   "key.click": "Klick",
-
   "palette.goLibrary": "Zur Bibliothek",
   "palette.goFavorites": "Zu den Favoriten",
   "palette.goTrash": "Zum Papierkorb",
@@ -296,20 +266,19 @@
   "palette.language": "Sprache: {name}",
   "palette.compareSelected": "{count} ausgewählte Schriften vergleichen",
   "palette.rescan": "Schriftordner neu einlesen",
+  "palette.applyInApp": "{family} in {app} anwenden",
   "palette.settings": "Einstellungen öffnen",
   "palette.shortcuts": "Tastenkürzel",
   "palette.placeholder": "Zu einer Schrift springen oder einen Befehl ausführen…",
   "palette.aria": "Befehlspalette",
   "palette.searchAria": "Suche in der Befehlspalette",
   "palette.empty": "Nichts gefunden — versuch weniger Buchstaben.",
-
   "bulk.aria": "Ausgewählte Schriften taggen",
   "bulk.title": "{count} Schriften taggen",
   "bulk.cancel": "Abbrechen",
   "bulk.placeholder": "Tag-Name…",
   "bulk.tagNameAria": "Tag-Name",
   "bulk.apply": "Auf {count} Schriften anwenden",
-
   "tour.inviteAria": "Willkommen",
   "tour.inviteTitle": "Neu hier?",
   "tour.inviteSub": "Eine Minute Rundgang durch deine neue Schriftbibliothek.",
@@ -341,7 +310,6 @@
   "tour.settings.body": "Sprache wählen, Ordner auf neue Schriften überwachen, weitere Suchorte hinzufügen, Bewegung und Töne einstellen.",
   "tour.last.title": "Noch eine Sache",
   "tour.last.body": "Zieh Schriftdateien, Ordner oder Zip-Archive irgendwo auf dieses Fenster, um sie zu installieren. Das war's — viel Freude mit deiner Bibliothek.",
-
   "menu.rename": "Umbenennen",
   "menu.exportFontList": "Schriftliste exportieren (Metadaten)…",
   "menu.deleteCollection": "Sammlung löschen",
@@ -369,35 +337,49 @@
   "menu.newCollection": "Neue Sammlung…",
   "menu.exportFamily": "Familie exportieren…",
   "menu.exportSpecimen": "Schriftmuster exportieren…",
+  "menu.applyInApp": "In {app} anwenden…",
+  "adobe.photoshop": "Photoshop",
+  "adobe.illustrator": "Illustrator",
   "menu.copyFamilyName": "Familiennamen kopieren",
   "menu.copyFilePath": "Dateipfad kopieren",
   "menu.showInFileManager": "Im Dateimanager anzeigen",
   "menu.moveToTrash": "In den Papierkorb",
-
   "copy.familyName": "Familienname",
   "copy.filePath": "Dateipfad",
-
   "fontlist.title": "{title} — Schriftliste",
   "fontlist.sub": "{count} Familien · exportiert mit ZFontManager",
   "fontlist.styles": "Schnitte",
   "fontlist.format": "Format",
   "fontlist.foundry": "Anbieter",
   "fontlist.variable": "variabel",
-
   "specimen.saveTitle": "Schriftmuster exportieren",
   "specimen.pngFilter": "PNG-Bild",
   "specimen.stylesHeading": "SCHNITTE",
   "specimen.brand": "Schriftmuster · ZFontManager",
-
   "preview.defaultSample": "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern",
-
   "toast.libraryUpdated": "Bibliothek aktualisiert",
   "toast.newFontsFound_one": "{count} neue Schrift gefunden",
   "toast.newFontsFound_other": "{count} neue Schriften gefunden",
   "toast.fontsRemoved_one": "{count} Schrift entfernt",
   "toast.fontsRemoved_other": "{count} Schriften entfernt",
+  "toast.noFontsInFolder": "In diesem Ordner wurden keine Schriftdateien gefunden",
+  "toast.libraryUnchanged": "Keine Änderungen",
   "toast.couldntScan": "Schriften konnten nicht eingelesen werden",
   "toast.couldntActivate": "Schrift konnte nicht aktiviert werden",
+  "toast.appliedInApp": "{family} in {app} angewendet",
+  "toast.appliedLayers_one": "{count} Textebene aktualisiert",
+  "toast.appliedLayers_other": "{count} Textebenen aktualisiert",
+  "toast.createdInApp": "Textebene in {app} hinzugefügt",
+  "toast.createdInAppSub": "Es war kein Text ausgewählt, daher wurde {family} auf eine neue Ebene gesetzt",
+  "toast.appNotRunning": "{app} läuft nicht",
+  "toast.appNotRunningSub": "Öffne es zuerst mit einem Dokument und versuche es dann erneut",
+  "toast.noDocumentInApp": "Kein geöffnetes Dokument in {app}",
+  "toast.noDocumentInAppSub": "Öffne oder erstelle ein Dokument und versuche es erneut",
+  "toast.fontUnknownToApp": "{app} sieht {family} noch nicht",
+  "toast.fontUnknownToAppSub": "Gib ihm einen Moment, um die Schriftliste zu aktualisieren, und versuche es erneut",
+  "toast.couldntApplyIn": "Konnte nicht in {app} anwenden",
+  "toast.noPostScriptName": "Diese Schrift hat keinen PostScript-Namen",
+  "toast.noPostScriptNameSub": "{app} braucht ihn, um eine Schrift auszuwählen",
   "toast.couldntDeactivate": "Schrift konnte nicht deaktiviert werden",
   "toast.activeUntilClose": "{family} bis zum Beenden aktiv",
   "toast.activeUntilCloseSub": "Wird beim Beenden von ZFontManager automatisch deaktiviert",

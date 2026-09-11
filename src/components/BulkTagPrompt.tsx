@@ -7,7 +7,6 @@ import { useFocusTrap } from "../lib/useFocusTrap";
 import { playTag } from "../lib/sound";
 import { useT } from "../lib/i18n";
 
-
 export function BulkTagPrompt() {
   const t = useT();
   const bulkTagFor = useFontStore((s) => s.bulkTagFor);

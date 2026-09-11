@@ -136,7 +136,6 @@ export default function App() {
   useEffect(() => {
     void init();
 
-
     void getCurrentWindow().show();
   }, [init]);
 
@@ -164,7 +163,6 @@ export default function App() {
         const st = useFontStore.getState();
         st.setPaletteOpen(!st.paletteOpen);
       }
-
 
       const arrows = ["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"];
       if (arrows.includes(e.key) && !inField) {
@@ -215,7 +213,6 @@ export default function App() {
         e.preventDefault();
         for (const name of doomed) void st.uninstallFamily(name);
       }
-
 
       if (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) {
         const st = useFontStore.getState();

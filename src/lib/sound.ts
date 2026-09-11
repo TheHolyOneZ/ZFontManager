@@ -31,7 +31,6 @@ export function playTag(add: boolean) {
   play(add ? "tag-add" : "tag-remove");
 }
 
-
 export function playKind(kind: string) {
   play(kind);
 }

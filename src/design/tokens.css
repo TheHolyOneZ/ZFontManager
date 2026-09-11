@@ -3,11 +3,9 @@
 :root {
   color-scheme: dark;
 
-
   --ink-rgb: 255, 255, 255;
 
   --scrim-rgb: 13, 13, 18;
-
 
   --canvas: #0d0d12;
   --text-primary: #e8e8e8;
@@ -15,23 +13,19 @@
   --text-tertiary: rgba(232, 232, 232, 0.4);
   --text-disabled: rgba(232, 232, 232, 0.25);
 
-
   --e0: rgba(255, 255, 255, 0);
   --e1: rgba(255, 255, 255, 0.04);
   --e2: rgba(255, 255, 255, 0.07);
   --e3: rgba(255, 255, 255, 0.1);
   --e4: rgba(255, 255, 255, 0.12);
 
-
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-top-highlight: rgba(255, 255, 255, 0.1);
   --glass-top-highlight-strong: rgba(255, 255, 255, 0.16);
 
-
   --shadow-ground: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-mass: 0 6px 12px rgba(0, 0, 0, 0.3);
   --shadow-ambient: 0 24px 48px rgba(0, 0, 0, 0.25);
-
 
   --accent-a: #7c3aed;
   --accent-b: #4f46e5;
@@ -39,16 +33,13 @@
   --accent-glow: rgba(124, 58, 237, 0.45);
   --accent-glow-soft: rgba(124, 58, 237, 0.22);
 
-
   --success: #4ade80;
   --warning: #fbbf24;
   --error: #f87171;
 
-
   --badge-otf: #60a5fa;
   --badge-ttf: #4ade80;
   --badge-woff: #fbbf24;
-
 
   --tooltip-bg: #1a1a22;
   --hero-grad: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, 0.55));
@@ -58,7 +49,6 @@
     rgba(255, 255, 255, 0.045) 45%,
     rgba(255, 255, 255, 0.07)
   );
-
 
   --fs-10: 10px;
   --fs-11: 11px;
@@ -75,14 +65,12 @@
     "Source Han Sans SC", "WenQuanYi Micro Hei", sans-serif;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", monospace;
 
-
   --t-micro: 100ms;
   --t-quick: 180ms;
   --t-state: 260ms;
   --t-layout: 400ms;
   --t-scene: 600ms;
 }
-
 
 :root[data-theme="light"] {
   color-scheme: light;
@@ -106,14 +94,12 @@
   --glass-top-highlight: rgba(255, 255, 255, 0.65);
   --glass-top-highlight-strong: rgba(255, 255, 255, 0.9);
 
-
   --shadow-ground: 0 1px 2px rgba(30, 30, 55, 0.12);
   --shadow-mass: 0 6px 12px rgba(30, 30, 55, 0.08);
   --shadow-ambient: 0 24px 48px rgba(30, 30, 55, 0.08);
 
   --accent-glow: rgba(124, 58, 237, 0.38);
   --accent-glow-soft: rgba(124, 58, 237, 0.16);
-
 
   --success: #15803d;
   --warning: #b45309;
@@ -145,11 +131,9 @@ body,
   overflow: hidden;
 }
 
-
 html.theme-switching body {
   transition: background var(--t-state) ease, color var(--t-state) ease;
 }
-
 
 :root[lang="ja"] {
   --font-ui: "Inter Variable", "Inter", system-ui, "Segoe UI", "Yu Gothic UI",
@@ -212,20 +196,17 @@ button:disabled {
   background: transparent;
 }
 
-
 :focus-visible {
   outline: none;
   box-shadow: 0 0 0 1px var(--accent-glow), 0 0 0 5px var(--accent-glow-soft);
   border-radius: 5px;
 }
 
-
 input:focus-visible,
 input:focus {
   outline: none;
   box-shadow: none;
 }
-
 
 .glass {
   background: var(--e1);
@@ -249,7 +230,6 @@ input:focus {
     var(--shadow-mass),
     var(--shadow-ambient);
 }
-
 
 .skeleton {
   position: relative;
@@ -280,6 +260,9 @@ input:focus {
   .skeleton::after {
     animation: none;
   }
+}
+:root[data-motion="reduced"] .skeleton::after {
+  animation: none;
 }
 
 .tabular {

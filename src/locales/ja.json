@@ -1,9 +1,7 @@
 {
   "lang.name": "日本語",
-
   "scan.reading": "フォントファイルを読み込み中… {done} / {total}",
   "scan.finding": "フォントを探しています…",
-
   "empty.library.title": "ライブラリは空です",
   "empty.library.body": "フォントファイル・フォルダ・.zip アーカイブをこのウィンドウのどこかにドラッグするとインストールできます →",
   "empty.search.title": "一致するフォントがありません",
@@ -14,28 +12,23 @@
   "empty.collection.body": "フォントを右クリック → コレクション → 「{name}」で追加できます。",
   "empty.tag.title": "このタグが付いたフォントはありません",
   "empty.tag.body": "フォントを右クリックして「タグ」を選ぶとラベルを付けられます。",
-
   "titlebar.settings": "設定",
   "titlebar.minimize": "最小化",
   "titlebar.maximize": "最大化",
   "titlebar.close": "閉じる",
-
   "sort.name": "名前",
   "sort.styles": "スタイル数",
   "sort.size": "ファイルサイズ",
-
   "filter.aria": "フォントを絞り込む",
   "filter.classification": "分類",
   "filter.languageSupport": "対応言語",
   "filter.variableOnly": "バリアブルのみ",
-
   "class.serif": "セリフ",
   "class.sans": "サンセリフ",
   "class.mono": "等幅",
   "class.display": "ディスプレイ",
   "class.script": "スクリプト",
   "class.unknown": "不明",
-
   "script.latin": "ラテン文字",
   "script.cyrillic": "キリル文字",
   "script.greek": "ギリシャ文字",
@@ -46,7 +39,6 @@
   "script.cjk": "CJK",
   "script.korean": "ハングル",
   "script.vietnamese": "ベトナム語",
-
   "top.rescan": "フォントフォルダを再スキャン",
   "top.samplePlaceholder": "プレビュー用の文字を入力…",
   "top.sampleAria": "プレビューテキスト",
@@ -54,7 +46,6 @@
   "top.searchPlaceholder": "検索…",
   "top.searchAria": "フォントを検索",
   "top.viewMode": "表示モード",
-
   "compare.ariaArmed": "選択した {count} 件のフォントを比較",
   "compare.ariaCancelPicking": "比較する選択をやめる",
   "compare.ariaIdle": "フォントを比較",
@@ -65,7 +56,6 @@
   "compare.close": "比較を閉じる",
   "compare.dialogAria": "フォントの比較",
   "compare.remove": "{name} を外す",
-
   "side.browse": "ブラウズ",
   "side.library": "ライブラリ",
   "side.favorites": "お気に入り",
@@ -79,7 +69,6 @@
   "side.trash": "ゴミ箱",
   "side.about": "情報",
   "side.shortcuts": "ショートカット",
-
   "sel.aria": "選択項目の操作",
   "sel.ready": "準備完了 — 「比較」を押してください",
   "sel.pickMore": "もう 1 つ以上フォントを選んでください",
@@ -88,13 +77,11 @@
   "sel.rightClick": "右クリックで他の操作",
   "sel.cancelCompare": "比較をやめる",
   "sel.clear": "選択を解除",
-
   "list.family": "ファミリー",
   "list.styles": "スタイル",
   "list.format": "形式",
   "list.size": "サイズ",
   "list.active": "有効",
-
   "card.collapseStyles": "スタイルを折りたたむ",
   "card.expandStyles": "スタイルを展開",
   "card.stylesCount_other": "{count} スタイル",
@@ -105,10 +92,8 @@
   "card.activate": "{name} を有効化",
   "card.previewUnavailable": "プレビューできません",
   "card.noPreview": "この形式はまだプレビューできません",
-
   "waterfall.emptyTitle": "表示するフォントがありません",
   "waterfall.emptyBody": "グリッドまたはリスト表示でフォントを選んでから、ウォーターフォールに戻ってください。",
-
   "trash.emptyTitle": "ゴミ箱は空です",
   "trash.emptyBody": "削除したフォントはまずここに入ります — 黙って消えることはありません。",
   "trash.count_other": "ゴミ箱に {count} 個のフォントファイル",
@@ -116,7 +101,6 @@
   "trash.restore": "元に戻す",
   "trash.delete": "削除",
   "trash.deletePermanently": "完全に削除",
-
   "about.version": "バージョン {version} · {license}",
   "about.desc": "Linux にはずっとなく、Windows や macOS では有料だったフォントマネージャー。プレビュー、タグ付け、有効化と無効化、インストールを、3 つの OS すべてで 1 つの軽快なネイティブアプリから。フォントがこのマシンから出ることはありません。",
   "about.stackAria": "使用技術",
@@ -124,11 +108,9 @@
   "about.moreProjects": "他のプロジェクト",
   "about.landing": "紹介・ダウンロードページ",
   "about.source": "ZFontManager のソースコード",
-
   "drop.title": "ドロップしてインストール",
   "drop.sub": "フォントファイル・フォルダ・.zip アーカイブ",
   "drop.installing_other": "{count} 個のフォントをインストール中…",
-
   "detail.exportFace": "{family} {style} を書き出す",
   "detail.reset": "リセット",
   "detail.axisAria": "{name} 軸",
@@ -161,7 +143,6 @@
   "detail.tags": "タグ",
   "detail.notes": "メモ",
   "detail.moveToTrash": "ゴミ箱に移動",
-
   "feat.liga": "合字",
   "feat.dlig": "任意の合字",
   "feat.calt": "文脈依存の異体字",
@@ -181,22 +162,18 @@
   "feat.titl": "タイトリング",
   "feat.hist": "歴史的字形",
   "feat.stylisticSet": "スタイルセット {n}",
-
   "axis.wght": "ウェイト",
   "axis.wdth": "幅",
   "axis.slnt": "傾き",
   "axis.ital": "イタリック",
   "axis.opsz": "オプティカルサイズ",
   "axis.GRAD": "グレード",
-
   "glyph.none": "文字マップを取得できません",
   "glyph.copyAria": "文字 {cp} をコピー",
   "glyph.copied": "「{ch}」をコピーしました",
   "glyph.showAll": "{count} 個のグリフをすべて表示",
-
   "note.placeholder": "メモ — 例: クライアント X 専用のライセンス…",
   "note.aria": "フォントのメモ",
-
   "license.open": "オープンライセンスの可能性",
   "license.restrictive": "制限がある可能性",
   "license.unknown": "ライセンス未分類",
@@ -204,11 +181,9 @@
   "license.more": "もっと見る",
   "license.less": "折りたたむ",
   "license.disclaimer": "埋め込みメタデータからの推定です — 法的助言ではありません",
-
   "tag.removeAria": "タグ {tag} を外す",
   "tag.addPlaceholder": "タグを追加…",
   "tag.addAria": "タグを追加",
-
   "settings.title": "設定",
   "settings.close": "設定を閉じる",
   "settings.addFolderTitle": "スキャンするフォルダを追加",
@@ -221,6 +196,7 @@
   "settings.watchedFoldersSub": "システムのフォントフォルダに加えてスキャンされます",
   "settings.removeFolder": "{dir} を外す",
   "settings.addFolder": "フォルダを追加…",
+  "settings.scanningFolders": "フォントを索引付けしています…",
   "settings.libraryData": "ライブラリデータ",
   "settings.curation": "タグ・コレクション・メモ",
   "settings.curationSub": "整理した内容をファイルにバックアップしたり、別のマシンの内容を取り込めます",
@@ -244,19 +220,15 @@
   "settings.soundLevelAria": "効果音の強さ",
   "settings.footerNote": "フォントはこのマシンから出ません",
   "settings.replayTour": "ツアーをもう一度",
-
   "theme.dark": "ダーク",
   "theme.light": "ライト",
   "theme.system": "システム",
-
   "sound.off": "オフ",
   "sound.subtle": "控えめ",
   "sound.on": "オン",
-
   "shortcuts.title": "ショートカット",
   "shortcuts.close": "ショートカットを閉じる",
   "shortcuts.aria": "キーボードショートカット",
-
   "sc.navigate": "移動",
   "sc.palette": "コマンドパレット",
   "sc.focusSearch": "検索にフォーカス",
@@ -277,9 +249,7 @@
   "sc.contextMenu": "コンテキストメニュー — 矢印キーで移動",
   "sc.help": "ヘルプ",
   "sc.thisOverlay": "このパネル",
-
   "key.click": "クリック",
-
   "palette.goLibrary": "ライブラリへ",
   "palette.goFavorites": "お気に入りへ",
   "palette.goTrash": "ゴミ箱へ",
@@ -292,20 +262,19 @@
   "palette.language": "言語: {name}",
   "palette.compareSelected": "選択した {count} 件のフォントを比較",
   "palette.rescan": "フォントフォルダを再スキャン",
+  "palette.applyInApp": "{family} を {app} に適用",
   "palette.settings": "設定を開く",
   "palette.shortcuts": "キーボードショートカット",
   "palette.placeholder": "フォントに移動、またはコマンドを実行…",
   "palette.aria": "コマンドパレット",
   "palette.searchAria": "コマンドパレットの検索",
   "palette.empty": "一致するものがありません — 文字を減らしてみてください。",
-
   "bulk.aria": "選択したフォントにタグを付ける",
   "bulk.title": "{count} 件のフォントにタグを付ける",
   "bulk.cancel": "キャンセル",
   "bulk.placeholder": "タグ名…",
   "bulk.tagNameAria": "タグ名",
   "bulk.apply": "{count} 件のフォントに適用",
-
   "tour.inviteAria": "ようこそ",
   "tour.inviteTitle": "はじめてですか？",
   "tour.inviteSub": "新しいフォントライブラリを 1 分でご案内します。",
@@ -337,7 +306,6 @@
   "tour.settings.body": "言語の選択、新しいフォントのフォルダ監視、スキャン場所の追加、モーションと効果音の調整。",
   "tour.last.title": "最後にひとつ",
   "tour.last.body": "フォントファイル・フォルダ・zip アーカイブをこのウィンドウのどこかにドラッグすればインストールできます。以上です — よいフォントライフを。",
-
   "menu.rename": "名前を変更",
   "menu.exportFontList": "フォント一覧を書き出す（メタデータ）…",
   "menu.deleteCollection": "コレクションを削除",
@@ -365,33 +333,46 @@
   "menu.newCollection": "新しいコレクション…",
   "menu.exportFamily": "ファミリーを書き出す…",
   "menu.exportSpecimen": "見本を書き出す…",
+  "menu.applyInApp": "{app} に適用…",
+  "adobe.photoshop": "Photoshop",
+  "adobe.illustrator": "Illustrator",
   "menu.copyFamilyName": "ファミリー名をコピー",
   "menu.copyFilePath": "ファイルパスをコピー",
   "menu.showInFileManager": "ファイルマネージャーで表示",
   "menu.moveToTrash": "ゴミ箱に移動",
-
   "copy.familyName": "ファミリー名",
   "copy.filePath": "ファイルパス",
-
   "fontlist.title": "{title} — フォント一覧",
   "fontlist.sub": "{count} ファミリー · ZFontManager で書き出し",
   "fontlist.styles": "スタイル",
   "fontlist.format": "形式",
   "fontlist.foundry": "ファウンドリ",
   "fontlist.variable": "バリアブル",
-
   "specimen.saveTitle": "見本を書き出す",
   "specimen.pngFilter": "PNG 画像",
   "specimen.stylesHeading": "スタイル",
   "specimen.brand": "見本 · ZFontManager",
-
   "preview.defaultSample": "The quick brown fox jumps over the lazy dog",
-
   "toast.libraryUpdated": "ライブラリを更新しました",
   "toast.newFontsFound_other": "新しいフォントを {count} 個見つけました",
   "toast.fontsRemoved_other": "{count} 個のフォントを削除しました",
+  "toast.noFontsInFolder": "そのフォルダーにフォントファイルは見つかりませんでした",
+  "toast.libraryUnchanged": "変更はありません",
   "toast.couldntScan": "フォントをスキャンできませんでした",
   "toast.couldntActivate": "フォントを有効化できませんでした",
+  "toast.appliedInApp": "{app} に {family} を適用しました",
+  "toast.appliedLayers_other": "{count} 個のテキストレイヤーを更新しました",
+  "toast.createdInApp": "{app} にテキストレイヤーを追加しました",
+  "toast.createdInAppSub": "テキストが選択されていなかったため、{family} を新しいレイヤーに配置しました",
+  "toast.appNotRunning": "{app} が起動していません",
+  "toast.appNotRunningSub": "先にドキュメントを開いてから、もう一度お試しください",
+  "toast.noDocumentInApp": "{app} で開いているドキュメントがありません",
+  "toast.noDocumentInAppSub": "ドキュメントを開くか作成してから、もう一度お試しください",
+  "toast.fontUnknownToApp": "{app} はまだ {family} を認識していません",
+  "toast.fontUnknownToAppSub": "フォント一覧が更新されるまで少し待ってから、もう一度お試しください",
+  "toast.couldntApplyIn": "{app} に適用できませんでした",
+  "toast.noPostScriptName": "このフォントには PostScript 名がありません",
+  "toast.noPostScriptNameSub": "{app} でフォントを選択するには必要です",
   "toast.couldntDeactivate": "フォントを無効化できませんでした",
   "toast.activeUntilClose": "{family} を終了するまで有効にしました",
   "toast.activeUntilCloseSub": "ZFontManager を終了すると自動的に無効になります",

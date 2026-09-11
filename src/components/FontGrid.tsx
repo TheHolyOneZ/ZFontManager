@@ -20,7 +20,6 @@ export function FontGrid({ families }: { families: Family[] }) {
     getItemKey: (i) => families[i].name,
   });
 
-
   const selectedFamily = useFontStore((s) => s.selectedFamily);
   useEffect(() => {
     if (!selectedFamily) return;
@@ -28,7 +27,6 @@ export function FontGrid({ families }: { families: Family[] }) {
     if (idx >= 0) virtualizer.scrollToIndex(idx, { align: "auto" });
 
   }, [selectedFamily]);
-
 
   const arriving = Date.now() - mountedAt.current < 1200;
 

@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   Library,
   List,
+  PenTool,
   RefreshCw,
   Rows3,
   Search,
@@ -33,7 +34,6 @@ interface Cmd {
   icon: ReactNode;
   run: () => void;
 }
-
 
 function score(label: string, q: string): number {
   const l = label.toLowerCase();
@@ -140,6 +140,19 @@ export function CommandPalette() {
           run: () => s.setLocalePref(code),
         }),
       ),
+      ...(s.adobeAvailable && s.selectedFamily
+        ? (["photoshop", "illustrator"] as const).map(
+            (app): Cmd => ({
+              id: `apply-${app}`,
+              label: t("palette.applyInApp", {
+                family: s.selectedFamily ?? "",
+                app: t(`adobe.${app}`),
+              }),
+              icon: <PenTool size={14} strokeWidth={1.5} />,
+              run: () => void s.applyFamilyInApp(s.selectedFamily ?? "", app),
+            }),
+          )
+        : []),
       ...(s.selection.length >= 2
         ? [
             {
@@ -178,7 +191,6 @@ export function CommandPalette() {
       .filter((x) => x.r >= 0)
       .sort((a, b) => b.r - a.r)
       .map((x) => x.c);
-
 
     const fonts: Cmd[] =
       q.length >= 2

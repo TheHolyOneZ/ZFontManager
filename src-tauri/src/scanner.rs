@@ -34,7 +34,6 @@ pub fn managed_font_dir() -> PathBuf {
     }
 }
 
-
 fn font_dirs() -> Vec<(PathBuf, FontSource)> {
     let mut dirs_list: Vec<(PathBuf, FontSource)> = Vec::new();
     let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
@@ -72,7 +71,6 @@ fn classify(path: &std::path::Path, base_source: FontSource) -> FontSource {
     }
 }
 
-
 pub fn all_dirs(extra: &[String]) -> Vec<(PathBuf, FontSource)> {
     let mut dirs_list = font_dirs();
     for d in extra {
@@ -80,7 +78,6 @@ pub fn all_dirs(extra: &[String]) -> Vec<(PathBuf, FontSource)> {
     }
     dirs_list
 }
-
 
 pub fn scan_all(app: &tauri::AppHandle, extra: &[String]) -> Vec<FontFace> {
     let files: Vec<(PathBuf, FontSource)> = all_dirs(extra)
@@ -106,7 +103,6 @@ pub fn scan_all(app: &tauri::AppHandle, extra: &[String]) -> Vec<FontFace> {
             let _ = app.emit("scan:progress", ScanProgress { done: done + 1, total });
         }
     }
-
 
     faces.sort_by(|a, b| a.id.cmp(&b.id));
     faces.dedup_by(|a, b| a.id == b.id);

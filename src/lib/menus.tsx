@@ -9,6 +9,7 @@ import {
   FolderOpen,
   FolderPlus,
   Image as ImageIcon,
+  PenTool,
   Power,
   Star,
   Timer,
@@ -78,7 +79,6 @@ async function exportFamilies(families: Family[]) {
   }
 }
 
-
 export async function exportFontList(families: Family[], title: string) {
   const dest = await save({
     defaultPath: `${title.replace(/[^\w-]+/g, "-").toLowerCase()}-fonts.md`,
@@ -107,7 +107,6 @@ export async function exportFontList(families: Family[], title: string) {
     toast.error(t("toast.exportFailed"), String(e));
   }
 }
-
 
 function buildBulkMenu(names: string[]): MenuItem[] {
   const s = useFontStore.getState();
@@ -195,7 +194,6 @@ function buildBulkMenu(names: string[]): MenuItem[] {
   ];
 }
 
-
 export function buildFamilyMenu(family: Family): MenuItem[] {
   const s = useFontStore.getState();
   if (s.selection.length > 1 && s.selection.includes(family.name)) {
@@ -229,6 +227,18 @@ export function buildFamilyMenu(family: Family): MenuItem[] {
       icon: <Star size={14} strokeWidth={1.5} />,
       action: () => void s.toggleFavorite(family.name),
     },
+    ...(s.adobeAvailable
+      ? [
+          { kind: "separator" } satisfies MenuItem,
+          ...(["photoshop", "illustrator"] as const).map(
+            (app): MenuItem => ({
+              label: t("menu.applyInApp", { app: t(`adobe.${app}`) }),
+              icon: <PenTool size={14} strokeWidth={1.5} />,
+              action: () => void useFontStore.getState().applyFamilyInApp(family.name, app),
+            }),
+          ),
+        ]
+      : []),
     { kind: "separator" },
     { kind: "heading", label: t("menu.collections") },
     ...collectionNames.map(

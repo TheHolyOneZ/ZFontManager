@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 const FOCUSABLE =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
-
 export function useFocusTrap<T extends HTMLElement>(active: boolean) {
   const ref = useRef<T | null>(null);
   useEffect(() => {

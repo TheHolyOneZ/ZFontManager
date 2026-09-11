@@ -55,7 +55,6 @@ pub fn load() -> AppState {
         .unwrap_or_default()
 }
 
-
 pub fn save(state: &AppState) -> Result<(), String> {
     let path = state_path();
     if let Some(parent) = path.parent() {

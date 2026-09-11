@@ -8,7 +8,6 @@ import type { InstallProgress } from "../lib/ipc";
 import { useFontStore } from "../state/fontStore";
 import { useT } from "../lib/i18n";
 
-
 export function DropZone() {
   const t = useT();
   const [dragging, setDragging] = useState(false);

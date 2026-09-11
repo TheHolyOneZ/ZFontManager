@@ -36,13 +36,11 @@ const useMenuStore = create<MenuState>((set) => ({
   close: () => set({ open: false }),
 }));
 
-
 export function openContextMenu(e: ReactMouseEvent, items: MenuItem[]) {
   e.preventDefault();
   e.stopPropagation();
   useMenuStore.getState().show(e.clientX, e.clientY, items);
 }
-
 
 export function openContextMenuAt(x: number, y: number, items: MenuItem[]) {
   useMenuStore.getState().show(x, y, items);
@@ -57,7 +55,6 @@ function MenuPanel({ x, y, items }: { x: number; y: number; items: MenuItem[] })
   const [pos, setPos] = useState({ x, y });
   const close = useMenuStore((s) => s.close);
 
-
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -67,7 +64,6 @@ function MenuPanel({ x, y, items }: { x: number; y: number; items: MenuItem[] })
       y: Math.min(y, window.innerHeight - r.height - 8),
     });
   }, [x, y]);
-
 
   useEffect(() => {
     const el = ref.current;

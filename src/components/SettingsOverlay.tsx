@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect } from "react";
+import { LoaderCircle } from "lucide-react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { springSoft } from "../design/springs";
 import { useFontStore } from "../state/fontStore";
@@ -42,6 +43,8 @@ export function SettingsOverlay() {
   const setSoundPref = useFontStore((s) => s.setSoundPref);
   const themePref = useFontStore((s) => s.themePref);
   const setThemePref = useFontStore((s) => s.setThemePref);
+  const scanning = useFontStore((s) => s.phase === "scanning");
+  const scanProgress = useFontStore((s) => s.scanProgress);
   const trapRef = useFocusTrap<HTMLDivElement>(openState);
 
   useEffect(() => {
@@ -186,10 +189,22 @@ export function SettingsOverlay() {
                       </button>
                     </div>
                   ))}
-                  <button className="settings-add-folder" onClick={() => void addFolder()}>
+                  <button
+                    className="settings-add-folder"
+                    onClick={() => void addFolder()}
+                    disabled={scanning}
+                  >
                     <FolderPlus size={13} strokeWidth={1.5} />
                     {t("settings.addFolder")}
                   </button>
+                  {scanning && (
+                    <div className="settings-scanning tabular" role="status" aria-live="polite">
+                      <LoaderCircle size={13} strokeWidth={1.5} className="settings-scanning-icon" />
+                      {scanProgress.total > 0
+                        ? t("scan.reading", { done: scanProgress.done, total: scanProgress.total })
+                        : t("settings.scanningFolders")}
+                    </div>
+                  )}
                 </div>
               </div>
             </section>

@@ -1,7 +1,9 @@
 mod activation;
+mod adobe;
 mod font_types;
 mod installer;
 mod parser;
+mod registry;
 mod scanner;
 mod sound;
 mod store;
@@ -26,21 +28,22 @@ async fn scan_fonts(app: tauri::AppHandle) -> Result<Vec<FontFace>, String> {
     .await
     .map_err(|e| e.to_string())?;
 
+    let probe = activation::probe();
     let store: State<Store> = app.state();
     let state = store.0.lock().map_err(|e| e.to_string())?;
     let mut faces: Vec<FontFace> = faces
         .into_iter()
         .map(|mut f| {
-            f.active = activation::is_active(&state, &f.path);
+            f.active = activation::is_active(&probe, &state, &f);
             f
         })
         .collect();
-
 
     for (orig, parked) in &state.parked {
         for mut f in parser::parse_font_file(std::path::Path::new(parked), FontSource::User) {
             f.id = format!("{}#{}", orig, f.face_index);
             f.path = orig.clone();
+            f.preview_path = Some(parked.clone());
             f.active = false;
             faces.push(f);
         }
@@ -58,10 +61,15 @@ fn set_font_active(store: State<Store>, path: String, active: bool) -> Result<()
 #[tauri::command]
 fn set_fonts_active(store: State<Store>, paths: Vec<String>, active: bool) -> Result<(), String> {
     let mut state = store.0.lock().map_err(|e| e.to_string())?;
+
+    let mut first_err = None;
     for path in &paths {
-        activation::sync(&mut state, path, active)?;
+        if let Err(e) = activation::sync(&mut state, path, active) {
+            first_err.get_or_insert(e);
+        }
     }
-    store::save(&state)
+    store::save(&state)?;
+    first_err.map_or(Ok(()), Err)
 }
 
 #[tauri::command]
@@ -158,7 +166,6 @@ fn rename_collection(store: State<Store>, from: String, to: String) -> Result<()
     store::save(&state)
 }
 
-
 #[tauri::command]
 fn play_sound(kind: String, level: String) {
     sound::play(&kind, &level);
@@ -198,7 +205,6 @@ fn set_favorite(store: State<Store>, family: String, favorite: bool) -> Result<(
     store::save(&state)
 }
 
-
 #[tauri::command]
 fn get_charset(path: String, face_index: u32) -> Result<Vec<u32>, String> {
     let data = std::fs::read(&path).map_err(|e| e.to_string())?;
@@ -223,18 +229,15 @@ fn get_charset(path: String, face_index: u32) -> Result<Vec<u32>, String> {
     Ok(cps)
 }
 
-
 #[tauri::command]
 fn export_font(src: String, dest: String) -> Result<(), String> {
     std::fs::copy(&src, &dest).map(|_| ()).map_err(|e| e.to_string())
 }
 
-
 #[tauri::command]
 fn write_text_file(path: String, content: String) -> Result<(), String> {
     std::fs::write(&path, content).map_err(|e| e.to_string())
 }
-
 
 #[tauri::command]
 fn read_text_file(path: String) -> Result<String, String> {
@@ -245,21 +248,26 @@ fn read_text_file(path: String) -> Result<String, String> {
     std::fs::read_to_string(&path).map_err(|e| e.to_string())
 }
 
-
 static SESSION_ACTIVATED: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(Vec::new());
-
 
 #[tauri::command]
 fn set_fonts_active_session(store: State<Store>, paths: Vec<String>) -> Result<(), String> {
     let mut state = store.0.lock().map_err(|e| e.to_string())?;
-    for path in &paths {
-        activation::sync(&mut state, path, true)?;
+    let mut first_err = None;
+    let mut activated = Vec::with_capacity(paths.len());
+    for path in paths {
+        match activation::sync(&mut state, &path, true) {
+            Ok(()) => activated.push(path),
+            Err(e) => {
+                first_err.get_or_insert(e);
+            }
+        }
     }
     store::save(&state)?;
     if let Ok(mut session) = SESSION_ACTIVATED.lock() {
-        session.extend(paths);
+        session.extend(activated);
     }
-    Ok(())
+    first_err.map_or(Ok(()), Err)
 }
 
 fn revert_session_activations(app: &tauri::AppHandle) {
@@ -282,12 +290,10 @@ fn revert_session_activations(app: &tauri::AppHandle) {
     let _ = store::save(&guard);
 }
 
-
 #[tauri::command]
 fn write_binary_file(path: String, data: Vec<u8>) -> Result<(), String> {
     std::fs::write(&path, data).map_err(|e| e.to_string())
 }
-
 
 #[tauri::command]
 fn get_features(path: String, face_index: u32) -> Result<Vec<String>, String> {
@@ -307,7 +313,6 @@ fn get_features(path: String, face_index: u32) -> Result<Vec<String>, String> {
     tags.dedup();
     Ok(tags)
 }
-
 
 #[tauri::command]
 fn export_fonts(paths: Vec<String>, dest_dir: String) -> Result<u32, String> {
@@ -353,9 +358,18 @@ fn set_settings(
         state.watch_enabled = settings.watch_enabled;
         store::save(&state)?;
     }
+    allow_previews(&app, &settings.extra_dirs);
     apply_watch(&app, settings.watch_enabled, &settings.extra_dirs)
 }
 
+fn allow_previews(app: &tauri::AppHandle, extra: &[String]) {
+    let scope = app.asset_protocol_scope();
+    for (dir, _) in scanner::all_dirs(extra) {
+
+        let dir = std::fs::canonicalize(&dir).unwrap_or(dir);
+        let _ = scope.allow_directory(&dir, true);
+    }
+}
 
 fn apply_watch(app: &tauri::AppHandle, enabled: bool, extra: &[String]) -> Result<(), String> {
     let handle: State<watcher::WatchHandle> = app.state();
@@ -381,7 +395,6 @@ fn set_prefs(store: State<Store>, prefs: serde_json::Value) -> Result<(), String
     store::save(&state)
 }
 
-
 #[tauri::command]
 fn open_url(url: String) -> Result<(), String> {
     if !url.starts_with("https://") && !url.starts_with("http://") {
@@ -399,7 +412,6 @@ fn open_url(url: String) -> Result<(), String> {
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
-
         std::process::Command::new("cmd")
             .args(["/C", "start", "", &url])
             .creation_flags(CREATE_NO_WINDOW)
@@ -407,6 +419,23 @@ fn open_url(url: String) -> Result<(), String> {
     };
 
     spawned.map(|_| ()).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn adobe_available() -> bool {
+    adobe::available()
+}
+
+#[tauri::command]
+async fn apply_font_in_app(
+    app: String,
+    postscript_name: String,
+    label: String,
+) -> Result<String, String> {
+    let target = adobe::Target::parse(&app)?;
+    tauri::async_runtime::spawn_blocking(move || adobe::apply(target, &postscript_name, &label))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -424,6 +453,7 @@ pub fn run() {
         .manage(Store(std::sync::Mutex::new(state)))
         .manage(watcher::WatchHandle(std::sync::Mutex::new(None)))
         .setup(move |app| {
+            allow_previews(app.handle(), &extra_dirs);
             if watch_enabled {
                 let _ = apply_watch(app.handle(), true, &extra_dirs);
             }
@@ -462,7 +492,9 @@ pub fn run() {
             set_prefs,
             get_settings,
             set_settings,
-            open_url
+            open_url,
+            adobe_available,
+            apply_font_in_app
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

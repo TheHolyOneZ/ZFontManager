@@ -14,6 +14,8 @@ export interface VariationAxis {
 export interface FontFace {
   id: string;
   path: string;
+
+  previewPath: string | null;
   faceIndex: number;
   family: string;
   style: string;
@@ -60,6 +62,8 @@ export interface InstallProgress {
   ok: boolean;
   error: string | null;
 }
+
+export type AdobeApp = "photoshop" | "illustrator";
 
 export interface AppSettings {
   extraDirs: string[];
@@ -108,6 +112,9 @@ export const ipc = {
     invoke<void>("write_text_file", { path, content }),
   exportFonts: (paths: string[], destDir: string) =>
     invoke<number>("export_fonts", { paths, destDir }),
+  adobeAvailable: () => invoke<boolean>("adobe_available"),
+  applyFontInApp: (app: AdobeApp, postscriptName: string, label: string) =>
+    invoke<string>("apply_font_in_app", { app, postscriptName, label }),
   getPrefs: () => invoke<Record<string, unknown> | null>("get_prefs"),
   setPrefs: (prefs: Record<string, unknown>) => invoke<void>("set_prefs", { prefs }),
 };

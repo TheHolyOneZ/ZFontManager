@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import { springSoft } from "../design/springs";
 import { useT } from "../lib/i18n";
 
-
 function SettingsGlyph({ size = 15 }: { size?: number }) {
   return (
     <svg
@@ -27,7 +26,6 @@ function SettingsGlyph({ size = 15 }: { size?: number }) {
     </svg>
   );
 }
-
 
 export function Titlebar() {
   const t = useT();

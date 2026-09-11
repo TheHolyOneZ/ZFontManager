@@ -16,7 +16,6 @@ import { t as translate, useT, type TKey } from "../lib/i18n";
 
 const WATERFALL = [14, 20, 28, 40, 56];
 
-
 function StyleRow({
   face,
   family,
@@ -73,7 +72,6 @@ function StyleRow({
   );
 }
 
-
 const FEATURE_TAGS = [
   "liga",
   "dlig",
@@ -98,7 +96,6 @@ const FEATURE_TAGS = [
 const FEATURE_KEYS = new Map<string, TKey>(
   FEATURE_TAGS.map((tag) => [tag, `feat.${tag}`] as const),
 );
-
 
 const DEFAULT_ON = new Set(["liga", "calt"]);
 
@@ -184,7 +181,6 @@ function scriptLabel(code: string): string {
   return key ? translate(key) : code;
 }
 
-
 function AxisSliders({
   axes,
   values,
@@ -232,7 +228,6 @@ function AxisSliders({
 const charsetCache = new Map<string, number[]>();
 const GLYPH_LIMIT = 512;
 
-
 function GlyphMap({
   face,
   fontFamily,
@@ -255,7 +250,7 @@ function GlyphMap({
     setCps(null);
     let alive = true;
     ipc
-      .getCharset(face.path, face.faceIndex)
+      .getCharset(face.previewPath ?? face.path, face.faceIndex)
       .then((list) => {
         charsetCache.set(face.id, list);
         if (alive) setCps(list);
@@ -310,7 +305,6 @@ function GlyphMap({
     </>
   );
 }
-
 
 function NoteEditor({ family }: { family: string }) {
   const t = useT();
@@ -460,7 +454,6 @@ export function DetailPanel() {
     ? familiesFor(fonts, tags).get(selectedFamily) ?? null
     : null;
 
-
   const [styleId, setStyleId] = useState<string | null>(null);
   const [axisValues, setAxisValues] = useState<Record<string, number>>({});
 
@@ -489,7 +482,7 @@ export function DetailPanel() {
     if (!lead || lead.format === "woff" || lead.format === "woff2") return;
     let stale = false;
     ipc
-      .getFeatures(lead.path, lead.faceIndex)
+      .getFeatures(lead.previewPath ?? lead.path, lead.faceIndex)
       .then((tags) => {
         if (!stale) setFeatures(tags.filter((t) => featureLabel(t) !== null));
       })
@@ -499,7 +492,6 @@ export function DetailPanel() {
     };
   }, [lead?.id, lead?.path, lead?.faceIndex, lead?.format]);
 
-
   const featureSettings =
     Object.keys(featureOverrides).length > 0
       ? Object.entries(featureOverrides)
@@ -508,7 +500,6 @@ export function DetailPanel() {
       : undefined;
   const favorite = family ? favorites.includes(family.name) : false;
   const conflicts = family ? conflictsFor(fonts).get(family.name) ?? [] : [];
-
 
   const variation =
     lead && lead.isVariable && Object.keys(axisValues).length > 0
@@ -539,7 +530,6 @@ export function DetailPanel() {
           >
             <GripVertical size={12} strokeWidth={1.5} />
           </div>
-
 
           <motion.div
             key={family.name}

@@ -1,9 +1,7 @@
 {
   "lang.name": "繁體中文",
-
   "scan.reading": "正在讀取第 {done} / {total} 個字型檔…",
   "scan.finding": "正在尋找你的字型…",
-
   "empty.library.title": "你的字型庫還空著",
   "empty.library.body": "把字型檔、資料夾或 .zip 壓縮檔拖到視窗任意位置即可安裝 →",
   "empty.search.title": "沒有符合的字型",
@@ -14,28 +12,23 @@
   "empty.collection.body": "在任一字型上按右鍵 → 分組 → 「{name}」，即可把它加進來。",
   "empty.tag.title": "還沒有字型帶這個標籤",
   "empty.tag.body": "在字型上按右鍵並選擇「標籤」來為它做標記。",
-
   "titlebar.settings": "設定",
   "titlebar.minimize": "最小化",
   "titlebar.maximize": "最大化",
   "titlebar.close": "關閉",
-
   "sort.name": "名稱",
   "sort.styles": "樣式數",
   "sort.size": "檔案大小",
-
   "filter.aria": "篩選字型",
   "filter.classification": "分類",
   "filter.languageSupport": "語言支援",
   "filter.variableOnly": "僅可變字型",
-
   "class.serif": "襯線",
   "class.sans": "無襯線",
   "class.mono": "等寬",
   "class.display": "展示",
   "class.script": "手寫",
   "class.unknown": "未知",
-
   "script.latin": "拉丁文",
   "script.cyrillic": "西里爾文",
   "script.greek": "希臘文",
@@ -46,7 +39,6 @@
   "script.cjk": "中日韓",
   "script.korean": "韓文",
   "script.vietnamese": "越南文",
-
   "top.rescan": "重新掃描字型目錄",
   "top.samplePlaceholder": "輸入一句預覽文字…",
   "top.sampleAria": "預覽文字",
@@ -54,7 +46,6 @@
   "top.searchPlaceholder": "搜尋…",
   "top.searchAria": "搜尋字型",
   "top.viewMode": "檢視模式",
-
   "compare.ariaArmed": "比較選取的 {count} 個字型",
   "compare.ariaCancelPicking": "取消挑選要比較的字型",
   "compare.ariaIdle": "比較字型",
@@ -65,7 +56,6 @@
   "compare.close": "關閉比較",
   "compare.dialogAria": "比較字型",
   "compare.remove": "移除 {name}",
-
   "side.browse": "瀏覽",
   "side.library": "字型庫",
   "side.favorites": "收藏",
@@ -79,7 +69,6 @@
   "side.trash": "垃圾桶",
   "side.about": "關於",
   "side.shortcuts": "快速鍵",
-
   "sel.aria": "選取項目操作",
   "sel.ready": "準備好了——點擊「比較」！",
   "sel.pickMore": "至少再選一個字型",
@@ -88,13 +77,11 @@
   "sel.rightClick": "按右鍵查看更多",
   "sel.cancelCompare": "取消比較",
   "sel.clear": "清除選取",
-
   "list.family": "字型家族",
   "list.styles": "樣式",
   "list.format": "格式",
   "list.size": "大小",
   "list.active": "已啟用",
-
   "card.collapseStyles": "收合樣式",
   "card.expandStyles": "展開樣式",
   "card.stylesCount_other": "{count} 種樣式",
@@ -105,10 +92,8 @@
   "card.activate": "啟用 {name}",
   "card.previewUnavailable": "無法預覽",
   "card.noPreview": "這種格式暫時無法預覽",
-
   "waterfall.emptyTitle": "沒有可展示的字型",
   "waterfall.emptyBody": "先在格狀或清單檢視中選擇一個字型，再回到瀑布檢視。",
-
   "trash.emptyTitle": "垃圾桶是空的",
   "trash.emptyBody": "你移除的字型會先來到這裡——不會有任何字型被悄悄刪除。",
   "trash.count_other": "垃圾桶中有 {count} 個字型檔",
@@ -116,7 +101,6 @@
   "trash.restore": "還原",
   "trash.delete": "刪除",
   "trash.deletePermanently": "永久刪除",
-
   "about.version": "版本 {version} · {license}",
   "about.desc": "Linux 一直缺席、Windows 與 macOS 卻要付費的字型管理器。在一個乾淨的原生應用程式裡預覽、加標籤、啟用與停用、安裝字型，三大系統通用——你的字型永遠不會離開這台電腦。",
   "about.stackAria": "技術堆疊",
@@ -124,11 +108,9 @@
   "about.moreProjects": "更多專案",
   "about.landing": "介紹與下載頁",
   "about.source": "ZFontManager 原始碼",
-
   "drop.title": "放開以安裝",
   "drop.sub": "字型檔、資料夾或 .zip 壓縮檔",
   "drop.installing_other": "正在安裝 {count} 個字型…",
-
   "detail.exportFace": "匯出 {family} {style}",
   "detail.reset": "重設",
   "detail.axisAria": "{name} 軸",
@@ -161,7 +143,6 @@
   "detail.tags": "標籤",
   "detail.notes": "備註",
   "detail.moveToTrash": "移到垃圾桶",
-
   "feat.liga": "連字",
   "feat.dlig": "自由連字",
   "feat.calt": "上下文替代",
@@ -181,22 +162,18 @@
   "feat.titl": "標題字形",
   "feat.hist": "古體字形",
   "feat.stylisticSet": "風格集 {n}",
-
   "axis.wght": "字重",
   "axis.wdth": "字寬",
   "axis.slnt": "傾斜",
   "axis.ital": "斜體",
   "axis.opsz": "光學字級",
   "axis.GRAD": "灰度等級",
-
   "glyph.none": "沒有可用的字元表",
   "glyph.copyAria": "複製字元 {cp}",
   "glyph.copied": "已複製「{ch}」",
   "glyph.showAll": "顯示全部 {count} 個字形",
-
   "note.placeholder": "備註——例如：僅授權給客戶 X 使用…",
   "note.aria": "字型備註",
-
   "license.open": "可能是開放授權",
   "license.restrictive": "可能有使用限制",
   "license.unknown": "授權未辨識",
@@ -204,11 +181,9 @@
   "license.more": "展開",
   "license.less": "收合",
   "license.disclaimer": "根據內嵌中繼資料的盡力解讀，不構成法律意見",
-
   "tag.removeAria": "移除標籤 {tag}",
   "tag.addPlaceholder": "新增標籤…",
   "tag.addAria": "新增標籤",
-
   "settings.title": "設定",
   "settings.close": "關閉設定",
   "settings.addFolderTitle": "新增要掃描的資料夾",
@@ -221,6 +196,7 @@
   "settings.watchedFoldersSub": "在系統字型目錄之外額外掃描這些位置",
   "settings.removeFolder": "移除 {dir}",
   "settings.addFolder": "新增資料夾…",
+  "settings.scanningFolders": "正在建立字型索引…",
   "settings.libraryData": "資料庫資料",
   "settings.curation": "標籤、分組與備註",
   "settings.curationSub": "把你的整理成果備份到檔案，或從另一台電腦合併進來",
@@ -244,19 +220,15 @@
   "settings.soundLevelAria": "音效強度",
   "settings.footerNote": "字型始終留在你的電腦上",
   "settings.replayTour": "重看導覽",
-
   "theme.dark": "深色",
   "theme.light": "淺色",
   "theme.system": "系統",
-
   "sound.off": "關閉",
   "sound.subtle": "輕微",
   "sound.on": "開啟",
-
   "shortcuts.title": "快速鍵",
   "shortcuts.close": "關閉快速鍵面板",
   "shortcuts.aria": "鍵盤快速鍵",
-
   "sc.navigate": "導覽",
   "sc.palette": "命令面板",
   "sc.focusSearch": "聚焦搜尋框",
@@ -277,9 +249,7 @@
   "sc.contextMenu": "右鍵選單——用方向鍵瀏覽",
   "sc.help": "說明",
   "sc.thisOverlay": "本面板",
-
   "key.click": "點擊",
-
   "palette.goLibrary": "前往字型庫",
   "palette.goFavorites": "前往收藏",
   "palette.goTrash": "前往垃圾桶",
@@ -292,20 +262,19 @@
   "palette.language": "語言：{name}",
   "palette.compareSelected": "比較選取的 {count} 個字型",
   "palette.rescan": "重新掃描字型資料夾",
+  "palette.applyInApp": "在 {app} 中套用 {family}",
   "palette.settings": "開啟設定",
   "palette.shortcuts": "鍵盤快速鍵",
   "palette.placeholder": "跳至某個字型，或執行命令…",
   "palette.aria": "命令面板",
   "palette.searchAria": "命令面板搜尋",
   "palette.empty": "沒有符合項目——試試少輸入幾個字。",
-
   "bulk.aria": "為選取的字型加標籤",
   "bulk.title": "為 {count} 個字型加標籤",
   "bulk.cancel": "取消",
   "bulk.placeholder": "標籤名稱…",
   "bulk.tagNameAria": "標籤名稱",
   "bulk.apply": "套用到 {count} 個字型",
-
   "tour.inviteAria": "歡迎",
   "tour.inviteTitle": "第一次使用嗎？",
   "tour.inviteSub": "用一分鐘認識你的新字型庫。",
@@ -337,7 +306,6 @@
   "tour.settings.body": "選擇介面語言、監看資料夾中的新字型、新增額外的掃描位置、調整動態效果與音效。",
   "tour.last.title": "最後一件事",
   "tour.last.body": "把字型檔、資料夾或 zip 壓縮檔拖到這個視窗的任意位置即可安裝。就這些——享受你的字型庫吧。",
-
   "menu.rename": "重新命名",
   "menu.exportFontList": "匯出字型清單（中繼資料）…",
   "menu.deleteCollection": "刪除分組",
@@ -365,33 +333,46 @@
   "menu.newCollection": "新增分組…",
   "menu.exportFamily": "匯出字型家族…",
   "menu.exportSpecimen": "匯出字型樣張…",
+  "menu.applyInApp": "在 {app} 中套用…",
+  "adobe.photoshop": "Photoshop",
+  "adobe.illustrator": "Illustrator",
   "menu.copyFamilyName": "複製字型家族名稱",
   "menu.copyFilePath": "複製檔案路徑",
   "menu.showInFileManager": "在檔案管理器中顯示",
   "menu.moveToTrash": "移到垃圾桶",
-
   "copy.familyName": "字型家族名稱",
   "copy.filePath": "檔案路徑",
-
   "fontlist.title": "{title} —— 字型清單",
   "fontlist.sub": "{count} 個字型家族 · 由 ZFontManager 匯出",
   "fontlist.styles": "樣式",
   "fontlist.format": "格式",
   "fontlist.foundry": "字型廠商",
   "fontlist.variable": "可變",
-
   "specimen.saveTitle": "匯出字型樣張",
   "specimen.pngFilter": "PNG 圖片",
   "specimen.stylesHeading": "樣式",
   "specimen.brand": "字型樣張 · ZFontManager",
-
   "preview.defaultSample": "The quick brown fox jumps over the lazy dog",
-
   "toast.libraryUpdated": "字型庫已更新",
   "toast.newFontsFound_other": "發現 {count} 個新字型",
   "toast.fontsRemoved_other": "移除了 {count} 個字型",
+  "toast.noFontsInFolder": "在該資料夾中找不到字型檔案",
+  "toast.libraryUnchanged": "沒有變更",
   "toast.couldntScan": "無法掃描你的字型",
   "toast.couldntActivate": "無法啟用字型",
+  "toast.appliedInApp": "已在 {app} 中套用 {family}",
+  "toast.appliedLayers_other": "已更新 {count} 個文字圖層",
+  "toast.createdInApp": "已在 {app} 中新增文字圖層",
+  "toast.createdInAppSub": "未選取文字，因此 {family} 已放到新圖層上",
+  "toast.appNotRunning": "{app} 未執行",
+  "toast.appNotRunningSub": "請先開啟它並載入文件，然後再試一次",
+  "toast.noDocumentInApp": "{app} 中沒有開啟的文件",
+  "toast.noDocumentInAppSub": "請開啟或新增文件後再試一次",
+  "toast.fontUnknownToApp": "{app} 暫時還看不到 {family}",
+  "toast.fontUnknownToAppSub": "請稍等片刻讓它重新整理字型清單，然後再試一次",
+  "toast.couldntApplyIn": "無法在 {app} 中套用",
+  "toast.noPostScriptName": "此字型沒有 PostScript 名稱",
+  "toast.noPostScriptNameSub": "{app} 需要它才能選擇字型",
   "toast.couldntDeactivate": "無法停用字型",
   "toast.activeUntilClose": "{family} 已啟用至結束",
   "toast.activeUntilCloseSub": "結束 ZFontManager 後會自動停用",

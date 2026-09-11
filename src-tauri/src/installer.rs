@@ -24,7 +24,6 @@ pub struct InstallResult {
     pub errors: Vec<String>,
 }
 
-
 fn move_file(from: &Path, to: &Path) -> Result<(), String> {
     if fs::rename(from, to).is_ok() {
         return Ok(());
@@ -42,7 +41,6 @@ fn unique_dest(dir: &Path, file_name: &std::ffi::OsStr) -> PathBuf {
     }
     dest
 }
-
 
 fn expand_dropped(path: &Path, staging: &Path) -> Result<Vec<PathBuf>, String> {
     if path.is_dir() {
@@ -82,7 +80,6 @@ fn expand_dropped(path: &Path, staging: &Path) -> Result<Vec<PathBuf>, String> {
     }
     Err(format!("not a font file: {}", path.display()))
 }
-
 
 pub fn install(app: &tauri::AppHandle, dropped: Vec<String>) -> InstallResult {
     let managed = scanner::managed_font_dir();
@@ -125,9 +122,7 @@ pub fn install(app: &tauri::AppHandle, dropped: Vec<String>) -> InstallResult {
             Ok(()) => {
                 let faces = parser::parse_font_file(&dest, FontSource::Managed);
                 #[cfg(target_os = "windows")]
-                if let Some(f) = faces.first() {
-                    register_user_font(&dest, &f.family, &f.style);
-                }
+                register_user_font(&dest);
                 result.installed.extend(faces);
             }
             Err(e) => result.errors.push(e),
@@ -139,9 +134,7 @@ pub fn install(app: &tauri::AppHandle, dropped: Vec<String>) -> InstallResult {
     result
 }
 
-
 pub fn uninstall(path: &str, family: &str) -> Result<TrashEntry, String> {
-
 
     #[cfg(target_os = "windows")]
     unregister_user_font(path);
@@ -252,7 +245,6 @@ fn refresh_system_font_cache() {
 mod tests {
     use super::*;
 
-
     #[test]
     fn uninstall_restore_roundtrip() {
         let tmp = std::env::temp_dir().join(format!("zfm-inst-test-{}", std::process::id()));
@@ -279,59 +271,21 @@ mod tests {
     }
 }
 
-
 #[cfg(target_os = "windows")]
 fn unregister_user_font(path: &str) {
-    use windows_sys::Win32::Graphics::Gdi::RemoveFontResourceW;
-
-    let wide: Vec<u16> = path.encode_utf16().chain(std::iter::once(0)).collect();
-    unsafe {
-
-        while RemoveFontResourceW(wide.as_ptr()) != 0 {}
-    }
-    let key = r"HKCU\Software\Microsoft\Windows NT\CurrentVersion\Fonts";
-    if let Ok(out) = crate::activation::hidden_reg().args(["query", key]).output() {
-        let text = String::from_utf8_lossy(&out.stdout).into_owned();
-        for line in text.lines() {
-            let l = line.trim();
-            if let Some((name, rest)) = l.split_once("REG_SZ") {
-                if rest.trim().eq_ignore_ascii_case(path) {
-                    let _ = crate::activation::hidden_reg()
-                        .args(["delete", key, "/v", name.trim(), "/f"])
-                        .output();
-                }
-            }
-        }
+    use crate::registry;
+    registry::remove_font_resource(path);
+    for name in registry::user_entries_for(path) {
+        let _ = registry::delete_user_entry(&name);
     }
     refresh_system_font_cache();
 }
 
-
 #[cfg(target_os = "windows")]
-fn register_user_font(path: &Path, family: &str, style: &str) {
-    use windows_sys::Win32::Graphics::Gdi::AddFontResourceW;
-
-    let value_name = if style.eq_ignore_ascii_case("regular") {
-        format!("{family} (TrueType)")
-    } else {
-        format!("{family} {style} (TrueType)")
-    };
-    let path_str = path.to_string_lossy();
-    let _ = crate::activation::hidden_reg()
-        .args([
-            "add",
-            r"HKCU\Software\Microsoft\Windows NT\CurrentVersion\Fonts",
-            "/v",
-            &value_name,
-            "/t",
-            "REG_SZ",
-            "/d",
-            &path_str,
-            "/f",
-        ])
-        .output();
-    let wide: Vec<u16> = path_str.encode_utf16().chain(std::iter::once(0)).collect();
-    unsafe {
-        AddFontResourceW(wide.as_ptr());
-    }
+fn register_user_font(path: &Path) {
+    use crate::registry;
+    let path = path.to_string_lossy();
+    let name = registry::unique_user_name(&registry::value_name_for(&path), &path);
+    let _ = registry::set_user_entry(&name, &path);
+    registry::add_font_resource(&path);
 }

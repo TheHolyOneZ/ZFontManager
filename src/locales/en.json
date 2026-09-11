@@ -1,9 +1,7 @@
 {
   "lang.name": "English",
-
   "scan.reading": "Reading {done} of {total} font files…",
   "scan.finding": "Finding your fonts…",
-
   "empty.library.title": "Your library is waiting",
   "empty.library.body": "Drag font files, folders, or .zip archives anywhere in this window to install them →",
   "empty.search.title": "No fonts match",
@@ -14,28 +12,23 @@
   "empty.collection.body": "Right-click any font → Collections → “{name}” to add it here.",
   "empty.tag.title": "Nothing wears this tag",
   "empty.tag.body": "Right-click a font and pick Tags to label it.",
-
   "titlebar.settings": "Settings",
   "titlebar.minimize": "Minimize",
   "titlebar.maximize": "Maximize",
   "titlebar.close": "Close",
-
   "sort.name": "Name",
   "sort.styles": "Styles",
   "sort.size": "File size",
-
   "filter.aria": "Filter fonts",
   "filter.classification": "Classification",
   "filter.languageSupport": "Language support",
   "filter.variableOnly": "Variable only",
-
   "class.serif": "Serif",
   "class.sans": "Sans",
   "class.mono": "Mono",
   "class.display": "Display",
   "class.script": "Script",
   "class.unknown": "Unknown",
-
   "script.latin": "Latin",
   "script.cyrillic": "Cyrillic",
   "script.greek": "Greek",
@@ -46,7 +39,6 @@
   "script.cjk": "CJK",
   "script.korean": "Korean",
   "script.vietnamese": "Vietnamese",
-
   "top.rescan": "Rescan font directories",
   "top.samplePlaceholder": "Type a preview sentence…",
   "top.sampleAria": "Preview text",
@@ -54,7 +46,6 @@
   "top.searchPlaceholder": "Search…",
   "top.searchAria": "Search fonts",
   "top.viewMode": "View mode",
-
   "compare.ariaArmed": "Compare {count} selected fonts",
   "compare.ariaCancelPicking": "Cancel picking fonts to compare",
   "compare.ariaIdle": "Compare fonts",
@@ -65,7 +56,6 @@
   "compare.close": "Close compare",
   "compare.dialogAria": "Compare fonts",
   "compare.remove": "Remove {name}",
-
   "side.browse": "Browse",
   "side.library": "Library",
   "side.favorites": "Favorites",
@@ -79,7 +69,6 @@
   "side.trash": "Trash",
   "side.about": "About",
   "side.shortcuts": "Shortcuts",
-
   "sel.aria": "Selection actions",
   "sel.ready": "Ready — hit Compare!",
   "sel.pickMore": "Pick at least one more font",
@@ -88,13 +77,11 @@
   "sel.rightClick": "right-click for more",
   "sel.cancelCompare": "Cancel comparing",
   "sel.clear": "Clear selection",
-
   "list.family": "Family",
   "list.styles": "Styles",
   "list.format": "Format",
   "list.size": "Size",
   "list.active": "Active",
-
   "card.collapseStyles": "Collapse styles",
   "card.expandStyles": "Expand styles",
   "card.stylesCount_one": "{count} style",
@@ -106,10 +93,8 @@
   "card.activate": "Activate {name}",
   "card.previewUnavailable": "preview unavailable",
   "card.noPreview": "This format can't be previewed yet",
-
   "waterfall.emptyTitle": "Nothing to cascade",
   "waterfall.emptyBody": "Select a font in grid or list view, then come back to the waterfall.",
-
   "trash.emptyTitle": "Trash is empty",
   "trash.emptyBody": "Fonts you remove land here first — nothing is ever silently deleted.",
   "trash.count_one": "{count} font file in trash",
@@ -118,7 +103,6 @@
   "trash.restore": "Restore",
   "trash.delete": "Delete",
   "trash.deletePermanently": "Delete permanently",
-
   "about.version": "Version {version} · {license}",
   "about.desc": "The font manager Linux never got and Windows/macOS have to pay for. Preview, tag, activate and deactivate, and install fonts across all three OSes from one clean native app — your fonts never leave your machine.",
   "about.stackAria": "Tech stack",
@@ -126,12 +110,10 @@
   "about.moreProjects": "More projects",
   "about.landing": "Landing & download page",
   "about.source": "ZFontManager source",
-
   "drop.title": "Drop to install",
   "drop.sub": "Font files, folders, or .zip archives",
   "drop.installing_one": "Installing {count} font…",
   "drop.installing_other": "Installing {count} fonts…",
-
   "detail.exportFace": "Export {family} {style}",
   "detail.reset": "Reset",
   "detail.axisAria": "{name} axis",
@@ -165,7 +147,6 @@
   "detail.tags": "Tags",
   "detail.notes": "Notes",
   "detail.moveToTrash": "Move to Trash",
-
   "feat.liga": "Ligatures",
   "feat.dlig": "Discretionary ligatures",
   "feat.calt": "Contextual alternates",
@@ -185,22 +166,18 @@
   "feat.titl": "Titling",
   "feat.hist": "Historical forms",
   "feat.stylisticSet": "Stylistic set {n}",
-
   "axis.wght": "Weight",
   "axis.wdth": "Width",
   "axis.slnt": "Slant",
   "axis.ital": "Italic",
   "axis.opsz": "Optical size",
   "axis.GRAD": "Grade",
-
   "glyph.none": "No character map available",
   "glyph.copyAria": "Copy character {cp}",
   "glyph.copied": "Copied “{ch}”",
   "glyph.showAll": "Show all {count} glyphs",
-
   "note.placeholder": "Notes — e.g. licensed for Client X only…",
   "note.aria": "Font notes",
-
   "license.open": "Likely open license",
   "license.restrictive": "Possibly restrictive",
   "license.unknown": "License unclassified",
@@ -208,11 +185,9 @@
   "license.more": "more",
   "license.less": "less",
   "license.disclaimer": "Best-effort reading of embedded metadata — not legal advice",
-
   "tag.removeAria": "Remove tag {tag}",
   "tag.addPlaceholder": "Add tag…",
   "tag.addAria": "Add tag",
-
   "settings.title": "Settings",
   "settings.close": "Close settings",
   "settings.addFolderTitle": "Add a folder to scan",
@@ -225,6 +200,7 @@
   "settings.watchedFoldersSub": "Scanned in addition to your system font directories",
   "settings.removeFolder": "Remove {dir}",
   "settings.addFolder": "Add folder…",
+  "settings.scanningFolders": "Indexing your fonts…",
   "settings.libraryData": "Library data",
   "settings.curation": "Tags, collections & notes",
   "settings.curationSub": "Back up your curation to a file, or merge one in from another machine",
@@ -248,19 +224,15 @@
   "settings.soundLevelAria": "Sound level",
   "settings.footerNote": "fonts stay on your machine",
   "settings.replayTour": "replay tour",
-
   "theme.dark": "Dark",
   "theme.light": "Light",
   "theme.system": "System",
-
   "sound.off": "Off",
   "sound.subtle": "Subtle",
   "sound.on": "On",
-
   "shortcuts.title": "Shortcuts",
   "shortcuts.close": "Close shortcuts",
   "shortcuts.aria": "Keyboard shortcuts",
-
   "sc.navigate": "Navigate",
   "sc.palette": "Command palette",
   "sc.focusSearch": "Focus search",
@@ -281,9 +253,7 @@
   "sc.contextMenu": "Context menu — arrows to browse it",
   "sc.help": "Help",
   "sc.thisOverlay": "This overlay",
-
   "key.click": "Click",
-
   "palette.goLibrary": "Go to Library",
   "palette.goFavorites": "Go to Favorites",
   "palette.goTrash": "Go to Trash",
@@ -296,20 +266,19 @@
   "palette.language": "Language: {name}",
   "palette.compareSelected": "Compare {count} selected fonts",
   "palette.rescan": "Rescan font folders",
+  "palette.applyInApp": "Apply {family} in {app}",
   "palette.settings": "Open Settings",
   "palette.shortcuts": "Keyboard shortcuts",
   "palette.placeholder": "Jump to a font or run a command…",
   "palette.aria": "Command palette",
   "palette.searchAria": "Command palette search",
   "palette.empty": "Nothing matches — try fewer letters.",
-
   "bulk.aria": "Tag selected fonts",
   "bulk.title": "Tag {count} fonts",
   "bulk.cancel": "Cancel",
   "bulk.placeholder": "Tag name…",
   "bulk.tagNameAria": "Tag name",
   "bulk.apply": "Apply to {count} fonts",
-
   "tour.inviteAria": "Welcome",
   "tour.inviteTitle": "New here?",
   "tour.inviteSub": "A one-minute tour of your new font library.",
@@ -341,7 +310,6 @@
   "tour.settings.body": "Pick your language, watch folders for new fonts, add extra scan locations, tune motion and sounds.",
   "tour.last.title": "One last thing",
   "tour.last.body": "Drag font files, folders, or zip archives anywhere onto this window to install them. That's it — enjoy your library.",
-
   "menu.rename": "Rename",
   "menu.exportFontList": "Export font list (metadata)…",
   "menu.deleteCollection": "Delete collection",
@@ -369,35 +337,49 @@
   "menu.newCollection": "New collection…",
   "menu.exportFamily": "Export family…",
   "menu.exportSpecimen": "Export specimen…",
+  "menu.applyInApp": "Apply in {app}…",
+  "adobe.photoshop": "Photoshop",
+  "adobe.illustrator": "Illustrator",
   "menu.copyFamilyName": "Copy family name",
   "menu.copyFilePath": "Copy file path",
   "menu.showInFileManager": "Show in file manager",
   "menu.moveToTrash": "Move to Trash",
-
   "copy.familyName": "Family name",
   "copy.filePath": "File path",
-
   "fontlist.title": "{title} — font list",
   "fontlist.sub": "{count} families · exported by ZFontManager",
   "fontlist.styles": "Styles",
   "fontlist.format": "Format",
   "fontlist.foundry": "Foundry",
   "fontlist.variable": "variable",
-
   "specimen.saveTitle": "Export specimen",
   "specimen.pngFilter": "PNG image",
   "specimen.stylesHeading": "STYLES",
   "specimen.brand": "Specimen · ZFontManager",
-
   "preview.defaultSample": "The quick brown fox jumps over the lazy dog",
-
   "toast.libraryUpdated": "Library updated",
   "toast.newFontsFound_one": "{count} new font found",
   "toast.newFontsFound_other": "{count} new fonts found",
   "toast.fontsRemoved_one": "{count} font removed",
   "toast.fontsRemoved_other": "{count} fonts removed",
+  "toast.noFontsInFolder": "No font files were found in that folder",
+  "toast.libraryUnchanged": "Nothing changed",
   "toast.couldntScan": "Couldn't scan your fonts",
   "toast.couldntActivate": "Couldn't activate font",
+  "toast.appliedInApp": "{family} applied in {app}",
+  "toast.appliedLayers_one": "{count} text layer updated",
+  "toast.appliedLayers_other": "{count} text layers updated",
+  "toast.createdInApp": "Added a text layer in {app}",
+  "toast.createdInAppSub": "No text was selected, so {family} went on a new layer",
+  "toast.appNotRunning": "{app} isn't running",
+  "toast.appNotRunningSub": "Open it with a document first, then try again",
+  "toast.noDocumentInApp": "No open document in {app}",
+  "toast.noDocumentInAppSub": "Open or create a document, then try again",
+  "toast.fontUnknownToApp": "{app} can't see {family} yet",
+  "toast.fontUnknownToAppSub": "Give it a moment to refresh its font list, then try again",
+  "toast.couldntApplyIn": "Couldn't apply in {app}",
+  "toast.noPostScriptName": "This font has no PostScript name",
+  "toast.noPostScriptNameSub": "{app} needs one to select a font",
   "toast.couldntDeactivate": "Couldn't deactivate font",
   "toast.activeUntilClose": "{family} active until close",
   "toast.activeUntilCloseSub": "It deactivates itself when you quit ZFontManager",

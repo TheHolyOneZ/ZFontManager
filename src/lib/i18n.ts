@@ -12,16 +12,13 @@ import zhTW from "../locales/zh-TW.json";
 export type Dict = typeof en;
 type Vars = Record<string, string | number>;
 
-
 type PluralBase<K extends string> = K extends `${infer B}_one`
   ? B
   : K extends `${infer B}_other`
     ? B
     : never;
 
-
 export type TKey = keyof Dict | PluralBase<keyof Dict & string>;
-
 
 export type LocaleCode =
   | "en"
@@ -42,7 +39,6 @@ export interface LocaleInfo {
 
   english: string;
 }
-
 
 export const LOCALES: readonly LocaleInfo[] = [
   { code: "en", name: "English", english: "English" },
@@ -71,7 +67,6 @@ const DICTS: Record<LocaleCode, Partial<Dict>> = {
 const FALLBACK: LocaleCode = "en";
 const STORAGE_KEY = "zfm.locale";
 
-
 const REGION_HINTS: Record<string, LocaleCode> = {
   zh: "zh-CN",
   "zh-hans": "zh-CN",
@@ -96,7 +91,6 @@ export function isLocalePref(v: unknown): v is LocalePref {
   return v === "system" || isLocaleCode(v);
 }
 
-
 function matchTag(tag: string): LocaleCode | null {
   const lower = tag.toLowerCase();
   const exact = LOCALES.find((l) => l.code.toLowerCase() === lower);
@@ -117,7 +111,6 @@ function matchTag(tag: string): LocaleCode | null {
   const byPrimary = LOCALES.find((l) => l.code.toLowerCase().split("-")[0] === primary);
   return byPrimary ? byPrimary.code : null;
 }
-
 
 export function detectLocale(): LocaleCode {
   const tags =
@@ -188,7 +181,6 @@ export function setLocalePref(next: LocalePref) {
   apply(next);
 }
 
-
 export function hydrateLocalePref(next: LocalePref) {
   try {
     localStorage.setItem(STORAGE_KEY, next);
@@ -204,13 +196,11 @@ function interpolate(template: string, vars: Vars): string {
   );
 }
 
-
 function lookup(key: string): string | undefined {
   const local = (dict as Record<string, string | undefined>)[key];
   if (local !== undefined) return local;
   return (en as Record<string, string | undefined>)[key];
 }
-
 
 export function t(key: TKey, vars?: Vars): string {
   let raw: string | undefined;
@@ -240,12 +230,10 @@ function getVersion() {
   return version;
 }
 
-
 export function useT(): typeof t {
   useSyncExternalStore(subscribe, getVersion, getVersion);
   return t;
 }
-
 
 export function useLocalePref(): LocalePref {
   useSyncExternalStore(subscribe, getVersion, getVersion);

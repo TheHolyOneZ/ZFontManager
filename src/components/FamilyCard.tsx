@@ -49,7 +49,6 @@ function FacePreview({
               fontSize: Math.min(size, 32),
               fontStyle: face.italic ? "italic" : "normal",
 
-
               fontWeight: synthesize ? face.weight : undefined,
             }}
             initial={{ opacity: 0, y: 4 }}
@@ -104,7 +103,6 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
       onClick={(e) => {
         const st = useFontStore.getState();
 
-
         if (st.comparePicking) {
           st.togglePick(family.name);
           return;
@@ -118,7 +116,6 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
         selectWith(family.name, "single", useFontStore.getState().visibleOrder);
       }}
       onContextMenu={(e) => openContextMenu(e, buildFamilyMenu(family))}
-
 
       animate={{ scale: family.active ? 1 : 0.99 }}
       whileHover={{ y: -1 }}

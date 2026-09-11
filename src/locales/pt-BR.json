@@ -1,9 +1,7 @@
 {
   "lang.name": "Português (Brasil)",
-
   "scan.reading": "Lendo {done} de {total} arquivos de fonte…",
   "scan.finding": "Procurando suas fontes…",
-
   "empty.library.title": "Sua biblioteca está esperando",
   "empty.library.body": "Arraste arquivos de fonte, pastas ou arquivos .zip para qualquer lugar desta janela para instalá-los →",
   "empty.search.title": "Nenhuma fonte corresponde",
@@ -14,28 +12,23 @@
   "empty.collection.body": "Clique com o botão direito em uma fonte → Coleções → “{name}” para adicioná-la aqui.",
   "empty.tag.title": "Nada usa esta etiqueta",
   "empty.tag.body": "Clique com o botão direito em uma fonte e escolha Etiquetas para marcá-la.",
-
   "titlebar.settings": "Configurações",
   "titlebar.minimize": "Minimizar",
   "titlebar.maximize": "Maximizar",
   "titlebar.close": "Fechar",
-
   "sort.name": "Nome",
   "sort.styles": "Estilos",
   "sort.size": "Tamanho do arquivo",
-
   "filter.aria": "Filtrar fontes",
   "filter.classification": "Classificação",
   "filter.languageSupport": "Idiomas suportados",
   "filter.variableOnly": "Somente variáveis",
-
   "class.serif": "Serifada",
   "class.sans": "Sem serifa",
   "class.mono": "Mono",
   "class.display": "Display",
   "class.script": "Manuscrita",
   "class.unknown": "Desconhecida",
-
   "script.latin": "Latino",
   "script.cyrillic": "Cirílico",
   "script.greek": "Grego",
@@ -46,7 +39,6 @@
   "script.cjk": "CJK",
   "script.korean": "Coreano",
   "script.vietnamese": "Vietnamita",
-
   "top.rescan": "Reexaminar as pastas de fontes",
   "top.samplePlaceholder": "Digite um texto de amostra…",
   "top.sampleAria": "Texto de visualização",
@@ -54,7 +46,6 @@
   "top.searchPlaceholder": "Buscar…",
   "top.searchAria": "Buscar fontes",
   "top.viewMode": "Modo de exibição",
-
   "compare.ariaArmed": "Comparar {count} fontes selecionadas",
   "compare.ariaCancelPicking": "Cancelar a seleção para comparar",
   "compare.ariaIdle": "Comparar fontes",
@@ -65,7 +56,6 @@
   "compare.close": "Fechar a comparação",
   "compare.dialogAria": "Comparar fontes",
   "compare.remove": "Remover {name}",
-
   "side.browse": "Explorar",
   "side.library": "Biblioteca",
   "side.favorites": "Favoritas",
@@ -79,7 +69,6 @@
   "side.trash": "Lixeira",
   "side.about": "Sobre",
   "side.shortcuts": "Atalhos",
-
   "sel.aria": "Ações da seleção",
   "sel.ready": "Pronto — clique em Comparar!",
   "sel.pickMore": "Escolha pelo menos mais uma fonte",
@@ -88,13 +77,11 @@
   "sel.rightClick": "botão direito para mais",
   "sel.cancelCompare": "Cancelar a comparação",
   "sel.clear": "Limpar a seleção",
-
   "list.family": "Família",
   "list.styles": "Estilos",
   "list.format": "Formato",
   "list.size": "Tamanho",
   "list.active": "Ativa",
-
   "card.collapseStyles": "Recolher os estilos",
   "card.expandStyles": "Expandir os estilos",
   "card.stylesCount_one": "{count} estilo",
@@ -107,10 +94,8 @@
   "card.activate": "Ativar {name}",
   "card.previewUnavailable": "visualização indisponível",
   "card.noPreview": "Este formato ainda não pode ser visualizado",
-
   "waterfall.emptyTitle": "Nada para exibir em cascata",
   "waterfall.emptyBody": "Escolha uma fonte na visualização em grade ou lista e volte para a cascata.",
-
   "trash.emptyTitle": "A lixeira está vazia",
   "trash.emptyBody": "As fontes que você remove chegam aqui primeiro — nada é apagado em silêncio.",
   "trash.count_one": "{count} arquivo de fonte na lixeira",
@@ -120,7 +105,6 @@
   "trash.restore": "Restaurar",
   "trash.delete": "Excluir",
   "trash.deletePermanently": "Excluir permanentemente",
-
   "about.version": "Versão {version} · {license}",
   "about.desc": "O gerenciador de fontes que o Linux nunca teve e pelo qual se paga no Windows e no macOS. Visualize, etiquete, ative e desative, instale fontes nos três sistemas a partir de um único aplicativo nativo e limpo — suas fontes nunca saem da sua máquina.",
   "about.stackAria": "Tecnologias",
@@ -128,13 +112,11 @@
   "about.moreProjects": "Mais projetos",
   "about.landing": "Página do projeto e downloads",
   "about.source": "Código-fonte do ZFontManager",
-
   "drop.title": "Solte para instalar",
   "drop.sub": "Arquivos de fonte, pastas ou arquivos .zip",
   "drop.installing_one": "Instalando {count} fonte…",
   "drop.installing_other": "Instalando {count} fontes…",
   "drop.installing_many": "Instalando {count} fontes…",
-
   "detail.exportFace": "Exportar {family} {style}",
   "detail.reset": "Redefinir",
   "detail.axisAria": "Eixo {name}",
@@ -169,7 +151,6 @@
   "detail.tags": "Etiquetas",
   "detail.notes": "Notas",
   "detail.moveToTrash": "Mover para a lixeira",
-
   "feat.liga": "Ligaduras",
   "feat.dlig": "Ligaduras discricionárias",
   "feat.calt": "Alternativas contextuais",
@@ -189,22 +170,18 @@
   "feat.titl": "Maiúsculas para títulos",
   "feat.hist": "Formas históricas",
   "feat.stylisticSet": "Conjunto estilístico {n}",
-
   "axis.wght": "Peso",
   "axis.wdth": "Largura",
   "axis.slnt": "Inclinação",
   "axis.ital": "Itálico",
   "axis.opsz": "Tamanho óptico",
   "axis.GRAD": "Grau",
-
   "glyph.none": "Nenhum mapa de caracteres disponível",
   "glyph.copyAria": "Copiar o caractere {cp}",
   "glyph.copied": "“{ch}” copiado",
   "glyph.showAll": "Mostrar todos os {count} glifos",
-
   "note.placeholder": "Notas — ex.: licenciada apenas para o cliente X…",
   "note.aria": "Notas sobre a fonte",
-
   "license.open": "Provavelmente licença livre",
   "license.restrictive": "Possivelmente restritiva",
   "license.unknown": "Licença não classificada",
@@ -212,11 +189,9 @@
   "license.more": "mais",
   "license.less": "menos",
   "license.disclaimer": "Leitura aproximada dos metadados embutidos — não é aconselhamento jurídico",
-
   "tag.removeAria": "Remover a etiqueta {tag}",
   "tag.addPlaceholder": "Adicionar etiqueta…",
   "tag.addAria": "Adicionar etiqueta",
-
   "settings.title": "Configurações",
   "settings.close": "Fechar as configurações",
   "settings.addFolderTitle": "Adicionar uma pasta para examinar",
@@ -229,6 +204,7 @@
   "settings.watchedFoldersSub": "Examinadas além das pastas de fontes do sistema",
   "settings.removeFolder": "Remover {dir}",
   "settings.addFolder": "Adicionar pasta…",
+  "settings.scanningFolders": "Indexando suas fontes…",
   "settings.libraryData": "Dados da biblioteca",
   "settings.curation": "Etiquetas, coleções e notas",
   "settings.curationSub": "Faça backup da sua organização em um arquivo, ou junte a de outra máquina",
@@ -252,19 +228,15 @@
   "settings.soundLevelAria": "Nível de som",
   "settings.footerNote": "suas fontes ficam na sua máquina",
   "settings.replayTour": "rever o tour",
-
   "theme.dark": "Escuro",
   "theme.light": "Claro",
   "theme.system": "Sistema",
-
   "sound.off": "Desligado",
   "sound.subtle": "Sutil",
   "sound.on": "Ligado",
-
   "shortcuts.title": "Atalhos",
   "shortcuts.close": "Fechar os atalhos",
   "shortcuts.aria": "Atalhos de teclado",
-
   "sc.navigate": "Navegar",
   "sc.palette": "Paleta de comandos",
   "sc.focusSearch": "Ir para a busca",
@@ -285,9 +257,7 @@
   "sc.contextMenu": "Menu de contexto — use as setas para percorrer",
   "sc.help": "Ajuda",
   "sc.thisOverlay": "Este painel",
-
   "key.click": "Clique",
-
   "palette.goLibrary": "Ir para a Biblioteca",
   "palette.goFavorites": "Ir para as Favoritas",
   "palette.goTrash": "Ir para a Lixeira",
@@ -300,20 +270,19 @@
   "palette.language": "Idioma: {name}",
   "palette.compareSelected": "Comparar {count} fontes selecionadas",
   "palette.rescan": "Reexaminar as pastas de fontes",
+  "palette.applyInApp": "Aplicar {family} no {app}",
   "palette.settings": "Abrir as configurações",
   "palette.shortcuts": "Atalhos de teclado",
   "palette.placeholder": "Vá para uma fonte ou execute um comando…",
   "palette.aria": "Paleta de comandos",
   "palette.searchAria": "Busca na paleta de comandos",
   "palette.empty": "Nada corresponde — tente com menos letras.",
-
   "bulk.aria": "Etiquetar as fontes selecionadas",
   "bulk.title": "Etiquetar {count} fontes",
   "bulk.cancel": "Cancelar",
   "bulk.placeholder": "Nome da etiqueta…",
   "bulk.tagNameAria": "Nome da etiqueta",
   "bulk.apply": "Aplicar a {count} fontes",
-
   "tour.inviteAria": "Boas-vindas",
   "tour.inviteTitle": "Primeira vez por aqui?",
   "tour.inviteSub": "Um minuto de tour pela sua nova biblioteca de fontes.",
@@ -345,7 +314,6 @@
   "tour.settings.body": "Escolha o idioma, monitore pastas em busca de fontes novas, adicione outros locais de busca, ajuste movimento e sons.",
   "tour.last.title": "Mais uma coisa",
   "tour.last.body": "Arraste arquivos de fonte, pastas ou arquivos zip para qualquer lugar desta janela para instalá-los. É isso — aproveite sua biblioteca.",
-
   "menu.rename": "Renomear",
   "menu.exportFontList": "Exportar a lista de fontes (metadados)…",
   "menu.deleteCollection": "Excluir a coleção",
@@ -373,37 +341,52 @@
   "menu.newCollection": "Nova coleção…",
   "menu.exportFamily": "Exportar a família…",
   "menu.exportSpecimen": "Exportar um espécime…",
+  "menu.applyInApp": "Aplicar no {app}…",
+  "adobe.photoshop": "Photoshop",
+  "adobe.illustrator": "Illustrator",
   "menu.copyFamilyName": "Copiar o nome da família",
   "menu.copyFilePath": "Copiar o caminho do arquivo",
   "menu.showInFileManager": "Mostrar no gerenciador de arquivos",
   "menu.moveToTrash": "Mover para a lixeira",
-
   "copy.familyName": "Nome da família",
   "copy.filePath": "Caminho do arquivo",
-
   "fontlist.title": "{title} — lista de fontes",
   "fontlist.sub": "{count} famílias · exportado pelo ZFontManager",
   "fontlist.styles": "Estilos",
   "fontlist.format": "Formato",
   "fontlist.foundry": "Fundidora",
   "fontlist.variable": "variável",
-
   "specimen.saveTitle": "Exportar o espécime",
   "specimen.pngFilter": "Imagem PNG",
   "specimen.stylesHeading": "ESTILOS",
   "specimen.brand": "Espécime · ZFontManager",
-
   "preview.defaultSample": "Um pequeno jabuti xereta viu dez cegonhas felizes",
-
   "toast.libraryUpdated": "Biblioteca atualizada",
   "toast.newFontsFound_one": "{count} fonte nova encontrada",
   "toast.newFontsFound_other": "{count} fontes novas encontradas",
   "toast.newFontsFound_many": "{count} fontes novas encontradas",
   "toast.fontsRemoved_one": "{count} fonte removida",
   "toast.fontsRemoved_other": "{count} fontes removidas",
+  "toast.noFontsInFolder": "Nenhum arquivo de fonte foi encontrado nessa pasta",
+  "toast.libraryUnchanged": "Nada mudou",
   "toast.fontsRemoved_many": "{count} fontes removidas",
   "toast.couldntScan": "Não foi possível examinar suas fontes",
   "toast.couldntActivate": "Não foi possível ativar a fonte",
+  "toast.appliedInApp": "{family} aplicada no {app}",
+  "toast.appliedLayers_one": "{count} camada de texto atualizada",
+  "toast.appliedLayers_other": "{count} camadas de texto atualizadas",
+  "toast.appliedLayers_many": "{count} camadas de texto atualizadas",
+  "toast.createdInApp": "Camada de texto adicionada no {app}",
+  "toast.createdInAppSub": "Nenhum texto estava selecionado, então {family} foi para uma nova camada",
+  "toast.appNotRunning": "O {app} não está aberto",
+  "toast.appNotRunningSub": "Abra-o com um documento primeiro e tente de novo",
+  "toast.noDocumentInApp": "Nenhum documento aberto no {app}",
+  "toast.noDocumentInAppSub": "Abra ou crie um documento e tente de novo",
+  "toast.fontUnknownToApp": "O {app} ainda não vê {family}",
+  "toast.fontUnknownToAppSub": "Dê um instante para ele atualizar a lista de fontes e tente de novo",
+  "toast.couldntApplyIn": "Não foi possível aplicar no {app}",
+  "toast.noPostScriptName": "Esta fonte não tem nome PostScript",
+  "toast.noPostScriptNameSub": "O {app} precisa dele para selecionar uma fonte",
   "toast.couldntDeactivate": "Não foi possível desativar a fonte",
   "toast.activeUntilClose": "{family} ativa até fechar",
   "toast.activeUntilCloseSub": "Ela se desativa sozinha quando você sai do ZFontManager",

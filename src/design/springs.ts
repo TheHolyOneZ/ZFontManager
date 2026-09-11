@@ -7,7 +7,6 @@ export const springSoft: Transition = { type: "spring", stiffness: 180, damping:
 
 export const springBouncy: Transition = { type: "spring", stiffness: 560, damping: 24 };
 
-
 export const STAGGER_CAP = 14;
 export const STAGGER_STEP = 0.04;
 

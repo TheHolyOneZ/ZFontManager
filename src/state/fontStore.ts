@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { listen } from "@tauri-apps/api/event";
 import {
   ipc,
+  type AdobeApp,
   type AppSettings,
   type Classification,
   type FontFace,
@@ -58,7 +59,6 @@ interface FontStore {
   trash: TrashEntry[];
   panelWidth: number;
 
-
   selection: string[];
 
   visibleOrder: string[];
@@ -70,6 +70,8 @@ interface FontStore {
   helpOpen: boolean;
   paletteOpen: boolean;
   settings: AppSettings;
+
+  adobeAvailable: boolean;
   motionPref: MotionPref;
   soundPref: SoundLevel;
   themePref: ThemePref;
@@ -94,7 +96,6 @@ interface FontStore {
   nav: Nav;
   selectedFamily: string | null;
 
-
   pendingCollectionFor: string | null;
 
   init: () => Promise<void>;
@@ -114,6 +115,7 @@ interface FontStore {
   toggleFavorite: (family: string) => Promise<void>;
   setFamilyNote: (family: string, note: string) => Promise<void>;
   setFamiliesActiveBulk: (families: string[], active: boolean) => Promise<void>;
+  applyFamilyInApp: (family: string, app: AdobeApp) => Promise<void>;
   setPanelWidth: (w: number) => void;
   selectWith: (family: string, mode: "single" | "toggle" | "range", order: string[]) => void;
   openCompare: (families: string[]) => void;
@@ -146,6 +148,10 @@ interface FontStore {
   importLibraryData: (src: string) => Promise<void>;
   setNav: (n: Nav) => void;
   select: (family: string | null) => void;
+}
+
+function applyMotionPref(pref: MotionPref) {
+  document.documentElement.dataset.motion = pref;
 }
 
 let prefsTimer: ReturnType<typeof setTimeout> | undefined;
@@ -186,6 +192,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   helpOpen: false,
   paletteOpen: false,
   settings: { extraDirs: [], watchEnabled: false },
+  adobeAvailable: false,
   motionPref: "system",
   soundPref: "off",
   themePref: "dark",
@@ -243,12 +250,17 @@ export const useFontStore = create<FontStore>((set, get) => ({
 
     }
     applyTheme(get().themePref);
+    applyMotionPref(get().motionPref);
     try {
       set({ settings: await ipc.getSettings() });
     } catch {
 
     }
+    try {
+      set({ adobeAvailable: await ipc.adobeAvailable() });
+    } catch {
 
+    }
 
     let watchTimer: ReturnType<typeof setTimeout> | undefined;
     await listen("fonts:changed", () => {
@@ -383,7 +395,6 @@ export const useFontStore = create<FontStore>((set, get) => ({
         selectedFamily: get().selectedFamily === family ? null : get().selectedFamily,
         selection: get().selection.filter((f) => f !== family),
       });
-
 
       const { tags, favorites, collections } = get();
       if (tags[family]) void get().setFamilyTags(family, []);
@@ -600,6 +611,54 @@ export const useFontStore = create<FontStore>((set, get) => ({
     }
   },
 
+  applyFamilyInApp: async (family, app) => {
+    const appName = t(`adobe.${app}`);
+    const fam = familiesFor(get().fonts, get().tags).get(family);
+    if (!fam) return;
+    const lead = fam.faces.find((f) => f.style === "Regular") ?? fam.faces[0];
+    if (!lead.postscriptName) {
+      toast.error(t("toast.noPostScriptName"), t("toast.noPostScriptNameSub", { app: appName }));
+      return;
+    }
+
+    if (!fam.active) {
+      if (!fam.deactivatable) return;
+      await get().activateFamilySession(family);
+      if (!familiesFor(get().fonts, get().tags).get(family)?.active) return;
+      await new Promise((r) => setTimeout(r, 600));
+    }
+    try {
+      const outcome = await ipc.applyFontInApp(app, lead.postscriptName, family);
+      if (outcome.startsWith("applied:")) {
+        const count = Number(outcome.slice("applied:".length)) || 1;
+        toast.success(
+          t("toast.appliedInApp", { family, app: appName }),
+          t("toast.appliedLayers", { count }),
+          "success",
+        );
+      } else if (outcome === "created") {
+        toast.success(
+          t("toast.createdInApp", { app: appName }),
+          t("toast.createdInAppSub", { family }),
+          "success",
+        );
+      } else if (outcome === "not-running") {
+        toast.error(t("toast.appNotRunning", { app: appName }), t("toast.appNotRunningSub"));
+      } else if (outcome === "no-document") {
+        toast.error(t("toast.noDocumentInApp", { app: appName }), t("toast.noDocumentInAppSub"));
+      } else if (outcome === "font-not-found") {
+        toast.error(
+          t("toast.fontUnknownToApp", { app: appName, family }),
+          t("toast.fontUnknownToAppSub"),
+        );
+      } else {
+        toast.error(t("toast.couldntApplyIn", { app: appName }), outcome);
+      }
+    } catch (e) {
+      toast.error(t("toast.couldntApplyIn", { app: appName }), String(e));
+    }
+  },
+
   selectWith: (family, mode, order) => {
     const { selection, selectedFamily } = get();
     if (mode === "toggle") {
@@ -643,11 +702,33 @@ export const useFontStore = create<FontStore>((set, get) => ({
     } catch (e) {
       set({ settings: prev });
       toast.error(t("toast.couldntSaveSettings"), String(e));
+      return;
     }
+
+    const dirsChanged =
+      prev.extraDirs.length !== settings.extraDirs.length ||
+      prev.extraDirs.some((d, i) => d !== settings.extraDirs[i]);
+    if (!dirsChanged || get().phase === "scanning") return;
+    const before = get().fonts.length;
+    await get().rescan();
+    if (get().phase !== "ready") return;
+    const after = get().fonts.length;
+    const added = settings.extraDirs.length > prev.extraDirs.length;
+    toast.success(
+      t("toast.libraryUpdated"),
+      after > before
+        ? t("toast.newFontsFound", { count: after - before })
+        : after < before
+          ? t("toast.fontsRemoved", { count: before - after })
+          : added
+            ? t("toast.noFontsInFolder")
+            : t("toast.libraryUnchanged"),
+    );
   },
 
   setMotionPref: (motionPref) => {
     set({ motionPref });
+    applyMotionPref(motionPref);
     persistPrefs(get);
   },
 
@@ -743,7 +824,6 @@ export const useFontStore = create<FontStore>((set, get) => ({
       toast.error(t("toast.exportFailed"), String(e));
     }
   },
-
 
   importLibraryData: async (src) => {
     try {
@@ -842,7 +922,6 @@ export function computeFamilies(
     fam.isVariable ||= f.isVariable;
     fam.foundry ??= f.foundry;
 
-
     if (fam.classification === "unknown") fam.classification = f.classification;
     for (const s of f.scripts ?? []) {
       if (!fam.scripts.includes(s)) fam.scripts.push(s);
@@ -929,9 +1008,7 @@ export interface FontConflict {
   paths: string[];
 }
 
-
 const familyCache = new WeakMap<FontFace[], WeakMap<object, Map<string, Family>>>();
-
 
 export function familiesFor(
   fonts: FontFace[],
@@ -951,7 +1028,6 @@ export function familiesFor(
 }
 
 const conflictCache = new WeakMap<FontFace[], Map<string, FontConflict[]>>();
-
 
 export function conflictsFor(fonts: FontFace[]): Map<string, FontConflict[]> {
   let cached = conflictCache.get(fonts);

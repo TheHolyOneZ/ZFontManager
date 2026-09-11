@@ -1,4 +1,4 @@
-name: Build ZFontManager (Windows + macOS)
+name: Build ZFontManager (Windows + macOS + Linux)
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ on:
       - "pnpm-lock.yaml"
       - "vite.config.ts"
       - "tsconfig.json"
-      - ".github/workflows/build.yml"
+      - ".github/workflows/workflowLatest_.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -215,9 +215,76 @@ jobs:
           retention-days: 30
 
 
+  build-linux:
+    name: Linux x86_64
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Set up Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential curl wget file \
+            libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev \
+            libasound2-dev \
+            patchelf rpm
+
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          workspaces: src-tauri
+          key: linux-x64
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rust tests
+        working-directory: src-tauri
+        run: cargo test --locked
+
+      - name: Build — AppImage + deb + rpm
+        run: pnpm tauri build --bundles appimage,deb,rpm
+
+      - name: List bundle output
+        if: always()
+        run: |
+          echo "=== All bundle files ==="
+          find src-tauri/target -type f \( -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' \) 2>/dev/null || echo "(nothing found)"
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64
+          path: |
+            src-tauri/target/**/release/bundle/**/*.AppImage
+            src-tauri/target/**/release/bundle/**/*.deb
+            src-tauri/target/**/release/bundle/**/*.rpm
+          if-no-files-found: error
+          retention-days: 30
+
   draft-release:
     name: Draft release
-    needs: [build-windows, build-macos-intel, build-macos-silicon]
+    needs: [build-windows, build-macos-intel, build-macos-silicon, build-linux]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -268,7 +335,10 @@ jobs:
           find dist -type f \( \
             -name '*.msi' -o \
             -name '*.exe' -o \
-            -name '*.dmg' \
+            -name '*.dmg' -o \
+            -name '*.AppImage' -o \
+            -name '*.deb' -o \
+            -name '*.rpm' \
           \) -exec cp {} release/ \;
           echo "=== release/ ==="
           ls -lah release/
@@ -283,11 +353,11 @@ jobs:
           prerelease: false
           files: release/*
           body: |
-            **Draft — Windows and macOS builds only.**
+            **Draft** — all seven installers are attached (Windows .exe/.msi,
+            macOS Apple Silicon + Intel .dmg, Linux AppImage/.deb/.rpm).
 
-            Linux bundles (`.AppImage`, `.deb`, `.rpm`) are built locally and are
-            not attached here. Download these installers, then run
-            `node prepare-release.mjs` locally to build the Linux bundles, collect
-            everything into the webspace and refresh the download page.
-
-            Delete this draft once the files are downloaded.
+            To publish: download the assets into `zfontmanager/releases/` (or
+            point `node prepare-release.mjs --from <folder>` at the download),
+            run `node prepare-release.mjs` to refresh the website download page
+            and `SHA256SUMS.txt`, upload the `zfontmanager/` folder, paste the
+            matching section of `CHANGELOG.md` here, and publish this draft.

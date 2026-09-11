@@ -356,8 +356,6 @@ jobs:
             **Draft** — all seven installers are attached (Windows .exe/.msi,
             macOS Apple Silicon + Intel .dmg, Linux AppImage/.deb/.rpm).
 
-            To publish: download the assets into `zfontmanager/releases/` (or
-            point `node prepare-release.mjs --from <folder>` at the download),
-            run `node prepare-release.mjs` to refresh the website download page
-            and `SHA256SUMS.txt`, upload the `zfontmanager/` folder, paste the
+            To publish: download the assets, refresh the download page and
+            checksums on the website with the local release tooling, paste the
             matching section of `CHANGELOG.md` here, and publish this draft.

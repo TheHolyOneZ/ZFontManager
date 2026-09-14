@@ -678,6 +678,10 @@ export const useFontStore = create<FontStore>((set, get) => ({
 
   selectWith: (family, mode, order) => {
     const { selection, selectedFamily } = get();
+    if (mode === "single" && selectedFamily === family && selection.length <= 1) {
+      set({ selection: [], selectedFamily: null });
+      return;
+    }
     if (mode === "toggle") {
       const next = selection.includes(family)
         ? selection.filter((f) => f !== family)

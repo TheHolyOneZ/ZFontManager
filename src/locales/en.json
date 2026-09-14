@@ -53,6 +53,7 @@
   "top.sizeAria": "Preview size",
   "top.searchPlaceholder": "Search…",
   "top.searchAria": "Search fonts",
+  "top.searchClear": "Clear search",
   "top.viewMode": "View mode",
   "compare.ariaArmed": "Compare {count} selected fonts",
   "compare.ariaCancelPicking": "Cancel picking fonts to compare",

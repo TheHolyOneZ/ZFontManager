@@ -2726,6 +2726,10 @@
   font-size: var(--fs-11);
   color: var(--text-tertiary);
 }
+.settings-dim {
+  filter: saturate(0.5);
+  opacity: 0.45;
+}
 .settings-add-folder {
   display: flex;
   align-items: center;

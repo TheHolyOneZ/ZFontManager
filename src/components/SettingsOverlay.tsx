@@ -69,9 +69,20 @@ export function SettingsOverlay() {
 
   const pickLibraryDir = async () => {
     const dir = await open({ directory: true, title: t("settings.libraryFolderTitle") });
-    if (!dir || dir === settings.libraryDir) return;
+    if (!dir) return;
     void updateSettings({ ...settings, libraryDir: dir });
   };
+
+  const toggleCustomDir = (on: boolean) => {
+    if (!on) {
+      void updateSettings({ ...settings, libraryDir: null });
+      return;
+    }
+    // Enabling always asks for the folder; cancelling leaves it off.
+    void pickLibraryDir();
+  };
+
+  const customDirOn = settings.libraryDir != null;
 
   const exportData = async () => {
     const dest = await save({
@@ -244,7 +255,7 @@ export function SettingsOverlay() {
                   <div className="settings-sub">{t("settings.libraryFolderSub")}</div>
                 </div>
                 <div className="settings-folders">
-                  <div className="settings-folder">
+                  <div className={`settings-folder ${customDirOn ? "settings-dim" : ""}`}>
                     <span className="settings-folder-tag">{t("settings.libraryDefault")}</span>
                     <button
                       className="path-link detail-mono settings-folder-path"
@@ -253,6 +264,18 @@ export function SettingsOverlay() {
                     >
                       <FolderOpen size={13} strokeWidth={1.5} />
                       <span className="settings-folder-path">{defaultLibDir}</span>
+                    </button>
+                  </div>
+                  <div className={`settings-folder ${customDirOn ? "" : "settings-dim"}`}>
+                    <PillToggle
+                      on={customDirOn}
+                      onChange={(on) => toggleCustomDir(on)}
+                      label={t("settings.libraryCustom")}
+                    />
+                    <span className="settings-folder-path">{t("settings.libraryCustom")}</span>
+                    <button className="settings-add-folder" onClick={() => void pickLibraryDir()}>
+                      <FolderPlus size={13} strokeWidth={1.5} />
+                      {t("settings.libraryAddFolder")}
                     </button>
                   </div>
                   {settings.libraryDir && (
@@ -267,19 +290,8 @@ export function SettingsOverlay() {
                         <FolderOpen size={13} strokeWidth={1.5} />
                         <span className="settings-folder-path">{settings.libraryDir}</span>
                       </button>
-                      <button
-                        aria-label={t("settings.libraryReset")}
-                        title={t("settings.libraryReset")}
-                        onClick={() => void updateSettings({ ...settings, libraryDir: null })}
-                      >
-                        <X size={12} strokeWidth={1.5} />
-                      </button>
                     </div>
                   )}
-                  <button className="settings-add-folder" onClick={() => void pickLibraryDir()}>
-                    <FolderPlus size={13} strokeWidth={1.5} />
-                    {t("settings.libraryChange")}
-                  </button>
                 </div>
               </div>
             </section>

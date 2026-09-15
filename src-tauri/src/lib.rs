@@ -181,7 +181,7 @@ fn list_trash() -> Vec<TrashEntry> {
 
 #[tauri::command]
 async fn affinity_connection() -> Result<affinity::AffinityConnection, String> {
-    Ok(affinity::connection(affinity::DEFAULT_MCP_URL).await)
+    Ok(affinity::connection().await)
 }
 
 #[tauri::command]

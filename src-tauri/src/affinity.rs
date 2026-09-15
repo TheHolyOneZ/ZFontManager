@@ -18,7 +18,14 @@ use tauri::{Emitter, Manager};
 
 use crate::store::{self, Store};
 
-pub const DEFAULT_MCP_URL: &str = "http://localhost:6767/sse";
+/// Affinity binds its MCP server to the IPv6 loopback on some systems, so a
+/// `localhost` URL may resolve to an IPv4 address nothing listens on.
+/// Try every loopback spelling, IPv6 first (observed in the wild).
+const CANDIDATE_URLS: [&str; 3] = [
+    "http://[::1]:6767/sse",
+    "http://127.0.0.1:6767/sse",
+    "http://localhost:6767/sse",
+];
 
 /// Protocol versions to offer, newest first (the server picks one it speaks).
 const PROTOCOL_VERSIONS: [&str; 3] = ["2025-11-25", "2025-06-18", "2024-11-05"];
@@ -384,15 +391,27 @@ async fn run_doc_fonts_script(session: &mut Session) -> Result<Vec<AffinityDoc>,
     Ok(resp.docs)
 }
 
+/// Open a session on the first reachable loopback spelling.
+async fn open_any() -> Result<(Session, Option<String>), String> {
+    let mut last_err = String::new();
+    for url in CANDIDATE_URLS {
+        match Session::open(url).await {
+            Ok(opened) => return Ok(opened),
+            Err(e) => last_err = e,
+        }
+    }
+    Err(last_err)
+}
+
 /// Full query: connect, run the font probe, drop the session.
-pub async fn doc_fonts(url: &str) -> Result<(Option<String>, Vec<AffinityDoc>), String> {
-    let (mut session, version) = Session::open(url).await?;
+pub async fn doc_fonts() -> Result<(Option<String>, Vec<AffinityDoc>), String> {
+    let (mut session, version) = open_any().await?;
     let docs = run_doc_fonts_script(&mut session).await?;
     Ok((version, docs))
 }
 
-pub async fn connection(url: &str) -> AffinityConnection {
-    match doc_fonts(url).await {
+pub async fn connection() -> AffinityConnection {
+    match doc_fonts().await {
         Ok((version, docs)) => AffinityConnection {
             reachable: true,
             version,
@@ -486,7 +505,6 @@ pub fn tick(app: &tauri::AppHandle) {
     let Some((enabled, deactivate_on_quit)) = settings_snapshot(app) else {
         return;
     };
-    let url = DEFAULT_MCP_URL;
     let running = is_affinity_running();
     let was = WAS_RUNNING.swap(running, Ordering::SeqCst);
 
@@ -509,7 +527,7 @@ pub fn tick(app: &tauri::AppHandle) {
 
     if running && !was {
         // Affinity just started: query everything.
-        match tauri::async_runtime::block_on(doc_fonts(&url)) {
+        match tauri::async_runtime::block_on(doc_fonts()) {
             Ok((_, docs)) => {
                 if let Ok(mut known) = known_docs().lock() {
                     *known = docs.iter().map(|d| d.path.clone()).collect();
@@ -522,7 +540,7 @@ pub fn tick(app: &tauri::AppHandle) {
         // While running, re-query periodically for newly opened documents.
         let n = TICK.fetch_add(1, Ordering::SeqCst);
         if n % 5 == 0 {
-            if let Ok((_, docs)) = tauri::async_runtime::block_on(doc_fonts(&url)) {
+            if let Ok((_, docs)) = tauri::async_runtime::block_on(doc_fonts()) {
                 let fresh: Vec<AffinityDoc> = match known_docs().lock() {
                     Ok(mut known) => {
                         let fresh: Vec<AffinityDoc> = docs

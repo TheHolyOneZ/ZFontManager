@@ -16,10 +16,23 @@ export function DropZone() {
   const [progress, setProgress] = useState<InstallProgress | null>(null);
   const installPaths = useFontStore((s) => s.installPaths);
   const libraryDir = useFontStore((s) => s.settings.libraryDir);
-  const sideRef = useRef<InstallMode>("link");
-  const setSideBoth = (mode: InstallMode) => {
-    sideRef.current = mode;
-    setSide(mode);
+  const moveRef = useRef<HTMLDivElement>(null);
+
+  // DOM drag events don't fire reliably during a native file drag, so the
+  // active panel is picked from the cursor position Tauri reports instead.
+  const sideAt = (pos: { x: number; y: number }): InstallMode => {
+    const dpr = window.devicePixelRatio || 1;
+    const r = moveRef.current?.getBoundingClientRect();
+    if (
+      r &&
+      pos.x / dpr >= r.left &&
+      pos.x / dpr <= r.right &&
+      pos.y / dpr >= r.top &&
+      pos.y / dpr <= r.bottom
+    ) {
+      return "move";
+    }
+    return "link";
   };
 
   useEffect(() => {
@@ -28,18 +41,19 @@ export function DropZone() {
 
   useEffect(() => {
     const unlistenDrop = getCurrentWebview().onDragDropEvent((event) => {
-      if (event.payload.type === "over") {
+      if (event.payload.type === "over" || event.payload.type === "enter") {
         setDragging(true);
+        setSide(sideAt(event.payload.position));
       } else if (event.payload.type === "drop") {
-        const mode = sideRef.current;
+        const mode = sideAt(event.payload.position);
         setDragging(false);
-        setSideBoth("link");
+        setSide("link");
         void installPaths(event.payload.paths, mode).finally(() => {
           setTimeout(() => setProgress(null), 900);
         });
       } else {
         setDragging(false);
-        setSideBoth("link");
+        setSide("link");
       }
     });
     const unlistenProgress = listen<InstallProgress>("install:progress", (e) => {
@@ -69,15 +83,14 @@ export function DropZone() {
             <div className="dropchoice-panels">
               <div
                 className={`dropchoice-panel ${side === "link" ? "dropchoice-active" : ""}`}
-                onDragOver={() => setSideBoth("link")}
               >
                 <Link2 size={30} strokeWidth={1.75} />
                 <div className="dropchoice-title">{t("drop.linkTitle")}</div>
                 <div className="dropchoice-sub">{t("drop.linkSub")}</div>
               </div>
               <div
+                ref={moveRef}
                 className={`dropchoice-panel dropchoice-move ${side === "move" ? "dropchoice-active" : ""}`}
-                onDragOver={() => setSideBoth("move")}
                 title={target}
               >
                 <FolderInput size={30} strokeWidth={1.75} />

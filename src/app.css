@@ -1376,7 +1376,6 @@
   padding: 28px;
   background: rgba(var(--scrim-rgb), 0.65);
   backdrop-filter: blur(10px);
-  pointer-events: none;
 }
 .dropchoice-hint {
   text-align: center;
@@ -1433,6 +1432,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.dropchoice-warn {
+  color: var(--error);
+  font-weight: 600;
 }
 
 .install-toast {

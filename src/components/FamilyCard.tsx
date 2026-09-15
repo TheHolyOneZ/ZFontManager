@@ -93,9 +93,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
 
   return (
     <motion.article
-      className={`family-card ${selected ? "card-selected" : ""} ${
-        family.active ? "" : "card-inactive"
-      }`}
+      className={`family-card ${selected ? "card-selected" : ""}`}
       data-family={family.name}
       tabIndex={0}
       role="button"

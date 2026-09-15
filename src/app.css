@@ -606,11 +606,6 @@
     var(--shadow-ambient);
 }
 
-.card-inactive {
-  filter: saturate(0.4);
-  opacity: 0.7;
-}
-
 .card-head {
   display: flex;
   align-items: center;
@@ -800,10 +795,6 @@
   box-shadow:
     inset 3px 0 0 var(--accent-a),
     inset 0 0 0 1px color-mix(in srgb, var(--accent-a) 40%, transparent);
-}
-.row-inactive {
-  filter: saturate(0.4);
-  opacity: 0.7;
 }
 .row-name {
   overflow: hidden;
@@ -1891,10 +1882,6 @@
   }
 }
 
-.card-inactive .preview-text {
-  transition: opacity var(--t-state) ease;
-}
-
 .card-expand:hover .chevron {
   transform: translateX(1px);
 }
@@ -1991,10 +1978,6 @@
 .detail-activate .activate-label {
   transition: color var(--t-state) ease;
 }
-.detail-activate.card-inactive .activate-label {
-  color: var(--text-secondary);
-}
-
 .style-row {
   padding: 10px 12px;
   gap: 12px;

@@ -669,7 +669,7 @@ export function DetailPanel() {
             </motion.section>
 
             <motion.section
-              className={`detail-activate ${family.active ? "" : "card-inactive"}`}
+              className="detail-activate"
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
             >
               <div>

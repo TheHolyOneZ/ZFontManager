@@ -2471,6 +2471,9 @@
   color: var(--warning);
   flex-shrink: 0;
 }
+.conflict-badge-dormant {
+  color: var(--text-tertiary);
+}
 .conflict-section {
   border: 1px solid color-mix(in srgb, var(--warning) 22%, transparent);
   background: color-mix(in srgb, var(--warning) 5%, transparent);
@@ -2559,25 +2562,21 @@
   border: 1px solid rgba(var(--ink-rgb), 0.12);
   color: var(--text-secondary);
 }
-.conflict-file-active {
+.conflict-file-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
 }
-.conflict-file-active .activate-label {
+.conflict-file-row .activate-label {
   font-size: var(--fs-12);
+}
+.conflict-file-row .conflict-btn-trash {
+  margin-left: auto;
 }
 .conflict-file-path {
   font-size: var(--fs-10);
   color: var(--text-tertiary);
   overflow-wrap: anywhere;
-}
-.conflict-file-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 2px;
 }
 .conflict-btn {
   display: inline-flex;

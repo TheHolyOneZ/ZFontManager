@@ -468,18 +468,14 @@ function ConflictFileCard({ path }: { path: string }) {
         <span className="conflict-system-note">{t("detail.conflictSystemProtected")}</span>
       ) : (
         <>
-          <div className={`conflict-file-active ${isActive ? "" : "card-inactive"}`}>
-            <div>
-              <div className="activate-label">{t(isActive ? "detail.active" : "detail.inactive")}</div>
-            </div>
+          <div className="conflict-file-row">
+            <span className="activate-label">{t(isActive ? "detail.active" : "detail.inactive")}</span>
             <PillToggle
               on={isActive}
               disabled={!canToggle}
               onChange={(on) => void setFontFileActive(path, on)}
               label={t(isActive ? "card.deactivate" : "card.activate", { name: pathBasename(path) })}
             />
-          </div>
-          <div className="conflict-file-actions">
             <button
               className="conflict-btn conflict-btn-trash"
               onClick={() => void uninstallFontFile(path)}

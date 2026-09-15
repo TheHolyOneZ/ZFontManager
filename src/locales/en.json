@@ -103,6 +103,7 @@
   "card.stylesCount_one": "{count} style",
   "card.stylesCount_other": "{count} styles",
   "card.conflict": "Name conflict with another installed font",
+  "card.conflictResolved": "Name conflict resolved — only one copy is active",
   "card.unfavorite": "Unfavorite {name}",
   "card.favorite": "Favorite {name}",
   "card.deactivate": "Deactivate {name}",

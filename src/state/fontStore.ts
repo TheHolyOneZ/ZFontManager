@@ -1178,6 +1178,18 @@ export function familiesFor(
 
 const conflictCache = new WeakMap<FontFace[], Map<string, FontConflict[]>>();
 
+const activeConflictCache = new WeakMap<FontFace[], Map<string, FontConflict[]>>();
+
+/** Conflicts among ACTIVE fonts only: these are the ones apps can actually see. */
+export function activeConflictsFor(fonts: FontFace[]): Map<string, FontConflict[]> {
+  let cached = activeConflictCache.get(fonts);
+  if (!cached) {
+    cached = computeConflicts(fonts.filter((f) => f.active));
+    activeConflictCache.set(fonts, cached);
+  }
+  return cached;
+}
+
 export function conflictsFor(fonts: FontFace[]): Map<string, FontConflict[]> {
   let cached = conflictCache.get(fonts);
   if (!cached) {

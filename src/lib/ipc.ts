@@ -71,6 +71,7 @@ export interface AppSettings {
   watchEnabled: boolean;
   autoActivateImports: boolean;
   libraryDir: string | null;
+  libraryDirEnabled: boolean;
 }
 
 export type InstallMode = "link" | "move";

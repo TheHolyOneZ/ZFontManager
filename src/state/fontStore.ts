@@ -207,7 +207,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   settingsOpen: false,
   helpOpen: false,
   paletteOpen: false,
-  settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false, libraryDir: null },
+  settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false, libraryDir: null, libraryDirEnabled: false },
   adobeAvailable: false,
   motionPref: "system",
   soundPref: "off",
@@ -839,7 +839,8 @@ export const useFontStore = create<FontStore>((set, get) => ({
     const dirsChanged =
       prev.extraDirs.length !== settings.extraDirs.length ||
       prev.extraDirs.some((d, i) => d !== settings.extraDirs[i]) ||
-      prev.libraryDir !== settings.libraryDir;
+      prev.libraryDir !== settings.libraryDir ||
+      prev.libraryDirEnabled !== settings.libraryDirEnabled;
     if (!dirsChanged || get().phase === "scanning") return;
     const before = get().fonts.length;
     await get().rescan();

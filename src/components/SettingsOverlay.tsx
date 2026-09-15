@@ -70,19 +70,18 @@ export function SettingsOverlay() {
   const pickLibraryDir = async () => {
     const dir = await open({ directory: true, title: t("settings.libraryFolderTitle") });
     if (!dir) return;
-    void updateSettings({ ...settings, libraryDir: dir });
+    // Picking a folder turns the custom folder on.
+    void updateSettings({ ...settings, libraryDir: dir, libraryDirEnabled: true });
   };
 
-  const toggleCustomDir = (on: boolean) => {
-    if (!on) {
-      void updateSettings({ ...settings, libraryDir: null });
-      return;
-    }
-    // Enabling always asks for the folder; cancelling leaves it off.
-    void pickLibraryDir();
+  const setCustomDirEnabled = (on: boolean) => {
+    if (on === settings.libraryDirEnabled) return;
+    // The path is kept while disabled, so re-enabling restores it as-is.
+    void updateSettings({ ...settings, libraryDirEnabled: on });
   };
 
-  const customDirOn = settings.libraryDir != null;
+  // The custom folder is in effect only when enabled with a folder picked.
+  const customDirActive = settings.libraryDirEnabled && settings.libraryDir != null;
 
   const exportData = async () => {
     const dest = await save({
@@ -255,7 +254,7 @@ export function SettingsOverlay() {
                   <div className="settings-sub">{t("settings.libraryFolderSub")}</div>
                 </div>
                 <div className="settings-folders">
-                  <div className={`settings-folder ${customDirOn ? "settings-dim" : ""}`}>
+                  <div className={`settings-folder ${customDirActive ? "settings-dim" : ""}`}>
                     <span className="settings-folder-tag">{t("settings.libraryDefault")}</span>
                     <button
                       className="path-link detail-mono settings-folder-path"
@@ -266,20 +265,22 @@ export function SettingsOverlay() {
                       <span className="settings-folder-path">{defaultLibDir}</span>
                     </button>
                   </div>
-                  <div className={`settings-folder ${customDirOn ? "" : "settings-dim"}`}>
-                    <PillToggle
-                      on={customDirOn}
-                      onChange={(on) => toggleCustomDir(on)}
-                      label={t("settings.libraryCustom")}
-                    />
-                    <span className="settings-folder-path">{t("settings.libraryCustom")}</span>
+                  <div className={`settings-row ${customDirActive ? "" : "settings-dim"}`}>
+                    <div className="settings-label">
+                      <PillToggle
+                        on={settings.libraryDirEnabled}
+                        onChange={(on) => setCustomDirEnabled(on)}
+                        label={t("settings.libraryCustom")}
+                      />
+                      <span>{t("settings.libraryCustom")}</span>
+                    </div>
                     <button className="settings-add-folder" onClick={() => void pickLibraryDir()}>
                       <FolderPlus size={13} strokeWidth={1.5} />
                       {t("settings.libraryAddFolder")}
                     </button>
                   </div>
                   {settings.libraryDir && (
-                    <div className="settings-folder">
+                    <div className={`settings-folder ${customDirActive ? "" : "settings-dim"}`}>
                       <button
                         className="path-link detail-mono settings-folder-path"
                         title={settings.libraryDir}

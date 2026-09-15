@@ -16,6 +16,7 @@ export function DropZone() {
   const [progress, setProgress] = useState<InstallProgress | null>(null);
   const installPaths = useFontStore((s) => s.installPaths);
   const libraryDir = useFontStore((s) => s.settings.libraryDir);
+  const libraryDirEnabled = useFontStore((s) => s.settings.libraryDirEnabled);
   const moveRef = useRef<HTMLDivElement>(null);
 
   // DOM drag events don't fire reliably during a native file drag, so the
@@ -65,8 +66,8 @@ export function DropZone() {
     };
   }, [installPaths]);
 
-  const target = libraryDir ?? defaultDir;
-  const moveTitle = libraryDir
+  const target = libraryDirEnabled && libraryDir ? libraryDir : defaultDir;
+  const moveTitle = libraryDirEnabled && libraryDir
     ? t("drop.moveTitle", { path: libraryDir })
     : t("drop.moveTitleDefault");
 

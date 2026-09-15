@@ -167,7 +167,7 @@ pub fn reconcile(state: &mut AppState) {
 #[cfg(target_os = "windows")]
 pub fn reconcile(state: &mut AppState) {
 
-    let managed = crate::scanner::effective_managed_dir(state.library_dir.as_deref());
+    let managed = crate::scanner::effective_managed_dir(state.active_library_dir());
     std::thread::spawn(move || {
         crate::registry::load_registered_outside(&managed);
     });

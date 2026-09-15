@@ -21,7 +21,7 @@ async fn scan_fonts(app: tauri::AppHandle) -> Result<Vec<FontFace>, String> {
         let state = store.0.lock().map_err(|e| e.to_string())?;
         (
             state.extra_dirs.clone(),
-            state.library_dir.clone(),
+            state.active_library_dir().map(|s| s.to_owned()),
             state.linked.clone(),
         )
     };
@@ -111,7 +111,7 @@ async fn install_fonts(
     let mode = installer::InstallMode::parse(&mode)?;
     let library_dir = {
         let state = store.0.lock().map_err(|e| e.to_string())?;
-        state.library_dir.clone()
+        state.active_library_dir().map(|s| s.to_owned())
     };
     let library = scanner::effective_managed_dir(library_dir.as_deref());
     let known: std::collections::HashSet<String> = existing.into_iter().collect();
@@ -422,6 +422,7 @@ struct Settings {
     watch_enabled: bool,
     auto_activate_imports: bool,
     library_dir: Option<String>,
+    library_dir_enabled: bool,
 }
 
 #[tauri::command]
@@ -432,6 +433,7 @@ fn get_settings(store: State<Store>) -> Result<Settings, String> {
         watch_enabled: state.watch_enabled,
         auto_activate_imports: state.auto_activate_imports,
         library_dir: state.library_dir.clone(),
+        library_dir_enabled: state.library_dir_enabled,
     })
 }
 
@@ -447,11 +449,17 @@ fn set_settings(
         state.watch_enabled = settings.watch_enabled;
         state.auto_activate_imports = settings.auto_activate_imports;
         state.library_dir = settings.library_dir.clone();
+        state.library_dir_enabled = settings.library_dir_enabled;
         store::save(&state)?;
     }
     allow_dir(
         &app,
-        &scanner::effective_managed_dir(settings.library_dir.as_deref()),
+        &scanner::effective_managed_dir(
+            settings
+                .library_dir_enabled
+                .then(|| settings.library_dir.as_deref())
+                .flatten(),
+        ),
     );
     allow_previews(&app, &settings.extra_dirs);
     apply_watch(&app, settings.watch_enabled, &settings.extra_dirs)
@@ -550,7 +558,7 @@ pub fn run() {
 
     let watch_enabled = state.watch_enabled;
     let extra_dirs = state.extra_dirs.clone();
-    let library_dir = state.library_dir.clone();
+    let library_dir = state.active_library_dir().map(|s| s.to_owned());
     let linked_dirs: Vec<String> = state.linked.iter().cloned().collect();
 
     tauri::Builder::default()

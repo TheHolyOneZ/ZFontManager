@@ -39,9 +39,20 @@ pub struct AppState {
 
     /// Font files linked in place: part of the library, never copied or moved.
     pub linked: HashSet<String>,
+
+    /// Auto-activate fonts for open Affinity documents (needs its MCP server).
+    pub affinity_enabled: bool,
+
+    /// Deactivate Affinity session fonts when Affinity quits.
+    #[serde(default = "default_true")]
+    pub affinity_deactivate_on_quit: bool,
 }
 
 pub struct Store(pub Mutex<AppState>);
+
+fn default_true() -> bool {
+    true
+}
 
 impl AppState {
     /// The custom library folder actually in effect, if one is enabled.

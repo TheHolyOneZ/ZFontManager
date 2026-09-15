@@ -72,6 +72,15 @@ export interface AppSettings {
   autoActivateImports: boolean;
   libraryDir: string | null;
   libraryDirEnabled: boolean;
+  affinityEnabled: boolean;
+  affinityDeactivateOnQuit: boolean;
+}
+
+export interface AffinityStatus {
+  reachable: boolean;
+  version: string | null;
+  docCount: number;
+  error: string | null;
 }
 
 export type InstallMode = "link" | "move";
@@ -80,6 +89,9 @@ export const ipc = {
   getSettings: () => invoke<AppSettings>("get_settings"),
   setSettings: (settings: AppSettings) => invoke<void>("set_settings", { settings }),
   defaultLibraryDir: () => invoke<string>("default_library_dir"),
+  affinityStatus: () => invoke<AffinityStatus>("affinity_status"),
+  affinitySessionActivate: (paths: string[]) =>
+    invoke<string[]>("affinity_session_activate", { paths }),
   scanFonts: () => invoke<FontFace[]>("scan_fonts"),
   setFontActive: (path: string, active: boolean) =>
     invoke<void>("set_font_active", { path, active }),

@@ -2730,6 +2730,20 @@
   filter: saturate(0.5);
   opacity: 0.45;
 }
+.affinity-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  flex-shrink: 0;
+}
+.affinity-dot-on {
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+}
+.affinity-dot-off {
+  background: var(--error);
+}
 .settings-add-folder {
   display: flex;
   align-items: center;

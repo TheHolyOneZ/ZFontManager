@@ -48,6 +48,12 @@ export function SettingsOverlay() {
   const scanProgress = useFontStore((s) => s.scanProgress);
   const trapRef = useFocusTrap<HTMLDivElement>(openState);
   const [defaultLibDir, setDefaultLibDir] = useState("");
+  const affinityStatus = useFontStore((s) => s.affinityStatus);
+  const refreshAffinityStatus = useFontStore((s) => s.refreshAffinityStatus);
+
+  useEffect(() => {
+    if (openState) void refreshAffinityStatus();
+  }, [openState, refreshAffinityStatus]);
 
   useEffect(() => {
     if (!openState || defaultLibDir) return;
@@ -82,6 +88,20 @@ export function SettingsOverlay() {
 
   // The custom folder is in effect only when enabled with a folder picked.
   const customDirActive = settings.libraryDirEnabled && settings.libraryDir != null;
+
+  const affinityDetail = !settings.affinityEnabled
+    ? t("settings.affinityDisabled")
+    : !affinityStatus
+      ? t("settings.affinityChecking")
+      : affinityStatus.reachable
+        ? `${t("settings.affinityOnline")}${affinityStatus.version ? ` · ${affinityStatus.version}` : ""} · ${t("settings.affinityDocs", { count: affinityStatus.docCount })}`
+        : (affinityStatus.error ?? t("settings.affinityOffline"));
+  const affinityDot =
+    !settings.affinityEnabled || !affinityStatus
+      ? ""
+      : affinityStatus.reachable
+        ? "affinity-dot-on"
+        : "affinity-dot-off";
 
   const exportData = async () => {
     const dest = await save({
@@ -295,6 +315,46 @@ export function SettingsOverlay() {
                   )}
                 </div>
               </div>
+            </section>
+
+            <section className="settings-section">
+              <div className="detail-heading">{t("settings.affinity")}</div>
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">{t("settings.affinityStatus")}</div>
+                  <div className="settings-sub">{affinityDetail}</div>
+                </div>
+                <span className={`affinity-dot ${affinityDot}`} aria-hidden />
+              </div>
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">{t("settings.affinityEnable")}</div>
+                  <div className="settings-sub">{t("settings.affinityEnableSub")}</div>
+                </div>
+                <PillToggle
+                  on={settings.affinityEnabled}
+                  onChange={(on) => {
+                    void updateSettings({ ...settings, affinityEnabled: on }).then(() =>
+                      refreshAffinityStatus(),
+                    );
+                  }}
+                  label={t("settings.affinityEnable")}
+                />
+              </div>
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">{t("settings.affinityDeactivate")}</div>
+                  <div className="settings-sub">{t("settings.affinityDeactivateSub")}</div>
+                </div>
+                <PillToggle
+                  on={settings.affinityDeactivateOnQuit}
+                  onChange={(on) =>
+                    void updateSettings({ ...settings, affinityDeactivateOnQuit: on })
+                  }
+                  label={t("settings.affinityDeactivate")}
+                />
+              </div>
+              <div className="settings-sub">{t("settings.affinityHelp")}</div>
             </section>
 
             <section className="settings-section">

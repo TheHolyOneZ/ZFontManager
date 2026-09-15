@@ -1,5 +1,6 @@
 mod activation;
 mod adobe;
+mod affinity;
 mod font_types;
 mod installer;
 mod parser;
@@ -176,6 +177,44 @@ fn uninstall_font(store: State<Store>, path: String, family: String) -> Result<T
 #[tauri::command]
 fn list_trash() -> Vec<TrashEntry> {
     installer::list_trash()
+}
+
+#[tauri::command]
+async fn affinity_status(store: State<'_, Store>) -> Result<affinity::AffinityStatus, String> {
+    let enabled = {
+        let state = store.0.lock().map_err(|e| e.to_string())?;
+        state.affinity_enabled
+    };
+    if !enabled {
+        return Ok(affinity::AffinityStatus {
+            reachable: false,
+            version: None,
+            doc_count: 0,
+            error: Some("disabled".to_string()),
+        });
+    }
+    Ok(affinity::status(affinity::DEFAULT_MCP_URL).await)
+}
+
+#[tauri::command]
+fn affinity_session_activate(
+    store: State<Store>,
+    paths: Vec<String>,
+) -> Result<Vec<String>, String> {
+    let mut state = store.0.lock().map_err(|e| e.to_string())?;
+    let mut first_err = None;
+    let mut activated = Vec::with_capacity(paths.len());
+    for path in paths {
+        match activation::sync(&mut state, &path, true) {
+            Ok(()) => activated.push(path),
+            Err(e) => {
+                first_err.get_or_insert(e);
+            }
+        }
+    }
+    store::save(&state)?;
+    affinity::note_activated(activated.clone());
+    first_err.map_or(Ok(activated), Err)
 }
 
 #[tauri::command]
@@ -372,6 +411,7 @@ fn revert_session_activations(app: &tauri::AppHandle) {
     for p in &paths {
         let _ = activation::sync(&mut guard, p, false);
     }
+    affinity::revert_session(&mut guard);
     let _ = store::save(&guard);
 }
 
@@ -423,6 +463,8 @@ struct Settings {
     auto_activate_imports: bool,
     library_dir: Option<String>,
     library_dir_enabled: bool,
+    affinity_enabled: bool,
+    affinity_deactivate_on_quit: bool,
 }
 
 #[tauri::command]
@@ -434,6 +476,8 @@ fn get_settings(store: State<Store>) -> Result<Settings, String> {
         auto_activate_imports: state.auto_activate_imports,
         library_dir: state.library_dir.clone(),
         library_dir_enabled: state.library_dir_enabled,
+        affinity_enabled: state.affinity_enabled,
+        affinity_deactivate_on_quit: state.affinity_deactivate_on_quit,
     })
 }
 
@@ -450,6 +494,8 @@ fn set_settings(
         state.auto_activate_imports = settings.auto_activate_imports;
         state.library_dir = settings.library_dir.clone();
         state.library_dir_enabled = settings.library_dir_enabled;
+        state.affinity_enabled = settings.affinity_enabled;
+        state.affinity_deactivate_on_quit = settings.affinity_deactivate_on_quit;
         store::save(&state)?;
     }
     allow_dir(
@@ -581,6 +627,12 @@ pub fn run() {
             if watch_enabled {
                 let _ = apply_watch(app.handle(), true, &extra_dirs);
             }
+            // Affinity watcher: session-activate doc fonts while it runs.
+            let affinity_app = app.handle().clone();
+            std::thread::spawn(move || loop {
+                affinity::tick(&affinity_app);
+                std::thread::sleep(std::time::Duration::from_secs(2));
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -591,6 +643,8 @@ pub fn run() {
             install_fonts,
             uninstall_font,
             list_trash,
+            affinity_status,
+            affinity_session_activate,
             restore_from_trash,
             delete_trash_entry,
             empty_trash,

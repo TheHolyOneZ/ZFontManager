@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import {
   ipc,
   type AdobeApp,
+  type AffinityStatus,
   type AppSettings,
   type Classification,
   type FontFace,
@@ -10,6 +11,7 @@ import {
   type ScanProgress,
   type TrashEntry,
 } from "../lib/ipc";
+import { matchAffinityFonts, type AffinityEvent } from "../lib/affinity";
 import { toast } from "../design/primitives/Toast";
 import { setSoundLevel, type SoundLevel } from "../lib/sound";
 import { applyTheme, type ThemePref } from "../lib/theme";
@@ -78,6 +80,7 @@ interface FontStore {
   helpOpen: boolean;
   paletteOpen: boolean;
   settings: AppSettings;
+  affinityStatus: AffinityStatus | null;
 
   adobeAvailable: boolean;
   motionPref: MotionPref;
@@ -138,6 +141,7 @@ interface FontStore {
   setHelpOpen: (open: boolean) => void;
   setPaletteOpen: (open: boolean) => void;
   updateSettings: (settings: AppSettings) => Promise<void>;
+  refreshAffinityStatus: () => Promise<void>;
   setMotionPref: (pref: MotionPref) => void;
   setSoundPref: (pref: SoundLevel) => void;
   setThemePref: (pref: ThemePref) => void;
@@ -207,7 +211,8 @@ export const useFontStore = create<FontStore>((set, get) => ({
   settingsOpen: false,
   helpOpen: false,
   paletteOpen: false,
-  settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false, libraryDir: null, libraryDirEnabled: false },
+  settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false, libraryDir: null, libraryDirEnabled: false, affinityEnabled: false, affinityDeactivateOnQuit: true },
+  affinityStatus: null,
   adobeAvailable: false,
   motionPref: "system",
   soundPref: "off",
@@ -302,6 +307,36 @@ export const useFontStore = create<FontStore>((set, get) => ({
             }
           });
       }, 1500);
+    });
+    await listen<AffinityEvent>("affinity:event", (e) => {
+      const evt = e.payload;
+      if (evt.kind === "needs") {
+        const paths = matchAffinityFonts(
+          get().fonts,
+          evt.docs.flatMap((d) => d.fonts),
+        );
+        if (paths.length === 0) return;
+        void (async () => {
+          try {
+            const activated = await ipc.affinitySessionActivate(paths);
+            if (activated.length === 0) return;
+            const titles = [...new Set(evt.docs.map((d) => d.title))].join(", ");
+            toast.success(
+              t("toast.affinityActivated", { count: activated.length, docs: titles }),
+              undefined,
+              "activate",
+            );
+            await get().rescan();
+          } catch (err) {
+            toast.error(t("toast.affinityError"), String(err));
+          }
+        })();
+      } else if (evt.kind === "deactivated") {
+        toast.success(t("toast.affinityDeactivated"), undefined, "activate");
+        void get().rescan();
+      } else if (evt.kind === "error") {
+        toast.error(t("toast.affinityError"), evt.message ?? "");
+      }
     });
     await get().rescan();
   },
@@ -857,6 +892,16 @@ export const useFontStore = create<FontStore>((set, get) => ({
             ? t("toast.noFontsInFolder")
             : t("toast.libraryUnchanged"),
     );
+  },
+
+  refreshAffinityStatus: async () => {
+    try {
+      set({ affinityStatus: await ipc.affinityStatus() });
+    } catch {
+      set({
+        affinityStatus: { reachable: false, version: null, docCount: 0, error: null },
+      });
+    }
   },
 
   setMotionPref: (motionPref) => {

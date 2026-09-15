@@ -1401,13 +1401,16 @@
   background: var(--e3);
   border: 1.5px dashed rgba(var(--ink-rgb), 0.14);
   transition: border-color var(--t-quick) ease, box-shadow var(--t-state) ease,
-    color var(--t-quick) ease, background var(--t-state) ease;
+    color var(--t-quick) ease, background var(--t-state) ease,
+    transform var(--t-state) ease, filter var(--t-state) ease,
+    opacity var(--t-state) ease;
 }
 .dropchoice-move {
   flex: 1;
 }
 .dropchoice-active {
   color: var(--accent-a);
+  transform: translateY(-4px);
   background:
     radial-gradient(120% 140% at 50% 0%, color-mix(in srgb, var(--accent-a) 10%, transparent), transparent 65%),
     var(--e3);
@@ -1418,6 +1421,10 @@
     0 0 48px var(--accent-glow-soft),
     inset 0 1px 0 var(--glass-top-highlight-strong),
     var(--shadow-ambient);
+}
+.dropchoice-dim {
+  filter: saturate(0.4);
+  opacity: 0.55;
 }
 .dropchoice-title {
   font-size: var(--fs-20);

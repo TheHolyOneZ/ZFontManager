@@ -66,7 +66,9 @@ export function DropZone() {
   }, [installPaths]);
 
   const target = libraryDir ?? defaultDir;
-  const targetName = target.split(/[/\\]/).filter(Boolean).pop() ?? target;
+  const moveTitle = libraryDir
+    ? t("drop.moveTitle", { path: libraryDir })
+    : t("drop.moveTitleDefault");
 
   return (
     <>
@@ -82,7 +84,7 @@ export function DropZone() {
             <div className="dropchoice-hint">{t("drop.sub")}</div>
             <div className="dropchoice-panels">
               <div
-                className={`dropchoice-panel ${side === "link" ? "dropchoice-active" : ""}`}
+                className={`dropchoice-panel ${side === "link" ? "dropchoice-active" : "dropchoice-dim"}`}
               >
                 <Link2 size={30} strokeWidth={1.75} />
                 <div className="dropchoice-title">{t("drop.linkTitle")}</div>
@@ -90,11 +92,11 @@ export function DropZone() {
               </div>
               <div
                 ref={moveRef}
-                className={`dropchoice-panel dropchoice-move ${side === "move" ? "dropchoice-active" : ""}`}
+                className={`dropchoice-panel dropchoice-move ${side === "move" ? "dropchoice-active" : "dropchoice-dim"}`}
                 title={target}
               >
                 <FolderInput size={30} strokeWidth={1.75} />
-                <div className="dropchoice-title">{t("drop.moveTitle", { name: targetName })}</div>
+                <div className="dropchoice-title">{moveTitle}</div>
                 <div className="dropchoice-sub dropchoice-warn">{t("drop.moveSub")}</div>
               </div>
             </div>

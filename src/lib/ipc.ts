@@ -48,6 +48,7 @@ export interface TrashEntry {
 export interface InstallResult {
   installed: FontFace[];
   errors: string[];
+  duplicates: string[];
 }
 
 export interface ScanProgress {
@@ -68,6 +69,7 @@ export type AdobeApp = "photoshop" | "illustrator";
 export interface AppSettings {
   extraDirs: string[];
   watchEnabled: boolean;
+  autoActivateImports: boolean;
 }
 
 export const ipc = {
@@ -80,7 +82,8 @@ export const ipc = {
     invoke<void>("set_fonts_active", { paths, active }),
   setFontsActiveSession: (paths: string[]) =>
     invoke<void>("set_fonts_active_session", { paths }),
-  installFonts: (paths: string[]) => invoke<InstallResult>("install_fonts", { paths }),
+  installFonts: (paths: string[], existing: string[]) =>
+    invoke<InstallResult>("install_fonts", { paths, existing }),
   uninstallFont: (path: string, family: string) =>
     invoke<TrashEntry>("uninstall_font", { path, family }),
   listTrash: () => invoke<TrashEntry[]>("list_trash"),

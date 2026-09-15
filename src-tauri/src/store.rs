@@ -20,6 +20,8 @@ pub struct AppState {
 
     pub watch_enabled: bool,
 
+    pub auto_activate_imports: bool,
+
     pub notes: HashMap<String, String>,
 
     pub prefs: serde_json::Value,

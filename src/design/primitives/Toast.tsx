@@ -1,10 +1,10 @@
 import { AnimatePresence, motion } from "motion/react";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Info, XCircle } from "lucide-react";
 import { create } from "zustand";
 import { springBouncy } from "../springs";
 import { playError, playKind } from "../../lib/sound";
 
-type Kind = "success" | "error";
+type Kind = "success" | "error" | "info";
 
 interface ToastAction {
   label: string;
@@ -67,6 +67,8 @@ export const toast = {
     useToastStore.getState().push("success", title, detail, sound, action),
   error: (title: string, detail?: string) =>
     useToastStore.getState().push("error", title, detail),
+  info: (title: string, detail?: string) =>
+    useToastStore.getState().push("info", title, detail),
 };
 
 export function Toaster() {
@@ -97,8 +99,10 @@ export function Toaster() {
           >
             {t.kind === "success" ? (
               <CheckCircle2 size={16} strokeWidth={2} className="toast-icon success" />
-            ) : (
+            ) : t.kind === "error" ? (
               <XCircle size={16} strokeWidth={2} className="toast-icon error" />
+            ) : (
+              <Info size={16} strokeWidth={2} className="toast-icon info" />
             )}
             <span>
               <span className="toast-title">{t.title}</span>

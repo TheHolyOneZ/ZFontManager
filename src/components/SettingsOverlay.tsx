@@ -166,6 +166,20 @@ export function SettingsOverlay() {
                 />
               </div>
 
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">{t("settings.autoActivate")}</div>
+                  <div className="settings-sub">{t("settings.autoActivateSub")}</div>
+                </div>
+                <PillToggle
+                  on={settings.autoActivateImports}
+                  onChange={(on) =>
+                    void updateSettings({ ...settings, autoActivateImports: on })
+                  }
+                  label={t("settings.autoActivate")}
+                />
+              </div>
+
               <div className="settings-row settings-col">
                 <div>
                   <div className="settings-label">{t("settings.watchedFolders")}</div>

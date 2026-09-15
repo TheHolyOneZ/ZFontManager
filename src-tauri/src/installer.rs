@@ -2,6 +2,7 @@ use crate::font_types::{FontFace, FontSource, TrashEntry};
 use crate::parser;
 use crate::scanner;
 use serde::Serialize;
+use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -22,6 +23,15 @@ pub struct InstallProgress {
 pub struct InstallResult {
     pub installed: Vec<FontFace>,
     pub errors: Vec<String>,
+    pub duplicates: Vec<String>,
+}
+
+/// Identity used for duplicate detection: the PostScript name when present,
+/// otherwise "Family Style". The frontend mirrors this exact formula.
+pub fn dup_key(face: &FontFace) -> String {
+    face.postscript_name
+        .clone()
+        .unwrap_or_else(|| format!("{} {}", face.family, face.style))
 }
 
 fn move_file(from: &Path, to: &Path) -> Result<(), String> {
@@ -81,10 +91,15 @@ fn expand_dropped(path: &Path, staging: &Path) -> Result<Vec<PathBuf>, String> {
     Err(format!("not a font file: {}", path.display()))
 }
 
-pub fn install(app: &tauri::AppHandle, dropped: Vec<String>) -> InstallResult {
+pub fn install(
+    app: &tauri::AppHandle,
+    dropped: Vec<String>,
+    existing: &HashSet<String>,
+) -> InstallResult {
     let managed = scanner::managed_font_dir();
     let staging = crate::store::app_data_dir().join("staging");
     let mut result = InstallResult::default();
+    let mut known: HashSet<String> = existing.clone();
 
     if let Err(e) = fs::create_dir_all(&managed) {
         result.errors.push(e.to_string());
@@ -101,6 +116,31 @@ pub fn install(app: &tauri::AppHandle, dropped: Vec<String>) -> InstallResult {
 
     let total = files.len();
     for (i, src) in files.into_iter().enumerate() {
+        // Skip fonts that are already in the library (or earlier in this batch).
+        // Unparseable files fall through to the regular path (old behavior).
+        let src_faces = parser::parse_font_file(&src, FontSource::Managed);
+        let src_keys: Vec<String> = src_faces.iter().map(dup_key).collect();
+        if !src_keys.is_empty() && src_keys.iter().all(|k| known.contains(k)) {
+            for k in &src_keys {
+                if !result.duplicates.contains(k) {
+                    result.duplicates.push(k.clone());
+                }
+            }
+            let _ = app.emit(
+                "install:progress",
+                InstallProgress {
+                    file: src
+                        .file_name()
+                        .map(|f| f.to_string_lossy().into_owned())
+                        .unwrap_or_default(),
+                    done: i + 1,
+                    total,
+                    ok: true,
+                    error: None,
+                },
+            );
+            continue;
+        }
         let file_name = src.file_name().map(|f| f.to_owned()).unwrap_or_default();
         let dest = unique_dest(&managed, &file_name);
         let copied = fs::copy(&src, &dest).map(|_| ()).map_err(|e| e.to_string());
@@ -120,9 +160,14 @@ pub fn install(app: &tauri::AppHandle, dropped: Vec<String>) -> InstallResult {
         );
         match copied {
             Ok(()) => {
-                let faces = parser::parse_font_file(&dest, FontSource::Managed);
-                #[cfg(target_os = "windows")]
-                register_user_font(&dest);
+                // New fonts start deactivated: parse only, do NOT register.
+                // (activation::sync(..., false) runs right after in install_fonts,
+                // and the toggle registers on demand.)
+                let mut faces = parser::parse_font_file(&dest, FontSource::Managed);
+                for face in &mut faces {
+                    face.active = false;
+                    known.insert(dup_key(face));
+                }
                 result.installed.extend(faces);
             }
             Err(e) => result.errors.push(e),
@@ -279,13 +324,4 @@ fn unregister_user_font(path: &str) {
         let _ = registry::delete_user_entry(&name);
     }
     refresh_system_font_cache();
-}
-
-#[cfg(target_os = "windows")]
-fn register_user_font(path: &Path) {
-    use crate::registry;
-    let path = path.to_string_lossy();
-    let name = registry::unique_user_name(&registry::value_name_for(&path), &path);
-    let _ = registry::set_user_entry(&name, &path);
-    registry::add_font_resource(&path);
 }

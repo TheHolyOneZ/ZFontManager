@@ -370,6 +370,27 @@ async fn tools_list(session: &mut Session) -> Result<Vec<serde_json::Value>, Str
         .ok_or_else(|| "tools/list returned no tools".to_string())
 }
 
+/// Invoke a named tool and return its result; tool-level failures come back
+/// as the tool's own error text.
+async fn call_tool(
+    session: &mut Session,
+    name: &str,
+    args: serde_json::Value,
+    timeout: Duration,
+) -> Result<serde_json::Value, String> {
+    let res = session
+        .request(
+            "tools/call",
+            serde_json::json!({ "name": name, "arguments": args }),
+            timeout,
+        )
+        .await?;
+    if res.get("isError").and_then(|v| v.as_bool()).unwrap_or(false) {
+        return Err(result_text(&res));
+    }
+    Ok(res)
+}
+
 /// The server refuses `execute_script` until the preamble doc topic has been
 /// read in the current session ("The preamble documentation topic has not yet
 /// been read"). Do that first; if the docs tool is missing, try the script
@@ -381,16 +402,14 @@ async fn read_preamble(session: &mut Session, tools: &[serde_json::Value]) -> Re
     if !has_docs_tool {
         return Ok(());
     }
-    let res = session
-        .request(
-            "read_sdk_documentation_topic",
-            serde_json::json!({"filename": "preamble"}),
-            CONNECT_TIMEOUT,
-        )
-        .await?;
-    if res.get("isError").and_then(|v| v.as_bool()).unwrap_or(false) {
-        return Err(format!("Affinity preamble read failed: {}", result_text(&res)));
-    }
+    call_tool(
+        session,
+        "read_sdk_documentation_topic",
+        serde_json::json!({"filename": "preamble"}),
+        CONNECT_TIMEOUT,
+    )
+    .await
+    .map_err(|e| format!("Affinity preamble read failed: {e}"))?;
     Ok(())
 }
 
@@ -400,16 +419,9 @@ async fn run_doc_fonts_script(session: &mut Session) -> Result<Vec<AffinityDoc>,
     let (tool_name, arg_name) = pick_script_tool(&tools)?;
     let mut args = serde_json::Map::new();
     args.insert(arg_name, serde_json::Value::String(DOC_FONTS_SCRIPT.to_string()));
-    let res = session
-        .request(
-            "tools/call",
-            serde_json::json!({ "name": tool_name, "arguments": args }),
-            SCRIPT_TIMEOUT,
-        )
-        .await?;
-    if res.get("isError").and_then(|v| v.as_bool()).unwrap_or(false) {
-        return Err(format!("Affinity script failed: {}", result_text(&res)));
-    }
+    let res = call_tool(session, &tool_name, serde_json::Value::Object(args), SCRIPT_TIMEOUT)
+        .await
+        .map_err(|e| format!("Affinity script failed: {e}"))?;
     let parsed = extract_json(&result_text(&res))?;
     let resp: DocFontsResponse =
         serde_json::from_value(parsed).map_err(|e| format!("unexpected script result: {e}"))?;

@@ -2552,20 +2552,21 @@
   flex-wrap: wrap;
   gap: 4px;
 }
-.conflict-badge-src,
-.conflict-badge-state {
+.conflict-badge-src {
   font-size: var(--fs-10);
   padding: 1px 7px;
   border-radius: 999px;
   border: 1px solid rgba(var(--ink-rgb), 0.12);
   color: var(--text-secondary);
 }
-.conflict-badge-state.is-active {
-  color: var(--success, #3fa66a);
-  border-color: color-mix(in srgb, var(--success, #3fa66a) 40%, transparent);
+.conflict-file-active {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
-.conflict-badge-state.is-off {
-  color: var(--text-tertiary);
+.conflict-file-active .activate-label {
+  font-size: var(--fs-12);
 }
 .conflict-file-path {
   font-size: var(--fs-10);

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { AlertTriangle, Copy, Download, ExternalLink, EyeOff, FolderOpen, GripVertical, Plus, RotateCcw, Scale, Star, Trash2, X } from "lucide-react";
+import { AlertTriangle, Copy, Download, ExternalLink, FolderOpen, GripVertical, Plus, RotateCcw, Scale, Star, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { spring, springSoft } from "../design/springs";
@@ -427,8 +427,7 @@ function ConflictFileCard({ path }: { path: string }) {
   const rep = faces[0] ?? null;
   const isSystem = faces.length === 0 || faces.some((f) => f.source === "system");
   const isActive = faces.some((f) => f.active);
-  const canRemove =
-    !isSystem && isActive && faces.some((f) => f.deactivatable);
+  const canToggle = !isSystem && faces.some((f) => f.deactivatable);
   const styles = [...new Set(faces.map((f) => f.style))].join(", ");
   const sourceLabel =
     rep?.source === "system"
@@ -458,35 +457,38 @@ function ConflictFileCard({ path }: { path: string }) {
             {styles ? ` — ${styles}` : ""}
           </span>
         )}
-        <span className="conflict-file-badges">
-          {sourceLabel && <span className="conflict-badge-src">{sourceLabel}</span>}
-          <span className={`conflict-badge-state ${isActive ? "is-active" : "is-off"}`}>
-            {t(isActive ? "detail.conflictActive" : "detail.conflictInactive")}
+        {sourceLabel && (
+          <span className="conflict-file-badges">
+            <span className="conflict-badge-src">{sourceLabel}</span>
           </span>
-        </span>
+        )}
       </div>
       <span className="conflict-file-path detail-mono">{path}</span>
       {isSystem ? (
         <span className="conflict-system-note">{t("detail.conflictSystemProtected")}</span>
       ) : (
-        <div className="conflict-file-actions">
-          <button
-            className="conflict-btn conflict-btn-remove"
-            disabled={!canRemove}
-            title={!isActive ? t("detail.conflictInactive") : undefined}
-            onClick={() => void setFontFileActive(path, false)}
-          >
-            <EyeOff size={12} strokeWidth={1.5} />
-            {t("detail.conflictRemove")}
-          </button>
-          <button
-            className="conflict-btn conflict-btn-trash"
-            onClick={() => void uninstallFontFile(path)}
-          >
-            <Trash2 size={12} strokeWidth={1.5} />
-            {t("detail.conflictTrash")}
-          </button>
-        </div>
+        <>
+          <div className={`conflict-file-active ${isActive ? "" : "card-inactive"}`}>
+            <div>
+              <div className="activate-label">{t(isActive ? "detail.active" : "detail.inactive")}</div>
+            </div>
+            <PillToggle
+              on={isActive}
+              disabled={!canToggle}
+              onChange={(on) => void setFontFileActive(path, on)}
+              label={t(isActive ? "card.deactivate" : "card.activate", { name: pathBasename(path) })}
+            />
+          </div>
+          <div className="conflict-file-actions">
+            <button
+              className="conflict-btn conflict-btn-trash"
+              onClick={() => void uninstallFontFile(path)}
+            >
+              <Trash2 size={12} strokeWidth={1.5} />
+              {t("detail.conflictTrash")}
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

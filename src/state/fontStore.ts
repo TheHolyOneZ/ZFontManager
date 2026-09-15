@@ -26,6 +26,11 @@ import {
 
 export const SIZES = [8, 14, 18, 24, 32, 48, 64, 96] as const;
 
+// init() subscribes to backend events; React StrictMode runs the mounting
+// effect twice in dev, so guard it — a second run would attach every
+// listener twice and each toast would appear twice.
+let initStarted = false;
+
 export type ViewMode = "grid" | "list" | "waterfall";
 export type MotionPref = "system" | "reduced";
 export type SortMode = "name" | "styles" | "size";
@@ -236,6 +241,8 @@ export const useFontStore = create<FontStore>((set, get) => ({
   duplicateReport: null,
 
   init: async () => {
+    if (initStarted) return;
+    initStarted = true;
     await listen<ScanProgress>("scan:progress", (e) => {
       set({ scanProgress: e.payload });
     });

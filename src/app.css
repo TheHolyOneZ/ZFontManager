@@ -109,7 +109,7 @@
 }
 
 .sidebar {
-  width: 220px;
+  width: 248px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;

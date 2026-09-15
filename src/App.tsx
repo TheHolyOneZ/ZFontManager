@@ -1,6 +1,6 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { MotionConfig, motion } from "motion/react";
-import { FolderOpen, SearchX, Star, Tag as TagIcon, Type } from "lucide-react";
+import { Clock, FolderOpen, Monitor, Power, PowerOff, SearchX, Star, Tag as TagIcon, Type } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { DetailPanel } from "./components/DetailPanel";
 import { Titlebar } from "./components/Titlebar";
@@ -63,6 +63,22 @@ function EmptyLibrary({ searching, nav }: { searching: boolean; nav: Nav }) {
     icon = <TagIcon size={26} strokeWidth={1.5} />;
     title = t("empty.tag.title");
     hint = t("empty.tag.body");
+  } else if (nav.kind === "activated") {
+    icon = <Power size={26} strokeWidth={1.5} />;
+    title = t("empty.activated.title");
+    hint = t("empty.activated.body");
+  } else if (nav.kind === "activatedSession") {
+    icon = <Clock size={26} strokeWidth={1.5} />;
+    title = t("empty.session.title");
+    hint = t("empty.session.body");
+  } else if (nav.kind === "deactivated") {
+    icon = <PowerOff size={26} strokeWidth={1.5} />;
+    title = t("empty.deactivated.title");
+    hint = t("empty.deactivated.body");
+  } else if (nav.kind === "system") {
+    icon = <Monitor size={26} strokeWidth={1.5} />;
+    title = t("empty.system.title");
+    hint = t("empty.system.body");
   }
   return (
     <motion.div
@@ -86,6 +102,7 @@ function MainContent() {
   const tags = useFontStore((s) => s.tags);
   const collections = useFontStore((s) => s.collections);
   const favorites = useFontStore((s) => s.favorites);
+  const sessionActivated = useFontStore((s) => s.sessionActivated);
   const notes = useFontStore((s) => s.notes);
   const search = useFontStore((s) => s.search);
   const classFilter = useFontStore((s) => s.classFilter);
@@ -96,10 +113,10 @@ function MainContent() {
   const families = useMemo(
     () =>
       selectVisibleFamilies({
-        fonts, tags, collections, favorites, notes, search,
+        fonts, tags, collections, favorites, sessionActivated, notes, search,
         classFilter, scriptFilter, variableOnly, nav, sort,
       }),
-    [fonts, tags, collections, favorites, notes, search, classFilter, scriptFilter, variableOnly, nav, sort],
+    [fonts, tags, collections, favorites, sessionActivated, notes, search, classFilter, scriptFilter, variableOnly, nav, sort],
   );
 
   useEffect(() => {

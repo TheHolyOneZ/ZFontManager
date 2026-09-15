@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { FolderOpen, Info, Keyboard, Library, Plus, Star, Tag, Trash2 } from "lucide-react";
+import { Clock, FolderOpen, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { openContextMenu } from "../design/primitives/ContextMenu";
 import { spring, springSoft, staggerDelay } from "../design/springs";
@@ -145,6 +145,18 @@ export function Sidebar() {
   }, [pendingCollectionFor]);
 
   const familyCount = familiesFor(fonts, tags).size;
+  const sessionActivated = useFontStore((s) => s.sessionActivated);
+  const allFamilies = [...familiesFor(fonts, tags).values()];
+  const activatedCount = allFamilies.filter(
+    (f) => f.active && !sessionActivated.includes(f.name),
+  ).length;
+  const sessionCount = allFamilies.filter((f) =>
+    sessionActivated.includes(f.name),
+  ).length;
+  const deactivatedCount = allFamilies.filter((f) => !f.active).length;
+  const systemCount = allFamilies.filter(
+    (f) => f.faces.length > 0 && f.faces.every((face) => face.source === "system"),
+  ).length;
   const tagCounts = allTags(tags);
   const collectionNames = Object.keys(collections).sort((a, b) => a.localeCompare(b));
 
@@ -178,6 +190,34 @@ export function Sidebar() {
           icon={<Star size={15} strokeWidth={1.5} />}
           label={t("side.favorites")}
           count={favorites.length}
+          index={i++}
+        />
+        <NavRow
+          nav={{ kind: "activated" }}
+          icon={<Power size={15} strokeWidth={1.5} />}
+          label={t("side.activated")}
+          count={activatedCount}
+          index={i++}
+        />
+        <NavRow
+          nav={{ kind: "activatedSession" }}
+          icon={<Clock size={15} strokeWidth={1.5} />}
+          label={t("side.activatedUntilClose")}
+          count={sessionCount}
+          index={i++}
+        />
+        <NavRow
+          nav={{ kind: "deactivated" }}
+          icon={<PowerOff size={15} strokeWidth={1.5} />}
+          label={t("side.deactivated")}
+          count={deactivatedCount}
+          index={i++}
+        />
+        <NavRow
+          nav={{ kind: "system" }}
+          icon={<Monitor size={15} strokeWidth={1.5} />}
+          label={t("side.system")}
+          count={systemCount}
           index={i++}
         />
       </div>

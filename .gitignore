@@ -1,0 +1,5 @@
+todo.txt
+AGENTS.md
+node_modules/
+dist/
+src-tauri/target/

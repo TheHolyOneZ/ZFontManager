@@ -32,7 +32,11 @@ export type Nav =
   | { kind: "about" }
   | { kind: "tag"; tag: string }
   | { kind: "collection"; name: string }
-  | { kind: "favorites" };
+  | { kind: "favorites" }
+  | { kind: "activated" }
+  | { kind: "activatedSession" }
+  | { kind: "deactivated" }
+  | { kind: "system" };
 
 export interface Family {
   name: string;
@@ -55,6 +59,7 @@ interface FontStore {
   tags: Record<string, string[]>;
   collections: Record<string, string[]>;
   favorites: string[];
+  sessionActivated: string[];
   notes: Record<string, string>;
   trash: TrashEntry[];
   panelWidth: number;
@@ -181,6 +186,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   tags: {},
   collections: {},
   favorites: [],
+  sessionActivated: [],
   notes: {},
   trash: [],
   panelWidth: 348,
@@ -298,6 +304,10 @@ export const useFontStore = create<FontStore>((set, get) => ({
         ipc.listTrash(),
       ]);
       set({ fonts, tags, collections, favorites, notes, trash, phase: "ready" });
+      // Drop session entries that no longer exist or are no longer active.
+      const alive = new Set(fonts.filter((f) => f.active).map((f) => f.family));
+      const kept = get().sessionActivated.filter((n) => alive.has(n));
+      if (kept.length !== get().sessionActivated.length) set({ sessionActivated: kept });
     } catch (e) {
       set({ phase: "error" });
       toast.error(t("toast.couldntScan"), String(e));
@@ -309,10 +319,12 @@ export const useFontStore = create<FontStore>((set, get) => ({
     const paths = [...new Set(faces.map((f) => f.path))];
     if (paths.length === 0) return;
 
+    const prevSession = get().sessionActivated;
     set({
       fonts: get().fonts.map((f) =>
         f.family === family && f.deactivatable ? { ...f, active } : f,
       ),
+      sessionActivated: prevSession.filter((n) => n !== family),
     });
     try {
       await ipc.setFontsActive(paths, active);
@@ -321,6 +333,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
         fonts: get().fonts.map((f) =>
           f.family === family && f.deactivatable ? { ...f, active: !active } : f,
         ),
+        sessionActivated: prevSession,
       });
       toast.error(t(active ? "toast.couldntActivate" : "toast.couldntDeactivate"), String(e));
     }
@@ -337,6 +350,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
     });
     try {
       await ipc.setFontsActiveSession(paths);
+      set({ sessionActivated: [...new Set([...get().sessionActivated, family])] });
       toast.success(
         t("toast.activeUntilClose", { family }),
         t("toast.activeUntilCloseSub"),
@@ -394,6 +408,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
         trash: await ipc.listTrash(),
         selectedFamily: get().selectedFamily === family ? null : get().selectedFamily,
         selection: get().selection.filter((f) => f !== family),
+        sessionActivated: get().sessionActivated.filter((f) => f !== family),
       });
 
       const { tags, favorites, collections } = get();
@@ -590,10 +605,12 @@ export const useFontStore = create<FontStore>((set, get) => ({
     ];
     if (paths.length === 0) return;
     const prevFonts = get().fonts;
+    const prevSession = get().sessionActivated;
     set({
       fonts: prevFonts.map((f) =>
         families.includes(f.family) && f.deactivatable ? { ...f, active } : f,
       ),
+      sessionActivated: prevSession.filter((n) => !families.includes(n)),
     });
     try {
       await ipc.setFontsActive(paths, active);
@@ -606,7 +623,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
         { label: t("toast.undo"), run: () => void get().setFamiliesActiveBulk(families, !active) },
       );
     } catch (e) {
-      set({ fonts: prevFonts });
+      set({ fonts: prevFonts, sessionActivated: prevSession });
       toast.error(t("toast.bulkUpdateFailed"), String(e));
     }
   },
@@ -661,6 +678,10 @@ export const useFontStore = create<FontStore>((set, get) => ({
 
   selectWith: (family, mode, order) => {
     const { selection, selectedFamily } = get();
+    if (mode === "single" && selectedFamily === family && selection.length <= 1) {
+      set({ selection: [], selectedFamily: null });
+      return;
+    }
     if (mode === "toggle") {
       const next = selection.includes(family)
         ? selection.filter((f) => f !== family)
@@ -941,6 +962,7 @@ export function selectVisibleFamilies(s: {
   tags: Record<string, string[]>;
   collections: Record<string, string[]>;
   favorites: string[];
+  sessionActivated: string[];
   notes: Record<string, string>;
   search: string;
   classFilter: Classification[];
@@ -971,6 +993,18 @@ export function selectVisibleFamilies(s: {
   }
   if (s.nav.kind === "favorites") {
     out = out.filter((f) => s.favorites.includes(f.name));
+  }
+  if (s.nav.kind === "activated") {
+    out = out.filter((f) => f.active && !s.sessionActivated.includes(f.name));
+  }
+  if (s.nav.kind === "activatedSession") {
+    out = out.filter((f) => s.sessionActivated.includes(f.name));
+  }
+  if (s.nav.kind === "deactivated") {
+    out = out.filter((f) => !f.active);
+  }
+  if (s.nav.kind === "system") {
+    out = out.filter((f) => f.faces.length > 0 && f.faces.every((face) => face.source === "system"));
   }
   if (q) {
     out = out.filter(

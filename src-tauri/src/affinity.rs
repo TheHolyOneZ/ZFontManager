@@ -370,8 +370,33 @@ async fn tools_list(session: &mut Session) -> Result<Vec<serde_json::Value>, Str
         .ok_or_else(|| "tools/list returned no tools".to_string())
 }
 
+/// The server refuses `execute_script` until the preamble doc topic has been
+/// read in the current session ("The preamble documentation topic has not yet
+/// been read"). Do that first; if the docs tool is missing, try the script
+/// anyway.
+async fn read_preamble(session: &mut Session, tools: &[serde_json::Value]) -> Result<(), String> {
+    let has_docs_tool = tools
+        .iter()
+        .any(|t| t.get("name").and_then(|n| n.as_str()) == Some("read_sdk_documentation_topic"));
+    if !has_docs_tool {
+        return Ok(());
+    }
+    let res = session
+        .request(
+            "read_sdk_documentation_topic",
+            serde_json::json!({"filename": "preamble"}),
+            CONNECT_TIMEOUT,
+        )
+        .await?;
+    if res.get("isError").and_then(|v| v.as_bool()).unwrap_or(false) {
+        return Err(format!("Affinity preamble read failed: {}", result_text(&res)));
+    }
+    Ok(())
+}
+
 async fn run_doc_fonts_script(session: &mut Session) -> Result<Vec<AffinityDoc>, String> {
     let tools = tools_list(session).await?;
+    read_preamble(session, &tools).await?;
     let (tool_name, arg_name) = pick_script_tool(&tools)?;
     let mut args = serde_json::Map::new();
     args.insert(arg_name, serde_json::Value::String(DOC_FONTS_SCRIPT.to_string()));

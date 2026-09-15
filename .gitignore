@@ -3,3 +3,7 @@ AGENTS.md
 node_modules/
 dist/
 src-tauri/target/
+screenshots.af
+screenshots.af~lock~
+# Local Windows helper to start the dev version (not part of the app)
+start-dev.bat

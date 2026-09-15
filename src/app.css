@@ -587,25 +587,6 @@
     border-color var(--t-quick) ease, box-shadow var(--t-state) ease;
 }
 
-.family-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 35%,
-    rgba(var(--ink-rgb), 0.045) 48%,
-    rgba(var(--ink-rgb), 0.06) 50%,
-    rgba(var(--ink-rgb), 0.045) 52%,
-    transparent 65%
-  );
-  transform: translateX(-110%);
-  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none;
-}
-.family-card:hover::before {
-  transform: translateX(110%);
-}
 .family-card:hover {
   border-color: rgba(var(--ink-rgb), 0.11);
   box-shadow:

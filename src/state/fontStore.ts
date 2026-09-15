@@ -3,7 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import {
   ipc,
   type AdobeApp,
-  type AffinityStatus,
+  type AffinityConnection,
   type AppSettings,
   type Classification,
   type FontFace,
@@ -80,7 +80,7 @@ interface FontStore {
   helpOpen: boolean;
   paletteOpen: boolean;
   settings: AppSettings;
-  affinityStatus: AffinityStatus | null;
+  affinityConnection: AffinityConnection | null;
 
   adobeAvailable: boolean;
   motionPref: MotionPref;
@@ -141,7 +141,7 @@ interface FontStore {
   setHelpOpen: (open: boolean) => void;
   setPaletteOpen: (open: boolean) => void;
   updateSettings: (settings: AppSettings) => Promise<void>;
-  refreshAffinityStatus: () => Promise<void>;
+  refreshAffinityConnection: () => Promise<void>;
   setMotionPref: (pref: MotionPref) => void;
   setSoundPref: (pref: SoundLevel) => void;
   setThemePref: (pref: ThemePref) => void;
@@ -212,7 +212,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   helpOpen: false,
   paletteOpen: false,
   settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false, libraryDir: null, libraryDirEnabled: false, affinityEnabled: false, affinityDeactivateOnQuit: true },
-  affinityStatus: null,
+  affinityConnection: null,
   adobeAvailable: false,
   motionPref: "system",
   soundPref: "off",
@@ -894,12 +894,12 @@ export const useFontStore = create<FontStore>((set, get) => ({
     );
   },
 
-  refreshAffinityStatus: async () => {
+  refreshAffinityConnection: async () => {
     try {
-      set({ affinityStatus: await ipc.affinityStatus() });
+      set({ affinityConnection: await ipc.affinityConnection() });
     } catch {
       set({
-        affinityStatus: { reachable: false, version: null, docCount: 0, error: null },
+        affinityConnection: { reachable: false, version: null, docCount: 0, error: null },
       });
     }
   },

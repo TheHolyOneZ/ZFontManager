@@ -180,20 +180,8 @@ fn list_trash() -> Vec<TrashEntry> {
 }
 
 #[tauri::command]
-async fn affinity_status(store: State<'_, Store>) -> Result<affinity::AffinityStatus, String> {
-    let enabled = {
-        let state = store.0.lock().map_err(|e| e.to_string())?;
-        state.affinity_enabled
-    };
-    if !enabled {
-        return Ok(affinity::AffinityStatus {
-            reachable: false,
-            version: None,
-            doc_count: 0,
-            error: Some("disabled".to_string()),
-        });
-    }
-    Ok(affinity::status(affinity::DEFAULT_MCP_URL).await)
+async fn affinity_connection() -> Result<affinity::AffinityConnection, String> {
+    Ok(affinity::connection(affinity::DEFAULT_MCP_URL).await)
 }
 
 #[tauri::command]
@@ -643,7 +631,7 @@ pub fn run() {
             install_fonts,
             uninstall_font,
             list_trash,
-            affinity_status,
+            affinity_connection,
             affinity_session_activate,
             restore_from_trash,
             delete_trash_entry,

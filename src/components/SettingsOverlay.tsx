@@ -48,12 +48,12 @@ export function SettingsOverlay() {
   const scanProgress = useFontStore((s) => s.scanProgress);
   const trapRef = useFocusTrap<HTMLDivElement>(openState);
   const [defaultLibDir, setDefaultLibDir] = useState("");
-  const affinityStatus = useFontStore((s) => s.affinityStatus);
-  const refreshAffinityStatus = useFontStore((s) => s.refreshAffinityStatus);
+  const affinityConnection = useFontStore((s) => s.affinityConnection);
+  const refreshAffinityConnection = useFontStore((s) => s.refreshAffinityConnection);
 
   useEffect(() => {
-    if (openState) void refreshAffinityStatus();
-  }, [openState, refreshAffinityStatus]);
+    if (openState) void refreshAffinityConnection();
+  }, [openState, refreshAffinityConnection]);
 
   useEffect(() => {
     if (!openState || defaultLibDir) return;
@@ -89,19 +89,18 @@ export function SettingsOverlay() {
   // The custom folder is in effect only when enabled with a folder picked.
   const customDirActive = settings.libraryDirEnabled && settings.libraryDir != null;
 
-  const affinityDetail = !settings.affinityEnabled
-    ? t("settings.affinityDisabled")
-    : !affinityStatus
-      ? t("settings.affinityChecking")
-      : affinityStatus.reachable
-        ? `${t("settings.affinityOnline")}${affinityStatus.version ? ` · ${affinityStatus.version}` : ""} · ${t("settings.affinityDocs", { count: affinityStatus.docCount })}`
-        : (affinityStatus.error ?? t("settings.affinityOffline"));
-  const affinityDot =
-    !settings.affinityEnabled || !affinityStatus
-      ? ""
-      : affinityStatus.reachable
-        ? "affinity-dot-on"
-        : "affinity-dot-off";
+  const affinityDetail = !affinityConnection
+    ? t("settings.affinityChecking")
+    : affinityConnection.reachable
+      ? `${t("settings.affinityOnline")}${affinityConnection.version ? ` · ${affinityConnection.version}` : ""} · ${t("settings.affinityDocs", { count: affinityConnection.docCount })}`
+      : (affinityConnection.error
+          ? `${t("settings.affinityOffline")} · ${affinityConnection.error}`
+          : t("settings.affinityOffline"));
+  const affinityDot = !affinityConnection
+    ? ""
+    : affinityConnection.reachable
+      ? "affinity-dot-on"
+      : "affinity-dot-off";
 
   const exportData = async () => {
     const dest = await save({
@@ -321,12 +320,12 @@ export function SettingsOverlay() {
               <div className="detail-heading">{t("settings.affinity")}</div>
               <div className="settings-row">
                 <div>
-                  <div className="settings-label">{t("settings.affinityStatus")}</div>
+                  <div className="settings-label">{t("settings.affinityConnection")}</div>
                   <div className="settings-sub">{affinityDetail}</div>
                 </div>
                 <span className={`affinity-dot ${affinityDot}`} aria-hidden />
               </div>
-              <div className="settings-row">
+              <div className="settings-row" data-relation="enable-below">
                 <div>
                   <div className="settings-label">{t("settings.affinityEnable")}</div>
                   <div className="settings-sub">{t("settings.affinityEnableSub")}</div>
@@ -335,7 +334,7 @@ export function SettingsOverlay() {
                   on={settings.affinityEnabled}
                   onChange={(on) => {
                     void updateSettings({ ...settings, affinityEnabled: on }).then(() =>
-                      refreshAffinityStatus(),
+                      refreshAffinityConnection(),
                     );
                   }}
                   label={t("settings.affinityEnable")}

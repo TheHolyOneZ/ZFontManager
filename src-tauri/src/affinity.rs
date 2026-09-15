@@ -21,7 +21,7 @@ use crate::store::{self, Store};
 pub const DEFAULT_MCP_URL: &str = "http://localhost:6767/sse";
 
 /// Protocol versions to offer, newest first (the server picks one it speaks).
-const PROTOCOL_VERSIONS: [&str; 2] = ["2025-06-18", "2024-11-05"];
+const PROTOCOL_VERSIONS: [&str; 3] = ["2025-11-25", "2025-06-18", "2024-11-05"];
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(8);
 const SCRIPT_TIMEOUT: Duration = Duration::from_secs(30);
 
@@ -65,7 +65,7 @@ struct DocFontsResponse {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AffinityStatus {
+pub struct AffinityConnection {
     pub reachable: bool,
     pub version: Option<String>,
     pub doc_count: usize,
@@ -391,15 +391,15 @@ pub async fn doc_fonts(url: &str) -> Result<(Option<String>, Vec<AffinityDoc>), 
     Ok((version, docs))
 }
 
-pub async fn status(url: &str) -> AffinityStatus {
+pub async fn connection(url: &str) -> AffinityConnection {
     match doc_fonts(url).await {
-        Ok((version, docs)) => AffinityStatus {
+        Ok((version, docs)) => AffinityConnection {
             reachable: true,
             version,
             doc_count: docs.len(),
             error: None,
         },
-        Err(e) => AffinityStatus {
+        Err(e) => AffinityConnection {
             reachable: false,
             version: None,
             doc_count: 0,

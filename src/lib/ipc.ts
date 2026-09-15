@@ -76,7 +76,7 @@ export interface AppSettings {
   affinityDeactivateOnQuit: boolean;
 }
 
-export interface AffinityStatus {
+export interface AffinityConnection {
   reachable: boolean;
   version: string | null;
   docCount: number;
@@ -89,7 +89,7 @@ export const ipc = {
   getSettings: () => invoke<AppSettings>("get_settings"),
   setSettings: (settings: AppSettings) => invoke<void>("set_settings", { settings }),
   defaultLibraryDir: () => invoke<string>("default_library_dir"),
-  affinityStatus: () => invoke<AffinityStatus>("affinity_status"),
+  affinityConnection: () => invoke<AffinityConnection>("affinity_connection"),
   affinitySessionActivate: (paths: string[]) =>
     invoke<string[]>("affinity_session_activate", { paths }),
   scanFonts: () => invoke<FontFace[]>("scan_fonts"),

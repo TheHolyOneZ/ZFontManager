@@ -441,7 +441,7 @@ function ConflictFileCard({ path }: { path: string }) {
   return (
     <div className="conflict-file">
       <button
-        className="conflict-path detail-mono"
+        className="path-link detail-mono"
         onClick={() =>
           revealItemInDir(path).catch(() => toast.error(t("toast.couldntOpenFileManager")))
         }
@@ -782,7 +782,18 @@ export function DetailPanel() {
                   </>
                 )}
                 <dt>{t("detail.location")}</dt>
-                <dd className="detail-mono detail-path">{lead.path}</dd>
+                <dd className="detail-path">
+                  <button
+                    className="path-link detail-mono"
+                    onClick={() =>
+                      revealItemInDir(lead.path).catch(() => toast.error(t("toast.couldntOpenFileManager")))
+                    }
+                    title={lead.path}
+                  >
+                    <FolderOpen size={11} strokeWidth={1.5} />
+                    <span>{lead.path}</span>
+                  </button>
+                </dd>
                 {family.isVariable && lead.axes.length > 0 && (
                   <>
                     <dt>{t("detail.axes")}</dt>

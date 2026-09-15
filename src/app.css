@@ -2505,7 +2505,7 @@
   color: var(--text-tertiary);
   font-size: var(--fs-10);
 }
-.conflict-path {
+.path-link {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2517,11 +2517,11 @@
   overflow-wrap: anywhere;
   transition: background var(--t-quick) ease, color var(--t-quick) ease;
 }
-.conflict-path:hover {
+.path-link:hover {
   background: var(--e2);
   color: var(--text-primary);
 }
-.conflict-path svg {
+.path-link svg {
   flex-shrink: 0;
 }
 .conflict-group {

@@ -111,6 +111,8 @@ interface FontStore {
   rescan: () => Promise<void>;
   setFamilyActive: (family: string, active: boolean) => Promise<void>;
   activateFamilySession: (family: string) => Promise<void>;
+  setFontFileActive: (path: string, active: boolean) => Promise<void>;
+  uninstallFontFile: (path: string) => Promise<void>;
   installPaths: (paths: string[]) => Promise<void>;
   uninstallFamily: (family: string) => Promise<void>;
   restoreTrash: (entryId: string) => Promise<void>;
@@ -378,6 +380,85 @@ export const useFontStore = create<FontStore>((set, get) => ({
         ),
       });
       toast.error(t("toast.couldntActivate"), String(e));
+    }
+  },
+
+  setFontFileActive: async (path, active) => {
+    const faces = get().fonts.filter((f) => f.path === path);
+    if (faces.length === 0) return;
+    // System files are protected: never deactivate or remove them from here.
+    if (faces.every((f) => f.source === "system")) {
+      toast.error(t("toast.cantUninstallSystem"), t("toast.cantUninstallSystemSub"));
+      return;
+    }
+    const targets = faces.filter((f) => f.deactivatable);
+    if (targets.length === 0) return;
+    const prevFonts = get().fonts;
+    set({
+      fonts: prevFonts.map((f) =>
+        f.path === path && f.deactivatable ? { ...f, active } : f,
+      ),
+    });
+    try {
+      await ipc.setFontsActive([path], active);
+    } catch (e) {
+      set({ fonts: prevFonts });
+      toast.error(t(active ? "toast.couldntActivate" : "toast.couldntDeactivate"), String(e));
+    }
+  },
+
+  uninstallFontFile: async (path) => {
+    const faces = get().fonts.filter((f) => f.path === path);
+    if (faces.length === 0) return;
+    // System files are protected: they cannot be moved to trash.
+    if (faces.some((f) => f.source === "system")) {
+      toast.error(t("toast.cantUninstallSystem"), t("toast.cantUninstallSystemSub"));
+      return;
+    }
+    const family = faces[0].family;
+    try {
+      const entry = await ipc.uninstallFont(path, family);
+      const remaining = get().fonts.filter((f) => f.path !== path);
+      const familyAlive = remaining.some((f) => f.family === family);
+      set({
+        fonts: remaining,
+        trash: await ipc.listTrash(),
+        selectedFamily: !familyAlive && get().selectedFamily === family ? null : get().selectedFamily,
+        selection: !familyAlive ? get().selection.filter((f) => f !== family) : get().selection,
+        lastImported: !familyAlive
+          ? get().lastImported.filter((f) => f !== family)
+          : get().lastImported,
+      });
+
+      if (!familyAlive) {
+        const { tags, favorites, collections } = get();
+        if (tags[family]) void get().setFamilyTags(family, []);
+        if (favorites.includes(family)) void get().toggleFavorite(family);
+        for (const [name, members] of Object.entries(collections)) {
+          if (members.includes(family)) {
+            const next = members.filter((m) => m !== family);
+            set({ collections: { ...get().collections, [name]: next } });
+            void ipc.setCollection(name, next);
+          }
+        }
+      }
+      toast.success(t("toast.movedToTrash", { family }), t("toast.movedToTrashSub"), "trash", {
+        label: t("toast.undo"),
+        run: () => {
+          void (async () => {
+            try {
+              await ipc.restoreFromTrash(entry.id);
+              set({ trash: await ipc.listTrash() });
+              await get().rescan();
+              toast.success(t("toast.restoredFamily", { family }), undefined, "restore");
+            } catch (e) {
+              toast.error(t("toast.couldntRestore"), String(e));
+            }
+          })();
+        },
+      });
+    } catch (e) {
+      toast.error(t("toast.couldntMoveToTrash"), String(e));
     }
   },
 

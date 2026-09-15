@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { AlertTriangle, Copy, Download, ExternalLink, FolderOpen, GripVertical, Plus, RotateCcw, Scale, Star, Trash2, X } from "lucide-react";
+import { AlertTriangle, Copy, Download, ExternalLink, EyeOff, FolderOpen, GripVertical, Plus, RotateCcw, Scale, Star, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { spring, springSoft } from "../design/springs";
@@ -418,6 +418,80 @@ function TagEditor({ family, tags }: { family: string; tags: string[] }) {
   );
 }
 
+function ConflictFileCard({ path }: { path: string }) {
+  const t = useT();
+  const fonts = useFontStore((s) => s.fonts);
+  const setFontFileActive = useFontStore((s) => s.setFontFileActive);
+  const uninstallFontFile = useFontStore((s) => s.uninstallFontFile);
+  const faces = fonts.filter((f) => f.path === path);
+  const rep = faces[0] ?? null;
+  const isSystem = faces.length === 0 || faces.some((f) => f.source === "system");
+  const isActive = faces.some((f) => f.active);
+  const canRemove =
+    !isSystem && isActive && faces.some((f) => f.deactivatable);
+  const styles = [...new Set(faces.map((f) => f.style))].join(", ");
+  const sourceLabel =
+    rep?.source === "system"
+      ? t("detail.systemFont")
+      : rep?.source === "managed"
+        ? "Managed"
+        : rep?.source === "user"
+          ? "User"
+          : null;
+
+  return (
+    <div className="conflict-file">
+      <button
+        className="conflict-path detail-mono"
+        onClick={() =>
+          revealItemInDir(path).catch(() => toast.error(t("toast.couldntOpenFileManager")))
+        }
+        title={path}
+      >
+        <FolderOpen size={11} strokeWidth={1.5} />
+        <span className="conflict-file-name">{pathBasename(path)}</span>
+      </button>
+      <div className="conflict-file-meta">
+        {rep && (
+          <span className="conflict-file-family">
+            {rep.family}
+            {styles ? ` — ${styles}` : ""}
+          </span>
+        )}
+        <span className="conflict-file-badges">
+          {sourceLabel && <span className="conflict-badge-src">{sourceLabel}</span>}
+          <span className={`conflict-badge-state ${isActive ? "is-active" : "is-off"}`}>
+            {t(isActive ? "detail.conflictActive" : "detail.conflictInactive")}
+          </span>
+        </span>
+      </div>
+      <span className="conflict-file-path detail-mono">{path}</span>
+      {isSystem ? (
+        <span className="conflict-system-note">{t("detail.conflictSystemProtected")}</span>
+      ) : (
+        <div className="conflict-file-actions">
+          <button
+            className="conflict-btn conflict-btn-remove"
+            disabled={!canRemove}
+            title={!isActive ? t("detail.conflictInactive") : undefined}
+            onClick={() => void setFontFileActive(path, false)}
+          >
+            <EyeOff size={12} strokeWidth={1.5} />
+            {t("detail.conflictRemove")}
+          </button>
+          <button
+            className="conflict-btn conflict-btn-trash"
+            onClick={() => void uninstallFontFile(path)}
+          >
+            <Trash2 size={12} strokeWidth={1.5} />
+            {t("detail.conflictTrash")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function DetailPanel() {
   const t = useT();
   const selectedFamily = useFontStore((s) => s.selectedFamily);
@@ -765,16 +839,7 @@ export function DetailPanel() {
                   <div key={c.key} className="conflict-group">
                     <span className="conflict-key detail-mono">{c.key}</span>
                     {c.paths.map((p) => (
-                      <button
-                        key={p}
-                        className="conflict-path detail-mono"
-                        onClick={() =>
-                          revealItemInDir(p).catch(() => toast.error(t("toast.couldntOpenFileManager")))
-                        }
-                      >
-                        <FolderOpen size={11} strokeWidth={1.5} />
-                        {p}
-                      </button>
+                      <ConflictFileCard key={p} path={p} />
                     ))}
                   </div>
                 ))}

@@ -2521,6 +2521,98 @@
 .conflict-path svg {
   flex-shrink: 0;
 }
+.conflict-group {
+  gap: 8px;
+}
+.conflict-file {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--warning) 14%, transparent);
+  background: color-mix(in srgb, var(--warning) 4%, transparent);
+}
+.conflict-file-name {
+  overflow-wrap: anywhere;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.conflict-file-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.conflict-file-family {
+  font-size: var(--fs-11);
+  color: var(--text-primary);
+}
+.conflict-file-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.conflict-badge-src,
+.conflict-badge-state {
+  font-size: var(--fs-10);
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--ink-rgb), 0.12);
+  color: var(--text-secondary);
+}
+.conflict-badge-state.is-active {
+  color: var(--success, #3fa66a);
+  border-color: color-mix(in srgb, var(--success, #3fa66a) 40%, transparent);
+}
+.conflict-badge-state.is-off {
+  color: var(--text-tertiary);
+}
+.conflict-file-path {
+  font-size: var(--fs-10);
+  color: var(--text-tertiary);
+  overflow-wrap: anywhere;
+}
+.conflict-file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+.conflict-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--fs-11);
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: var(--e2);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform var(--t-quick) ease, background var(--t-quick) ease, opacity var(--t-quick) ease;
+}
+.conflict-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.conflict-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.conflict-btn-trash {
+  background: color-mix(in srgb, var(--danger, #d43d3d) 14%, transparent);
+  border-color: color-mix(in srgb, var(--danger, #d43d3d) 55%, transparent);
+  color: var(--danger, #d43d3d);
+}
+.conflict-btn-trash:hover:not(:disabled) {
+  background: var(--danger, #d43d3d);
+  color: #fff;
+}
+.conflict-system-note {
+  font-size: var(--fs-11);
+  color: var(--text-tertiary);
+  font-style: italic;
+}
 
 .titlebar-sep {
   width: 1px;

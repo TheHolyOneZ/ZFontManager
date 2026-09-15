@@ -14,11 +14,12 @@ import {
   Volume2,
   X,
 } from "lucide-react";
-import { openUrl } from "@tauri-apps/plugin-opener";
-import { useEffect } from "react";
+import { openUrl, revealItemInDir } from "@tauri-apps/plugin-opener";
+import { useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { springSoft } from "../design/springs";
+import { ipc } from "../lib/ipc";
 import { useFontStore } from "../state/fontStore";
 import { useFocusTrap } from "../lib/useFocusTrap";
 import { useT } from "../lib/i18n";
@@ -46,6 +47,12 @@ export function SettingsOverlay() {
   const scanning = useFontStore((s) => s.phase === "scanning");
   const scanProgress = useFontStore((s) => s.scanProgress);
   const trapRef = useFocusTrap<HTMLDivElement>(openState);
+  const [defaultLibDir, setDefaultLibDir] = useState("");
+
+  useEffect(() => {
+    if (!openState || defaultLibDir) return;
+    void ipc.defaultLibraryDir().then(setDefaultLibDir).catch(() => {});
+  }, [openState, defaultLibDir]);
 
   useEffect(() => {
     if (!openState) return;
@@ -58,6 +65,12 @@ export function SettingsOverlay() {
     const dir = await open({ directory: true, title: t("settings.addFolderTitle") });
     if (!dir || settings.extraDirs.includes(dir)) return;
     void updateSettings({ ...settings, extraDirs: [...settings.extraDirs, dir] });
+  };
+
+  const pickLibraryDir = async () => {
+    const dir = await open({ directory: true, title: t("settings.libraryFolderTitle") });
+    if (!dir || dir === settings.libraryDir) return;
+    void updateSettings({ ...settings, libraryDir: dir });
   };
 
   const exportData = async () => {
@@ -219,6 +232,54 @@ export function SettingsOverlay() {
                         : t("settings.scanningFolders")}
                     </div>
                   )}
+                </div>
+              </div>
+            </section>
+
+            <section className="settings-section">
+              <div className="detail-heading">{t("settings.libraryFolder")}</div>
+              <div className="settings-row settings-col">
+                <div>
+                  <div className="settings-label">{t("settings.libraryFolder")}</div>
+                  <div className="settings-sub">{t("settings.libraryFolderSub")}</div>
+                </div>
+                <div className="settings-folders">
+                  <div className="settings-folder">
+                    <span className="settings-folder-tag">{t("settings.libraryDefault")}</span>
+                    <button
+                      className="path-link detail-mono settings-folder-path"
+                      title={defaultLibDir}
+                      onClick={() => void revealItemInDir(defaultLibDir).catch(() => {})}
+                    >
+                      <FolderOpen size={13} strokeWidth={1.5} />
+                      <span className="settings-folder-path">{defaultLibDir}</span>
+                    </button>
+                  </div>
+                  {settings.libraryDir && (
+                    <div className="settings-folder">
+                      <button
+                        className="path-link detail-mono settings-folder-path"
+                        title={settings.libraryDir}
+                        onClick={() =>
+                          void revealItemInDir(settings.libraryDir ?? "").catch(() => {})
+                        }
+                      >
+                        <FolderOpen size={13} strokeWidth={1.5} />
+                        <span className="settings-folder-path">{settings.libraryDir}</span>
+                      </button>
+                      <button
+                        aria-label={t("settings.libraryReset")}
+                        title={t("settings.libraryReset")}
+                        onClick={() => void updateSettings({ ...settings, libraryDir: null })}
+                      >
+                        <X size={12} strokeWidth={1.5} />
+                      </button>
+                    </div>
+                  )}
+                  <button className="settings-add-folder" onClick={() => void pickLibraryDir()}>
+                    <FolderPlus size={13} strokeWidth={1.5} />
+                    {t("settings.libraryChange")}
+                  </button>
                 </div>
               </div>
             </section>

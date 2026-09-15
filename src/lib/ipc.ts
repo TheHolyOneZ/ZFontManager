@@ -70,11 +70,15 @@ export interface AppSettings {
   extraDirs: string[];
   watchEnabled: boolean;
   autoActivateImports: boolean;
+  libraryDir: string | null;
 }
+
+export type InstallMode = "link" | "move";
 
 export const ipc = {
   getSettings: () => invoke<AppSettings>("get_settings"),
   setSettings: (settings: AppSettings) => invoke<void>("set_settings", { settings }),
+  defaultLibraryDir: () => invoke<string>("default_library_dir"),
   scanFonts: () => invoke<FontFace[]>("scan_fonts"),
   setFontActive: (path: string, active: boolean) =>
     invoke<void>("set_font_active", { path, active }),
@@ -82,8 +86,8 @@ export const ipc = {
     invoke<void>("set_fonts_active", { paths, active }),
   setFontsActiveSession: (paths: string[]) =>
     invoke<void>("set_fonts_active_session", { paths }),
-  installFonts: (paths: string[], existing: string[]) =>
-    invoke<InstallResult>("install_fonts", { paths, existing }),
+  installFonts: (paths: string[], existing: string[], mode: InstallMode) =>
+    invoke<InstallResult>("install_fonts", { paths, existing, mode }),
   uninstallFont: (path: string, family: string) =>
     invoke<TrashEntry>("uninstall_font", { path, family }),
   listTrash: () => invoke<TrashEntry[]>("list_trash"),

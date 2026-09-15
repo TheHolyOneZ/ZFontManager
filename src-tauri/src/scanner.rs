@@ -1,7 +1,7 @@
 use crate::font_types::{FontFace, FontSource};
 use crate::parser;
 use serde::Serialize;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::Emitter;
 use walkdir::WalkDir;
 
@@ -12,6 +12,7 @@ pub struct ScanProgress {
     pub total: usize,
 }
 
+/// Default folder moved imports are stored in (per-user fonts on Windows).
 pub fn managed_font_dir() -> PathBuf {
     #[cfg(target_os = "linux")]
     {
@@ -31,6 +32,14 @@ pub fn managed_font_dir() -> PathBuf {
         dirs::data_local_dir()
             .unwrap_or_else(|| PathBuf::from("."))
             .join("Microsoft\\Windows\\Fonts")
+    }
+}
+
+/// Effective library folder: the settings override when set, else the default.
+pub fn effective_managed_dir(library_dir: Option<&str>) -> PathBuf {
+    match library_dir.map(str::trim).filter(|s| !s.is_empty()) {
+        Some(dir) => PathBuf::from(dir),
+        None => managed_font_dir(),
     }
 }
 
@@ -63,8 +72,8 @@ fn font_dirs() -> Vec<(PathBuf, FontSource)> {
     dirs_list
 }
 
-fn classify(path: &std::path::Path, base_source: FontSource) -> FontSource {
-    if base_source == FontSource::User && path.starts_with(managed_font_dir()) {
+fn classify(path: &std::path::Path, base_source: FontSource, managed: &Path) -> FontSource {
+    if base_source == FontSource::User && path.starts_with(managed) {
         FontSource::Managed
     } else {
         base_source
@@ -79,7 +88,7 @@ pub fn all_dirs(extra: &[String]) -> Vec<(PathBuf, FontSource)> {
     dirs_list
 }
 
-pub fn scan_all(app: &tauri::AppHandle, extra: &[String]) -> Vec<FontFace> {
+pub fn scan_all(app: &tauri::AppHandle, extra: &[String], managed: &Path) -> Vec<FontFace> {
     let files: Vec<(PathBuf, FontSource)> = all_dirs(extra)
         .into_iter()
         .flat_map(|(dir, source)| {
@@ -97,7 +106,7 @@ pub fn scan_all(app: &tauri::AppHandle, extra: &[String]) -> Vec<FontFace> {
     let total = files.len();
     let mut faces = Vec::with_capacity(total);
     for (done, (path, base_source)) in files.into_iter().enumerate() {
-        let source = classify(&path, base_source);
+        let source = classify(&path, base_source, managed);
         faces.extend(parser::parse_font_file(&path, source));
         if done % 25 == 0 || done + 1 == total {
             let _ = app.emit("scan:progress", ScanProgress { done: done + 1, total });

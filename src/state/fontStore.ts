@@ -6,6 +6,7 @@ import {
   type AppSettings,
   type Classification,
   type FontFace,
+  type InstallMode,
   type ScanProgress,
   type TrashEntry,
 } from "../lib/ipc";
@@ -113,7 +114,7 @@ interface FontStore {
   activateFamilySession: (family: string) => Promise<void>;
   setFontFileActive: (path: string, active: boolean) => Promise<void>;
   uninstallFontFile: (path: string) => Promise<void>;
-  installPaths: (paths: string[]) => Promise<void>;
+  installPaths: (paths: string[], mode: InstallMode) => Promise<void>;
   uninstallFamily: (family: string) => Promise<void>;
   restoreTrash: (entryId: string) => Promise<void>;
   deleteTrashEntry: (entryId: string) => Promise<void>;
@@ -206,7 +207,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   settingsOpen: false,
   helpOpen: false,
   paletteOpen: false,
-  settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false },
+  settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false, libraryDir: null },
   adobeAvailable: false,
   motionPref: "system",
   soundPref: "off",
@@ -462,12 +463,12 @@ export const useFontStore = create<FontStore>((set, get) => ({
     }
   },
 
-  installPaths: async (paths) => {
+  installPaths: async (paths, mode) => {
     try {
       const dupKeyOf = (f: { postscriptName: string | null; family: string; style: string }) =>
         f.postscriptName ?? `${f.family} ${f.style}`;
       const existing = get().fonts.map(dupKeyOf);
-      const result = await ipc.installFonts(paths, existing);
+      const result = await ipc.installFonts(paths, existing, mode);
       if (result.installed.length > 0) {
         const families = [...new Set(result.installed.map((f) => f.family))];
         set({ fonts: [...get().fonts, ...result.installed], lastImported: families });
@@ -837,7 +838,8 @@ export const useFontStore = create<FontStore>((set, get) => ({
 
     const dirsChanged =
       prev.extraDirs.length !== settings.extraDirs.length ||
-      prev.extraDirs.some((d, i) => d !== settings.extraDirs[i]);
+      prev.extraDirs.some((d, i) => d !== settings.extraDirs[i]) ||
+      prev.libraryDir !== settings.libraryDir;
     if (!dirsChanged || get().phase === "scanning") return;
     const before = get().fonts.length;
     await get().rescan();

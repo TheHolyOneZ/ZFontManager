@@ -29,6 +29,12 @@ pub struct AppState {
     pub parked: HashMap<String, String>,
 
     pub registry_backup: HashMap<String, String>,
+
+    /// Override for the folder moved imports are stored in (None = default).
+    pub library_dir: Option<String>,
+
+    /// Font files linked in place: part of the library, never copied or moved.
+    pub linked: HashSet<String>,
 }
 
 pub struct Store(pub Mutex<AppState>);

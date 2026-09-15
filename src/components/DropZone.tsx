@@ -1,30 +1,45 @@
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { listen } from "@tauri-apps/api/event";
 import { AnimatePresence, motion } from "motion/react";
-import { Download } from "lucide-react";
-import { useEffect, useState } from "react";
-import { springSoft, springSnappy } from "../design/springs";
-import type { InstallProgress } from "../lib/ipc";
+import { FolderInput, Link2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { springSnappy } from "../design/springs";
+import { ipc, type InstallMode, type InstallProgress } from "../lib/ipc";
 import { useFontStore } from "../state/fontStore";
 import { useT } from "../lib/i18n";
 
 export function DropZone() {
   const t = useT();
   const [dragging, setDragging] = useState(false);
+  const [side, setSide] = useState<InstallMode>("link");
+  const [defaultDir, setDefaultDir] = useState("");
   const [progress, setProgress] = useState<InstallProgress | null>(null);
   const installPaths = useFontStore((s) => s.installPaths);
+  const libraryDir = useFontStore((s) => s.settings.libraryDir);
+  const sideRef = useRef<InstallMode>("link");
+  const setSideBoth = (mode: InstallMode) => {
+    sideRef.current = mode;
+    setSide(mode);
+  };
+
+  useEffect(() => {
+    void ipc.defaultLibraryDir().then(setDefaultDir).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const unlistenDrop = getCurrentWebview().onDragDropEvent((event) => {
       if (event.payload.type === "over") {
         setDragging(true);
       } else if (event.payload.type === "drop") {
+        const mode = sideRef.current;
         setDragging(false);
-        void installPaths(event.payload.paths).finally(() => {
+        setSideBoth("link");
+        void installPaths(event.payload.paths, mode).finally(() => {
           setTimeout(() => setProgress(null), 900);
         });
       } else {
         setDragging(false);
+        setSideBoth("link");
       }
     });
     const unlistenProgress = listen<InstallProgress>("install:progress", (e) => {
@@ -36,34 +51,40 @@ export function DropZone() {
     };
   }, [installPaths]);
 
+  const target = libraryDir ?? defaultDir;
+
   return (
     <>
       <AnimatePresence>
         {dragging && (
           <motion.div
-            className="dropzone"
+            className="dropchoice"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
+            transition={{ duration: 0.15 }}
           >
-            <motion.div
-              className="dropzone-card"
-              initial={{ scale: 0.94, y: 12 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.96, y: 8 }}
-              transition={springSoft}
-            >
-              <motion.span
-                className="dropzone-icon"
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            <div className="dropchoice-hint">{t("drop.sub")}</div>
+            <div className="dropchoice-panels">
+              <div
+                className={`dropchoice-panel ${side === "link" ? "dropchoice-active" : ""}`}
+                onDragOver={() => setSideBoth("link")}
               >
-                <Download size={28} strokeWidth={2} />
-              </motion.span>
-              <div className="dropzone-title">{t("drop.title")}</div>
-              <div className="dropzone-sub">{t("drop.sub")}</div>
-            </motion.div>
+                <Link2 size={30} strokeWidth={1.75} />
+                <div className="dropchoice-title">{t("drop.linkTitle")}</div>
+                <div className="dropchoice-sub">{t("drop.linkSub")}</div>
+              </div>
+              <div
+                className={`dropchoice-panel dropchoice-move ${side === "move" ? "dropchoice-active" : ""}`}
+                onDragOver={() => setSideBoth("move")}
+              >
+                <FolderInput size={30} strokeWidth={1.75} />
+                <div className="dropchoice-title">{t("drop.moveTitle")}</div>
+                <div className="dropchoice-sub detail-mono" title={target}>
+                  {t("drop.moveSub", { dir: target })}
+                </div>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

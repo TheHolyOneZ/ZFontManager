@@ -3,6 +3,7 @@ import {
   Columns2,
   Command,
   FolderOpen,
+  History,
   Info,
   Keyboard,
   Languages,
@@ -82,6 +83,12 @@ export function CommandPalette() {
         label: t("palette.goFavorites"),
         icon: <Star size={14} strokeWidth={1.5} />,
         run: () => s.setNav({ kind: "favorites" }),
+      },
+      {
+        id: "nav-last-imported",
+        label: t("palette.goLastImported"),
+        icon: <History size={14} strokeWidth={1.5} />,
+        run: () => s.setNav({ kind: "lastImported" }),
       },
       {
         id: "nav-activated",

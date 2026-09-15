@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Clock, FolderOpen, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
+import { Clock, FolderOpen, History, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { openContextMenu } from "../design/primitives/ContextMenu";
 import { spring, springSoft, staggerDelay } from "../design/springs";
@@ -131,6 +131,7 @@ export function Sidebar() {
   const tags = useFontStore((s) => s.tags);
   const collections = useFontStore((s) => s.collections);
   const favorites = useFontStore((s) => s.favorites);
+  const lastImported = useFontStore((s) => s.lastImported);
   const trash = useFontStore((s) => s.trash);
   const deleteCollection = useFontStore((s) => s.deleteCollection);
   const renameCollection = useFontStore((s) => s.renameCollection);
@@ -190,6 +191,13 @@ export function Sidebar() {
           icon={<Star size={15} strokeWidth={1.5} />}
           label={t("side.favorites")}
           count={favorites.length}
+          index={i++}
+        />
+        <NavRow
+          nav={{ kind: "lastImported" }}
+          icon={<History size={15} strokeWidth={1.5} />}
+          label={t("side.lastImported")}
+          count={lastImported.length}
           index={i++}
         />
         <NavRow

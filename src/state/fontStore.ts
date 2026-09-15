@@ -36,7 +36,8 @@ export type Nav =
   | { kind: "activated" }
   | { kind: "activatedSession" }
   | { kind: "deactivated" }
-  | { kind: "system" };
+  | { kind: "system" }
+  | { kind: "lastImported" };
 
 export interface Family {
   name: string;
@@ -60,6 +61,7 @@ interface FontStore {
   collections: Record<string, string[]>;
   favorites: string[];
   sessionActivated: string[];
+  lastImported: string[];
   notes: Record<string, string>;
   trash: TrashEntry[];
   panelWidth: number;
@@ -103,6 +105,8 @@ interface FontStore {
 
   pendingCollectionFor: string | null;
 
+  duplicateReport: { names: string[]; at: number } | null;
+
   init: () => Promise<void>;
   rescan: () => Promise<void>;
   setFamilyActive: (family: string, active: boolean) => Promise<void>;
@@ -140,6 +144,7 @@ interface FontStore {
   endTour: () => void;
   setBulkTagFor: (families: string[] | null) => void;
   applyTagToFamilies: (tag: string, families: string[]) => Promise<void>;
+  setDuplicateReport: (r: { names: string[]; at: number } | null) => void;
 
   setSampleText: (t: string) => void;
   setSizeIndex: (i: number) => void;
@@ -175,6 +180,7 @@ function persistPrefs(get: () => FontStore) {
       themePref: s.themePref,
       localePref: s.localePref,
       onboarded: s.onboarded,
+      lastImported: s.lastImported,
     });
   }, 600);
 }
@@ -187,6 +193,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   collections: {},
   favorites: [],
   sessionActivated: [],
+  lastImported: [],
   notes: {},
   trash: [],
   panelWidth: 348,
@@ -197,7 +204,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   settingsOpen: false,
   helpOpen: false,
   paletteOpen: false,
-  settings: { extraDirs: [], watchEnabled: false },
+  settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false },
   adobeAvailable: false,
   motionPref: "system",
   soundPref: "off",
@@ -218,6 +225,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   nav: { kind: "library" },
   selectedFamily: null,
   pendingCollectionFor: null,
+  duplicateReport: null,
 
   init: async () => {
     await listen<ScanProgress>("scan:progress", (e) => {
@@ -249,6 +257,9 @@ export const useFontStore = create<FontStore>((set, get) => ({
           : "dark",
         onboarded: prefs.onboarded === true,
         localePref: isLocalePref(prefs.localePref) ? prefs.localePref : get().localePref,
+        lastImported: Array.isArray(prefs.lastImported)
+          ? (prefs.lastImported as unknown[]).filter((n): n is string => typeof n === "string")
+          : [],
       });
       setSoundLevel(get().soundPref);
       hydrateLocalePref(get().localePref);
@@ -304,6 +315,10 @@ export const useFontStore = create<FontStore>((set, get) => ({
         ipc.listTrash(),
       ]);
       set({ fonts, tags, collections, favorites, notes, trash, phase: "ready" });
+      // Drop last-imported entries that no longer exist.
+      const names = new Set(fonts.map((f) => f.family));
+      const keptImported = get().lastImported.filter((n) => names.has(n));
+      if (keptImported.length !== get().lastImported.length) set({ lastImported: keptImported });
       // Drop session entries that no longer exist or are no longer active.
       const alive = new Set(fonts.filter((f) => f.active).map((f) => f.family));
       const kept = get().sessionActivated.filter((n) => alive.has(n));
@@ -368,10 +383,14 @@ export const useFontStore = create<FontStore>((set, get) => ({
 
   installPaths: async (paths) => {
     try {
-      const result = await ipc.installFonts(paths);
+      const dupKeyOf = (f: { postscriptName: string | null; family: string; style: string }) =>
+        f.postscriptName ?? `${f.family} ${f.style}`;
+      const existing = get().fonts.map(dupKeyOf);
+      const result = await ipc.installFonts(paths, existing);
       if (result.installed.length > 0) {
-        set({ fonts: [...get().fonts, ...result.installed] });
         const families = [...new Set(result.installed.map((f) => f.family))];
+        set({ fonts: [...get().fonts, ...result.installed], lastImported: families });
+        persistPrefs(get);
         toast.success(
           families.length === 1
             ? t("toast.installedOne", { name: families[0] })
@@ -381,8 +400,17 @@ export const useFontStore = create<FontStore>((set, get) => ({
         );
       }
       for (const err of result.errors) toast.error(t("toast.installFailed"), err);
-      if (result.installed.length === 0 && result.errors.length === 0) {
+      if (
+        result.installed.length === 0 &&
+        result.errors.length === 0 &&
+        result.duplicates.length === 0
+      ) {
         toast.error(t("toast.nothingToInstall"), t("toast.nothingToInstallSub"));
+      }
+      if (result.duplicates.length > 0) {
+        set({
+          duplicateReport: { names: [...result.duplicates], at: Date.now() },
+        });
       }
     } catch (e) {
       toast.error(t("toast.installFailed"), String(e));
@@ -408,7 +436,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
         trash: await ipc.listTrash(),
         selectedFamily: get().selectedFamily === family ? null : get().selectedFamily,
         selection: get().selection.filter((f) => f !== family),
-        sessionActivated: get().sessionActivated.filter((f) => f !== family),
+        lastImported: get().lastImported.filter((f) => f !== family),
       });
 
       const { tags, favorites, collections } = get();
@@ -795,6 +823,8 @@ export const useFontStore = create<FontStore>((set, get) => ({
     }
   },
 
+  setDuplicateReport: (duplicateReport) => set({ duplicateReport }),
+
   setPanelWidth: (panelWidth) => {
     set({ panelWidth: Math.min(560, Math.max(300, panelWidth)) });
     persistPrefs(get);
@@ -963,6 +993,7 @@ export function selectVisibleFamilies(s: {
   collections: Record<string, string[]>;
   favorites: string[];
   sessionActivated: string[];
+  lastImported: string[];
   notes: Record<string, string>;
   search: string;
   classFilter: Classification[];
@@ -993,6 +1024,9 @@ export function selectVisibleFamilies(s: {
   }
   if (s.nav.kind === "favorites") {
     out = out.filter((f) => s.favorites.includes(f.name));
+  }
+  if (s.nav.kind === "lastImported") {
+    out = out.filter((f) => s.lastImported.includes(f.name));
   }
   if (s.nav.kind === "activated") {
     out = out.filter((f) => f.active && !s.sessionActivated.includes(f.name));

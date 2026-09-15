@@ -1,6 +1,6 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { MotionConfig, motion } from "motion/react";
-import { Clock, FolderOpen, Monitor, Power, PowerOff, SearchX, Star, Tag as TagIcon, Type } from "lucide-react";
+import { Clock, FolderOpen, History, Monitor, Power, PowerOff, SearchX, Star, Tag as TagIcon, Type } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { DetailPanel } from "./components/DetailPanel";
 import { Titlebar } from "./components/Titlebar";
@@ -18,6 +18,7 @@ import { SettingsOverlay } from "./components/SettingsOverlay";
 import { ShortcutsOverlay } from "./components/ShortcutsOverlay";
 import { CommandPalette } from "./components/CommandPalette";
 import { BulkTagPrompt } from "./components/BulkTagPrompt";
+import { DuplicateDialog } from "./components/DuplicateDialog";
 import { Onboarding } from "./components/Onboarding";
 import { ContextMenuHost, openContextMenuAt } from "./design/primitives/ContextMenu";
 import { buildFamilyMenu } from "./lib/menus";
@@ -55,6 +56,10 @@ function EmptyLibrary({ searching, nav }: { searching: boolean; nav: Nav }) {
     icon = <Star size={26} strokeWidth={1.5} />;
     title = t("empty.favorites.title");
     hint = t("empty.favorites.body");
+  } else if (nav.kind === "lastImported") {
+    icon = <History size={26} strokeWidth={1.5} />;
+    title = t("empty.lastImported.title");
+    hint = t("empty.lastImported.body");
   } else if (nav.kind === "collection") {
     icon = <FolderOpen size={26} strokeWidth={1.5} />;
     title = t("empty.collection.title");
@@ -103,6 +108,7 @@ function MainContent() {
   const collections = useFontStore((s) => s.collections);
   const favorites = useFontStore((s) => s.favorites);
   const sessionActivated = useFontStore((s) => s.sessionActivated);
+  const lastImported = useFontStore((s) => s.lastImported);
   const notes = useFontStore((s) => s.notes);
   const search = useFontStore((s) => s.search);
   const classFilter = useFontStore((s) => s.classFilter);
@@ -113,10 +119,10 @@ function MainContent() {
   const families = useMemo(
     () =>
       selectVisibleFamilies({
-        fonts, tags, collections, favorites, sessionActivated, notes, search,
+        fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search,
         classFilter, scriptFilter, variableOnly, nav, sort,
       }),
-    [fonts, tags, collections, favorites, sessionActivated, notes, search, classFilter, scriptFilter, variableOnly, nav, sort],
+    [fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search, classFilter, scriptFilter, variableOnly, nav, sort],
   );
 
   useEffect(() => {
@@ -274,6 +280,7 @@ export default function App() {
       <BulkTagPrompt />
       <Onboarding />
       <ContextMenuHost />
+      <DuplicateDialog />
       <Toaster />
     </MotionConfig>
   );

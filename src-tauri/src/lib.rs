@@ -75,11 +75,34 @@ fn set_fonts_active(store: State<Store>, paths: Vec<String>, active: bool) -> Re
 #[tauri::command]
 async fn install_fonts(
     app: tauri::AppHandle,
+    store: State<'_, Store>,
     paths: Vec<String>,
+    existing: Vec<String>,
 ) -> Result<installer::InstallResult, String> {
-    tauri::async_runtime::spawn_blocking(move || installer::install(&app, paths))
-        .await
-        .map_err(|e| e.to_string())
+    let known: std::collections::HashSet<String> = existing.into_iter().collect();
+    let mut result =
+        tauri::async_runtime::spawn_blocking(move || installer::install(&app, paths, &known))
+            .await
+            .map_err(|e| e.to_string())?;
+    // New fonts start deactivated on every OS: run them through the regular
+    // deactivate path so a later toggle can bring them back.
+    // The Settings toggle can opt back into auto-activation for small batches.
+    if let Ok(mut state) = store.0.lock() {
+        let auto = state.auto_activate_imports && result.installed.len() < 64;
+        for face in &result.installed {
+            let _ = activation::sync(&mut state, &face.path, auto);
+        }
+        let _ = store::save(&state);
+        if auto {
+            for face in &mut result.installed {
+                face.active = true;
+            }
+        }
+    }
+    for face in &mut result.installed {
+        face.active = false;
+    }
+    Ok(result)
 }
 
 #[tauri::command]
@@ -335,6 +358,7 @@ fn export_fonts(paths: Vec<String>, dest_dir: String) -> Result<u32, String> {
 struct Settings {
     extra_dirs: Vec<String>,
     watch_enabled: bool,
+    auto_activate_imports: bool,
 }
 
 #[tauri::command]
@@ -343,6 +367,7 @@ fn get_settings(store: State<Store>) -> Result<Settings, String> {
     Ok(Settings {
         extra_dirs: state.extra_dirs.clone(),
         watch_enabled: state.watch_enabled,
+        auto_activate_imports: state.auto_activate_imports,
     })
 }
 
@@ -356,6 +381,7 @@ fn set_settings(
         let mut state = store.0.lock().map_err(|e| e.to_string())?;
         state.extra_dirs = settings.extra_dirs.clone();
         state.watch_enabled = settings.watch_enabled;
+        state.auto_activate_imports = settings.auto_activate_imports;
         store::save(&state)?;
     }
     allow_previews(&app, &settings.extra_dirs);

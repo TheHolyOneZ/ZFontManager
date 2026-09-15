@@ -2724,7 +2724,7 @@
 .settings-folder-tag {
   flex-shrink: 0;
   font-size: var(--fs-11);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 }
 .settings-dim {
   filter: saturate(0.5);
@@ -2738,6 +2738,8 @@
   border-radius: 5px;
   font-size: var(--fs-13);
   font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
   color: var(--text-secondary);
   border: 1px dashed rgba(var(--ink-rgb), 0.12);
   transition: color var(--t-quick) ease, background var(--t-quick) ease,

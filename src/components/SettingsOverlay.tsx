@@ -272,7 +272,7 @@ export function SettingsOverlay() {
                         onChange={(on) => setCustomDirEnabled(on)}
                         label={t("settings.libraryCustom")}
                       />
-                      <span>{t("settings.libraryCustom")}</span>
+                      <span className="settings-folder-path">{t("settings.libraryCustom")}</span>
                     </div>
                     <button className="settings-add-folder" onClick={() => void pickLibraryDir()}>
                       <FolderPlus size={13} strokeWidth={1.5} />

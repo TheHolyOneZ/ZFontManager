@@ -56,7 +56,13 @@ fn move_file(from: &Path, to: &Path) -> Result<(), String> {
         return Ok(());
     }
     fs::copy(from, to).map_err(|e| e.to_string())?;
-    fs::remove_file(from).map_err(|e| e.to_string())
+    recycle(from)
+}
+
+/// User files are never deleted outright: they go to the OS recycle bin
+/// (Windows Recycle Bin, macOS Trash, freedesktop trash on Linux).
+fn recycle(path: &Path) -> Result<(), String> {
+    trash::delete(path).map_err(|e| e.to_string())
 }
 
 fn unique_dest(dir: &Path, file_name: &std::ffi::OsStr) -> PathBuf {
@@ -323,9 +329,24 @@ pub fn restore(entry_id: &str) -> Result<RestoreOutcome, String> {
 
 pub fn empty_trash() -> Result<(), String> {
     let trash = crate::store::trash_dir();
-    if trash.exists() {
-        fs::remove_dir_all(&trash).map_err(|e| e.to_string())?;
+    if !trash.exists() {
+        return Ok(());
     }
+    // Linked entries leave no files behind, only sidecars.
+    let mut errors = Vec::new();
+    for entry in list_trash() {
+        if entry.original_path == entry.trashed_path {
+            continue;
+        }
+        if let Err(e) = recycle(Path::new(&entry.trashed_path)) {
+            errors.push(e);
+        }
+    }
+    if !errors.is_empty() {
+        return Err(errors.join("; "));
+    }
+    // Sidecars and anything unlisted are app metadata: drop them outright.
+    fs::remove_dir_all(&trash).map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -341,7 +362,7 @@ pub fn delete_trash_entry(entry_id: &str) -> Result<(), String> {
         }
         return Ok(());
     }
-    fs::remove_file(&entry.trashed_path).map_err(|e| e.to_string())?;
+    recycle(Path::new(&entry.trashed_path))?;
     remove_sidecar(&entry.trashed_path);
     Ok(())
 }

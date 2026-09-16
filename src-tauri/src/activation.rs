@@ -165,10 +165,11 @@ pub fn reconcile(state: &mut AppState) {
 }
 
 #[cfg(target_os = "windows")]
-pub fn reconcile(_state: &mut AppState) {
+pub fn reconcile(state: &mut AppState) {
 
-    std::thread::spawn(|| {
-        crate::registry::load_registered_outside(&crate::scanner::managed_font_dir());
+    let managed = crate::scanner::effective_managed_dir(state.active_library_dir());
+    std::thread::spawn(move || {
+        crate::registry::load_registered_outside(&managed);
     });
 }
 

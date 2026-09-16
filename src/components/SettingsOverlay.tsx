@@ -14,11 +14,12 @@ import {
   Volume2,
   X,
 } from "lucide-react";
-import { openUrl } from "@tauri-apps/plugin-opener";
-import { useEffect } from "react";
+import { openUrl, revealItemInDir } from "@tauri-apps/plugin-opener";
+import { useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { springSoft } from "../design/springs";
+import { ipc } from "../lib/ipc";
 import { useFontStore } from "../state/fontStore";
 import { useFocusTrap } from "../lib/useFocusTrap";
 import { useT } from "../lib/i18n";
@@ -46,6 +47,18 @@ export function SettingsOverlay() {
   const scanning = useFontStore((s) => s.phase === "scanning");
   const scanProgress = useFontStore((s) => s.scanProgress);
   const trapRef = useFocusTrap<HTMLDivElement>(openState);
+  const [defaultLibDir, setDefaultLibDir] = useState("");
+  const affinityConnection = useFontStore((s) => s.affinityConnection);
+  const refreshAffinityConnection = useFontStore((s) => s.refreshAffinityConnection);
+
+  useEffect(() => {
+    if (openState) void refreshAffinityConnection();
+  }, [openState, refreshAffinityConnection]);
+
+  useEffect(() => {
+    if (!openState || defaultLibDir) return;
+    void ipc.defaultLibraryDir().then(setDefaultLibDir).catch(() => {});
+  }, [openState, defaultLibDir]);
 
   useEffect(() => {
     if (!openState) return;
@@ -59,6 +72,35 @@ export function SettingsOverlay() {
     if (!dir || settings.extraDirs.includes(dir)) return;
     void updateSettings({ ...settings, extraDirs: [...settings.extraDirs, dir] });
   };
+
+  const pickLibraryDir = async () => {
+    const dir = await open({ directory: true, title: t("settings.libraryFolderTitle") });
+    if (!dir) return;
+    // Picking a folder turns the custom folder on.
+    void updateSettings({ ...settings, libraryDir: dir, libraryDirEnabled: true });
+  };
+
+  const setCustomDirEnabled = (on: boolean) => {
+    if (on === settings.libraryDirEnabled) return;
+    // The path is kept while disabled, so re-enabling restores it as-is.
+    void updateSettings({ ...settings, libraryDirEnabled: on });
+  };
+
+  // The custom folder is in effect only when enabled with a folder picked.
+  const customDirActive = settings.libraryDirEnabled && settings.libraryDir != null;
+
+  const affinityDetail = !affinityConnection
+    ? t("settings.affinityChecking")
+    : affinityConnection.reachable
+      ? `${t("settings.affinityOnline")}${affinityConnection.version ? ` · ${affinityConnection.version}` : ""} · ${t("settings.affinityDocs", { count: affinityConnection.docCount })}`
+      : (affinityConnection.error
+          ? `${t("settings.affinityOffline")} · ${affinityConnection.error}`
+          : t("settings.affinityOffline"));
+  const affinityDot = !affinityConnection
+    ? ""
+    : affinityConnection.reachable
+      ? "affinity-dot-on"
+      : "affinity-dot-off";
 
   const exportData = async () => {
     const dest = await save({
@@ -166,6 +208,20 @@ export function SettingsOverlay() {
                 />
               </div>
 
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">{t("settings.autoActivate")}</div>
+                  <div className="settings-sub">{t("settings.autoActivateSub")}</div>
+                </div>
+                <PillToggle
+                  on={settings.autoActivateImports}
+                  onChange={(on) =>
+                    void updateSettings({ ...settings, autoActivateImports: on })
+                  }
+                  label={t("settings.autoActivate")}
+                />
+              </div>
+
               <div className="settings-row settings-col">
                 <div>
                   <div className="settings-label">{t("settings.watchedFolders")}</div>
@@ -207,6 +263,97 @@ export function SettingsOverlay() {
                   )}
                 </div>
               </div>
+            </section>
+
+            <section className="settings-section">
+              <div className="detail-heading">{t("settings.libraryFolder")}</div>
+              <div className="settings-row settings-col">
+                <div>
+                  <div className="settings-label">{t("settings.libraryFolder")}</div>
+                  <div className="settings-sub">{t("settings.libraryFolderSub")}</div>
+                </div>
+                <div className="settings-folders">
+                  <div className={`settings-folder ${customDirActive ? "settings-dim" : ""}`}>
+                    <span className="settings-folder-tag">{t("settings.libraryDefault")}</span>
+                    <button
+                      className="path-link detail-mono settings-folder-path"
+                      title={defaultLibDir}
+                      onClick={() => void revealItemInDir(defaultLibDir).catch(() => {})}
+                    >
+                      <FolderOpen size={13} strokeWidth={1.5} />
+                      <span className="settings-folder-path">{defaultLibDir}</span>
+                    </button>
+                  </div>
+                  <div className={`settings-row ${customDirActive ? "" : "settings-dim"}`}>
+                    <div className="settings-label">
+                      <PillToggle
+                        on={settings.libraryDirEnabled}
+                        onChange={(on) => setCustomDirEnabled(on)}
+                        label={t("settings.libraryCustom")}
+                      />
+                      <span className="settings-folder-path">{t("settings.libraryCustom")}</span>
+                    </div>
+                    <button className="settings-add-folder" onClick={() => void pickLibraryDir()}>
+                      <FolderPlus size={13} strokeWidth={1.5} />
+                      {t("settings.libraryAddFolder")}
+                    </button>
+                  </div>
+                  {settings.libraryDir && (
+                    <div className={`settings-folder ${customDirActive ? "" : "settings-dim"}`}>
+                      <button
+                        className="path-link detail-mono settings-folder-path"
+                        title={settings.libraryDir}
+                        onClick={() =>
+                          void revealItemInDir(settings.libraryDir ?? "").catch(() => {})
+                        }
+                      >
+                        <FolderOpen size={13} strokeWidth={1.5} />
+                        <span className="settings-folder-path">{settings.libraryDir}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <section className="settings-section">
+              <div className="detail-heading">{t("settings.affinity")}</div>
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">{t("settings.affinityConnection")}</div>
+                  <div className="settings-sub">{affinityDetail}</div>
+                </div>
+                <span className={`affinity-dot ${affinityDot}`} aria-hidden />
+              </div>
+              <div className="settings-row" data-relation="enable-below">
+                <div>
+                  <div className="settings-label">{t("settings.affinityEnable")}</div>
+                  <div className="settings-sub">{t("settings.affinityEnableSub")}</div>
+                </div>
+                <PillToggle
+                  on={settings.affinityEnabled}
+                  onChange={(on) => {
+                    void updateSettings({ ...settings, affinityEnabled: on }).then(() =>
+                      refreshAffinityConnection(),
+                    );
+                  }}
+                  label={t("settings.affinityEnable")}
+                />
+              </div>
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">{t("settings.affinityDeactivate")}</div>
+                  <div className="settings-sub">{t("settings.affinityDeactivateSub")}</div>
+                </div>
+                <PillToggle
+                  on={settings.affinityDeactivateOnQuit}
+                  onChange={(on) =>
+                    void updateSettings({ ...settings, affinityDeactivateOnQuit: on })
+                  }
+                  label={t("settings.affinityDeactivate")}
+                />
+              </div>
+              <div className="settings-sub">{t("settings.affinityHelp")}</div>
             </section>
 
             <section className="settings-section">

@@ -7,9 +7,9 @@ import {
   LayoutGrid,
   List,
   RefreshCw,
-  Rows3,
   Search,
   Type,
+  X,
 } from "lucide-react";
 import { useState, type CSSProperties } from "react";
 import { springSnappy, springSoft } from "../design/springs";
@@ -274,6 +274,27 @@ export function TopBar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ ...springSoft, delay: 0.06 }}
     >
+      <div className="topbar-field topbar-search">
+        <Search size={14} strokeWidth={1.5} className="field-icon" />
+        <input
+          id="global-search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("top.searchPlaceholder")}
+          aria-label={t("top.searchAria")}
+          spellCheck={false}
+        />
+        {search.length > 0 && (
+          <button
+            className="search-clear"
+            onClick={() => setSearch("")}
+            aria-label={t("top.searchClear")}
+          >
+            <X size={13} strokeWidth={2} />
+          </button>
+        )}
+      </div>
+
       <div className="topbar-field topbar-sample">
         <Type size={14} strokeWidth={1.5} className="field-icon" />
         <input
@@ -298,18 +319,6 @@ export function TopBar() {
         <span className="size-value tabular">{SIZES[sizeIndex]}</span>
       </div>
 
-      <div className="topbar-field topbar-search">
-        <Search size={14} strokeWidth={1.5} className="field-icon" />
-        <input
-          id="global-search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("top.searchPlaceholder")}
-          aria-label={t("top.searchAria")}
-          spellCheck={false}
-        />
-      </div>
-
       <FilterMenu />
 
       <SortMenu />
@@ -319,7 +328,7 @@ export function TopBar() {
       <RescanButton />
 
       <div className="view-toggle" role="tablist" aria-label={t("top.viewMode")}>
-        {(["grid", "list", "waterfall"] as const).map((mode) => (
+        {(["grid", "list"] as const).map((mode) => (
           <motion.button
             key={mode}
             role="tab"
@@ -330,10 +339,8 @@ export function TopBar() {
           >
             {mode === "grid" ? (
               <LayoutGrid size={15} strokeWidth={1.5} />
-            ) : mode === "list" ? (
-              <List size={15} strokeWidth={1.5} />
             ) : (
-              <Rows3 size={15} strokeWidth={1.5} />
+              <List size={15} strokeWidth={1.5} />
             )}
           </motion.button>
         ))}

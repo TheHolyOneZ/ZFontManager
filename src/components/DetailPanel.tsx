@@ -418,6 +418,78 @@ function TagEditor({ family, tags }: { family: string; tags: string[] }) {
   );
 }
 
+function ConflictFileCard({ path }: { path: string }) {
+  const t = useT();
+  const fonts = useFontStore((s) => s.fonts);
+  const setFontFileActive = useFontStore((s) => s.setFontFileActive);
+  const uninstallFontFile = useFontStore((s) => s.uninstallFontFile);
+  const faces = fonts.filter((f) => f.path === path);
+  const rep = faces[0] ?? null;
+  const isSystem = faces.length === 0 || faces.some((f) => f.source === "system");
+  const isActive = faces.some((f) => f.active);
+  const canToggle = !isSystem && faces.some((f) => f.deactivatable);
+  const styles = [...new Set(faces.map((f) => f.style))].join(", ");
+  const sourceLabel =
+    rep?.source === "system"
+      ? t("detail.systemFont")
+      : rep?.source === "managed"
+        ? "Managed"
+        : rep?.source === "user"
+          ? "User"
+          : null;
+
+  return (
+    <div className="conflict-file">
+      <button
+        className="path-link detail-mono"
+        onClick={() =>
+          revealItemInDir(path).catch(() => toast.error(t("toast.couldntOpenFileManager")))
+        }
+        title={path}
+      >
+        <FolderOpen size={11} strokeWidth={1.5} />
+        <span className="conflict-file-name">{pathBasename(path)}</span>
+      </button>
+      <div className="conflict-file-meta">
+        {rep && (
+          <span className="conflict-file-family">
+            {rep.family}
+            {styles ? ` — ${styles}` : ""}
+          </span>
+        )}
+        {sourceLabel && (
+          <span className="conflict-file-badges">
+            <span className="conflict-badge-src">{sourceLabel}</span>
+          </span>
+        )}
+      </div>
+      <span className="conflict-file-path detail-mono">{path}</span>
+      {isSystem ? (
+        <span className="conflict-system-note">{t("detail.conflictSystemProtected")}</span>
+      ) : (
+        <>
+          <div className="conflict-file-row">
+            <span className="activate-label">{t(isActive ? "detail.active" : "detail.inactive")}</span>
+            <PillToggle
+              on={isActive}
+              disabled={!canToggle}
+              onChange={(on) => void setFontFileActive(path, on)}
+              label={t(isActive ? "card.deactivate" : "card.activate", { name: pathBasename(path) })}
+            />
+            <button
+              className="conflict-btn conflict-btn-trash"
+              onClick={() => void uninstallFontFile(path)}
+            >
+              <Trash2 size={12} strokeWidth={1.5} />
+              {t("detail.conflictTrash")}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function DetailPanel() {
   const t = useT();
   const selectedFamily = useFontStore((s) => s.selectedFamily);
@@ -597,7 +669,7 @@ export function DetailPanel() {
             </motion.section>
 
             <motion.section
-              className={`detail-activate ${family.active ? "" : "card-inactive"}`}
+              className="detail-activate"
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
             >
               <div>
@@ -710,7 +782,18 @@ export function DetailPanel() {
                   </>
                 )}
                 <dt>{t("detail.location")}</dt>
-                <dd className="detail-mono detail-path">{lead.path}</dd>
+                <dd className="detail-path">
+                  <button
+                    className="path-link detail-mono"
+                    onClick={() =>
+                      revealItemInDir(lead.path).catch(() => toast.error(t("toast.couldntOpenFileManager")))
+                    }
+                    title={lead.path}
+                  >
+                    <FolderOpen size={11} strokeWidth={1.5} />
+                    <span>{lead.path}</span>
+                  </button>
+                </dd>
                 {family.isVariable && lead.axes.length > 0 && (
                   <>
                     <dt>{t("detail.axes")}</dt>
@@ -765,16 +848,7 @@ export function DetailPanel() {
                   <div key={c.key} className="conflict-group">
                     <span className="conflict-key detail-mono">{c.key}</span>
                     {c.paths.map((p) => (
-                      <button
-                        key={p}
-                        className="conflict-path detail-mono"
-                        onClick={() =>
-                          revealItemInDir(p).catch(() => toast.error(t("toast.couldntOpenFileManager")))
-                        }
-                      >
-                        <FolderOpen size={11} strokeWidth={1.5} />
-                        {p}
-                      </button>
+                      <ConflictFileCard key={p} path={p} />
                     ))}
                   </div>
                 ))}

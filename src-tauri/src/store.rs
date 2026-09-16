@@ -20,6 +20,8 @@ pub struct AppState {
 
     pub watch_enabled: bool,
 
+    pub auto_activate_imports: bool,
+
     pub notes: HashMap<String, String>,
 
     pub prefs: serde_json::Value,
@@ -27,9 +29,41 @@ pub struct AppState {
     pub parked: HashMap<String, String>,
 
     pub registry_backup: HashMap<String, String>,
+
+    /// Override for the folder moved imports are stored in (None = default).
+    pub library_dir: Option<String>,
+
+    /// Whether the custom library folder is in effect (the path is kept
+    /// even while disabled, so re-enabling restores it without asking).
+    pub library_dir_enabled: bool,
+
+    /// Font files linked in place: part of the library, never copied or moved.
+    pub linked: HashSet<String>,
+
+    /// Auto-activate fonts for open Affinity documents (needs its MCP server).
+    pub affinity_enabled: bool,
+
+    /// Deactivate Affinity session fonts when Affinity quits.
+    #[serde(default = "default_true")]
+    pub affinity_deactivate_on_quit: bool,
 }
 
 pub struct Store(pub Mutex<AppState>);
+
+fn default_true() -> bool {
+    true
+}
+
+impl AppState {
+    /// The custom library folder actually in effect, if one is enabled.
+    pub fn active_library_dir(&self) -> Option<&str> {
+        if self.library_dir_enabled {
+            self.library_dir.as_deref()
+        } else {
+            None
+        }
+    }
+}
 
 fn state_path() -> PathBuf {
     dirs::config_dir()

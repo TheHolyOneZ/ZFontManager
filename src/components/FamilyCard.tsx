@@ -6,7 +6,7 @@ import { spring, springSnappy, springSoft, staggerDelay } from "../design/spring
 import { useFontCss } from "../lib/fontLoader";
 import { buildFamilyMenu } from "../lib/menus";
 import { openContextMenu } from "../design/primitives/ContextMenu";
-import { conflictsFor, SIZES, useFontStore, type Family } from "../state/fontStore";
+import { activeConflictsFor, conflictsFor, SIZES, useFontStore, type Family } from "../state/fontStore";
 import { playStar } from "../lib/sound";
 import type { FontFace } from "../lib/ipc";
 import { useT } from "../lib/i18n";
@@ -82,7 +82,8 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
   const selected = useFontStore((s) => s.selection.includes(family.name));
   const favorite = useFontStore((s) => s.favorites.includes(family.name));
   const toggleFavorite = useFontStore((s) => s.toggleFavorite);
-  const hasConflict = useFontStore((s) => conflictsFor(s.fonts).has(family.name));
+  const hasActiveConflict = useFontStore((s) => activeConflictsFor(s.fonts).has(family.name));
+  const hasDormantConflict = useFontStore((s) => conflictsFor(s.fonts).has(family.name));
   const [expanded, setExpanded] = useState(false);
 
   const size = SIZES[sizeIndex];
@@ -92,9 +93,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
 
   return (
     <motion.article
-      className={`family-card ${selected ? "card-selected" : ""} ${
-        family.active ? "" : "card-inactive"
-      }`}
+      className={`family-card ${selected ? "card-selected" : ""}`}
       data-family={family.name}
       tabIndex={0}
       role="button"
@@ -151,7 +150,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
           </motion.button>
         )}
         <span className="card-spacer" />
-        {hasConflict && (
+        {hasActiveConflict ? (
           <span
             className="conflict-badge"
             title=""
@@ -159,6 +158,16 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
           >
             <AlertTriangle size={13} strokeWidth={1.5} />
           </span>
+        ) : (
+          hasDormantConflict && (
+            <span
+              className="conflict-badge conflict-badge-dormant"
+              title=""
+              aria-label={t("card.conflictResolved")}
+            >
+              <AlertTriangle size={13} strokeWidth={1.5} />
+            </span>
+          )
         )}
         <motion.button
           className={`star-btn ${favorite ? "star-on" : ""}`}

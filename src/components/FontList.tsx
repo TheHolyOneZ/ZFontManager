@@ -48,7 +48,7 @@ export function FontList({ families }: { families: Family[] }) {
               <button
                 key={item.key}
                 data-family={fam.name}
-                className={`list-row ${fam.active ? "" : "row-inactive"} ${
+                className={`list-row ${
                   selection.includes(fam.name) ? "row-selected" : ""
                 }`}
                 style={{

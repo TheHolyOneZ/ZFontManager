@@ -48,6 +48,7 @@ export interface TrashEntry {
 export interface InstallResult {
   installed: FontFace[];
   errors: string[];
+  duplicates: string[];
 }
 
 export interface ScanProgress {
@@ -68,11 +69,29 @@ export type AdobeApp = "photoshop" | "illustrator";
 export interface AppSettings {
   extraDirs: string[];
   watchEnabled: boolean;
+  autoActivateImports: boolean;
+  libraryDir: string | null;
+  libraryDirEnabled: boolean;
+  affinityEnabled: boolean;
+  affinityDeactivateOnQuit: boolean;
 }
+
+export interface AffinityConnection {
+  reachable: boolean;
+  version: string | null;
+  docCount: number;
+  error: string | null;
+}
+
+export type InstallMode = "link" | "move";
 
 export const ipc = {
   getSettings: () => invoke<AppSettings>("get_settings"),
   setSettings: (settings: AppSettings) => invoke<void>("set_settings", { settings }),
+  defaultLibraryDir: () => invoke<string>("default_library_dir"),
+  affinityConnection: () => invoke<AffinityConnection>("affinity_connection"),
+  affinitySessionActivate: (paths: string[]) =>
+    invoke<string[]>("affinity_session_activate", { paths }),
   scanFonts: () => invoke<FontFace[]>("scan_fonts"),
   setFontActive: (path: string, active: boolean) =>
     invoke<void>("set_font_active", { path, active }),
@@ -80,7 +99,8 @@ export const ipc = {
     invoke<void>("set_fonts_active", { paths, active }),
   setFontsActiveSession: (paths: string[]) =>
     invoke<void>("set_fonts_active_session", { paths }),
-  installFonts: (paths: string[]) => invoke<InstallResult>("install_fonts", { paths }),
+  installFonts: (paths: string[], existing: string[], mode: InstallMode) =>
+    invoke<InstallResult>("install_fonts", { paths, existing, mode }),
   uninstallFont: (path: string, family: string) =>
     invoke<TrashEntry>("uninstall_font", { path, family }),
   listTrash: () => invoke<TrashEntry[]>("list_trash"),

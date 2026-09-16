@@ -163,6 +163,7 @@ fn uninstall_font(store: State<Store>, path: String, family: String) -> Result<T
         }
         if state.linked.contains(&path) {
             // Linked file: never touch the original, only unregister.
+            activation::drop_linked_alias(&state, &path);
             let entry = installer::unlink(&path, &family)?;
             state.linked.remove(&path);
             store::save(&state)?;
@@ -614,11 +615,13 @@ pub fn run() {
                 let _ = apply_watch(app.handle(), true, &extra_dirs);
             }
             // Affinity watcher: session-activate doc fonts while it runs.
-            let affinity_app = app.handle().clone();
-            std::thread::spawn(move || loop {
-                affinity::tick(&affinity_app);
-                std::thread::sleep(std::time::Duration::from_secs(2));
-            });
+            if !cfg!(target_os = "linux") {
+                let affinity_app = app.handle().clone();
+                std::thread::spawn(move || loop {
+                    affinity::tick(&affinity_app);
+                    std::thread::sleep(std::time::Duration::from_secs(2));
+                });
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

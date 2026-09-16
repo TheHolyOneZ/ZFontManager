@@ -25,6 +25,7 @@ const SECTIONS: [TKey, [string[], TKey][]][] = [
       [["Shift", "↑ ↓"], "sc.extend"],
       [["Ctrl", "Click"], "sc.addToSelection"],
       [["Shift", "Click"], "sc.selectRange"],
+      [["Ctrl", "A"], "sc.selectAll"],
     ],
   ],
   [

@@ -125,9 +125,6 @@ pub fn install(
     let mut result = InstallResult::default();
     let mut known: HashSet<String> = existing.clone();
 
-    // Note: on macOS deactivating a linked font parks (moves) the original
-    // until reactivated — the same file-move semantics macOS already uses.
-    // On Windows/Linux a linked file never moves.
     if mode == InstallMode::Move {
         if let Err(e) = fs::create_dir_all(library) {
             result.errors.push(e.to_string());

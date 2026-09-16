@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import {
+  CheckCheck,
   Columns2,
   Command,
   FolderOpen,
@@ -187,6 +188,16 @@ export function CommandPalette() {
               run: () => void s.applyFamilyInApp(s.selectedFamily ?? "", app),
             }),
           )
+        : []),
+      ...(s.visibleOrder.length > 0 && s.selection.length < s.visibleOrder.length
+        ? [
+            {
+              id: "select-all",
+              label: t("palette.selectAll", { count: s.visibleOrder.length }),
+              icon: <CheckCheck size={14} strokeWidth={1.5} />,
+              run: () => s.selectAll(),
+            } satisfies Cmd,
+          ]
         : []),
       ...(s.selection.length >= 2
         ? [

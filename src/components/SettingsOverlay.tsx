@@ -26,6 +26,8 @@ import { useT } from "../lib/i18n";
 import { LanguageSelect } from "./LanguageSelect";
 import { APP_LICENSE, APP_VERSION } from "../lib/version";
 
+const IS_LINUX = navigator.platform.toUpperCase().includes("LINUX");
+
 const TRANSLATE_GUIDE_URL =
   "https://github.com/TheHolyOneZ/ZFontManager/blob/main/docs/TRANSLATING.md";
 
@@ -52,8 +54,8 @@ export function SettingsOverlay() {
   const refreshAffinityConnection = useFontStore((s) => s.refreshAffinityConnection);
 
   useEffect(() => {
-    if (openState) void refreshAffinityConnection();
-  }, [openState, refreshAffinityConnection]);
+    if (openState && !IS_LINUX && settings.affinityEnabled) void refreshAffinityConnection();
+  }, [openState, settings.affinityEnabled, refreshAffinityConnection]);
 
   useEffect(() => {
     if (!openState || defaultLibDir) return;
@@ -89,14 +91,18 @@ export function SettingsOverlay() {
   // The custom folder is in effect only when enabled with a folder picked.
   const customDirActive = settings.libraryDirEnabled && settings.libraryDir != null;
 
-  const affinityDetail = !affinityConnection
+  const affinityDetail = !settings.affinityEnabled
+    ? t("settings.affinityDisabled")
+    : !affinityConnection
     ? t("settings.affinityChecking")
     : affinityConnection.reachable
       ? `${t("settings.affinityOnline")}${affinityConnection.version ? ` · ${affinityConnection.version}` : ""} · ${t("settings.affinityDocs", { count: affinityConnection.docCount })}`
       : (affinityConnection.error
           ? `${t("settings.affinityOffline")} · ${affinityConnection.error}`
           : t("settings.affinityOffline"));
-  const affinityDot = !affinityConnection
+  const affinityDot = !settings.affinityEnabled
+    ? "affinity-dot-off"
+    : !affinityConnection
     ? ""
     : affinityConnection.reachable
       ? "affinity-dot-on"
@@ -316,45 +322,47 @@ export function SettingsOverlay() {
               </div>
             </section>
 
-            <section className="settings-section">
-              <div className="detail-heading">{t("settings.affinity")}</div>
-              <div className="settings-row">
-                <div>
-                  <div className="settings-label">{t("settings.affinityConnection")}</div>
-                  <div className="settings-sub">{affinityDetail}</div>
+            {!IS_LINUX && (
+              <section className="settings-section">
+                <div className="detail-heading">{t("settings.affinity")}</div>
+                <div className="settings-row">
+                  <div>
+                    <div className="settings-label">{t("settings.affinityConnection")}</div>
+                    <div className="settings-sub">{affinityDetail}</div>
+                  </div>
+                  <span className={`affinity-dot ${affinityDot}`} aria-hidden />
                 </div>
-                <span className={`affinity-dot ${affinityDot}`} aria-hidden />
-              </div>
-              <div className="settings-row" data-relation="enable-below">
-                <div>
-                  <div className="settings-label">{t("settings.affinityEnable")}</div>
-                  <div className="settings-sub">{t("settings.affinityEnableSub")}</div>
+                <div className="settings-row" data-relation="enable-below">
+                  <div>
+                    <div className="settings-label">{t("settings.affinityEnable")}</div>
+                    <div className="settings-sub">{t("settings.affinityEnableSub")}</div>
+                  </div>
+                  <PillToggle
+                    on={settings.affinityEnabled}
+                    onChange={(on) => {
+                      void updateSettings({ ...settings, affinityEnabled: on }).then(() =>
+                        refreshAffinityConnection(),
+                      );
+                    }}
+                    label={t("settings.affinityEnable")}
+                  />
                 </div>
-                <PillToggle
-                  on={settings.affinityEnabled}
-                  onChange={(on) => {
-                    void updateSettings({ ...settings, affinityEnabled: on }).then(() =>
-                      refreshAffinityConnection(),
-                    );
-                  }}
-                  label={t("settings.affinityEnable")}
-                />
-              </div>
-              <div className="settings-row">
-                <div>
-                  <div className="settings-label">{t("settings.affinityDeactivate")}</div>
-                  <div className="settings-sub">{t("settings.affinityDeactivateSub")}</div>
+                <div className="settings-row">
+                  <div>
+                    <div className="settings-label">{t("settings.affinityDeactivate")}</div>
+                    <div className="settings-sub">{t("settings.affinityDeactivateSub")}</div>
+                  </div>
+                  <PillToggle
+                    on={settings.affinityDeactivateOnQuit}
+                    onChange={(on) =>
+                      void updateSettings({ ...settings, affinityDeactivateOnQuit: on })
+                    }
+                    label={t("settings.affinityDeactivate")}
+                  />
                 </div>
-                <PillToggle
-                  on={settings.affinityDeactivateOnQuit}
-                  onChange={(on) =>
-                    void updateSettings({ ...settings, affinityDeactivateOnQuit: on })
-                  }
-                  label={t("settings.affinityDeactivate")}
-                />
-              </div>
-              <div className="settings-sub">{t("settings.affinityHelp")}</div>
-            </section>
+                <div className="settings-sub">{t("settings.affinityHelp")}</div>
+              </section>
+            )}
 
             <section className="settings-section">
               <div className="detail-heading">{t("settings.libraryData")}</div>

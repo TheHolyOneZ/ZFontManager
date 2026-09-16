@@ -187,6 +187,13 @@ export default function App() {
         st.setPaletteOpen(!st.paletteOpen);
       }
 
+      if ((e.key === "a" || e.key === "A") && (e.metaKey || e.ctrlKey) && !inField) {
+        const st = useFontStore.getState();
+        if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
+        e.preventDefault();
+        st.selectAll();
+      }
+
       const arrows = ["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"];
       if (arrows.includes(e.key) && !inField) {
         const st = useFontStore.getState();

@@ -45,7 +45,10 @@ from one clean, fast, native app. Your fonts never leave your machine.
   - [Activate &amp; deactivate — the killer feature](#activate--deactivate--the-killer-feature)
   - [Try a font before committing](#try-a-font-before-committing)
   - [Apply a font in Photoshop or Illustrator](#apply-a-font-in-photoshop-or-illustrator)
+  - [Auto-activate for Affinity by Canva](#auto-activate-for-affinity-by-canva)
   - [Installing fonts](#installing-fonts)
+  - [Activate a whole library at once](#activate-a-whole-library-at-once)
+  - [When two fonts share a name](#when-two-fonts-share-a-name)
   - [A trash can, not a shredder](#a-trash-can-not-a-shredder)
   - [Organize: tags, collections, favorites, notes](#organize-tags-collections-favorites-notes)
   - [Find anything](#find-anything)
@@ -65,6 +68,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 - [FAQ](#-faq)
 - [Building from source](#-building-from-source)
 - [About the developer](#-about-the-developer)
+- [Contributing](#-contributing)
 - [License](#-license)
 
 ---
@@ -169,6 +173,20 @@ layer is added with the family name as its sample. A sleeping font is woken
 > [open an issue](https://github.com/TheHolyOneZ/ZFontManager/issues) with the
 > app version and what the toast said.
 
+### Auto-activate for Affinity by Canva
+
+Open a document in Affinity and ZFontManager can switch on the fonts it asks
+for, automatically, for as long as Affinity is running — then switch them back
+off when you quit. Nothing is installed permanently.
+
+Turn it on under **Settings → Affinity by Canva auto activation**. It needs
+**Affinity 3.2 or newer** with *Settings → Model Context Protocol* enabled
+(restart Affinity afterwards).
+
+> [!NOTE]
+> Affinity by Canva ships for Windows and macOS only, so this section is
+> hidden on Linux and the watcher never runs there.
+
 ### Installing fonts
 
 Drag anything into the window:
@@ -177,8 +195,32 @@ Drag anything into the window:
 - whole folders,
 - even **ZIP archives** — fresh from a font site, no unzipping needed.
 
-ZFontManager installs them into your user font directory, and they appear in
-the library immediately. A progress toast keeps you informed on big drops.
+Then pick how the file should be handled:
+
+- **Add to library** — the font stays exactly where it is and is registered
+  from there. Good for fonts on an external drive or in a project folder.
+- **Copy to system folder** — the font is copied into your library folder and
+  the original is removed.
+
+You can point the library folder somewhere else entirely under
+**Settings → Library folder**. A progress toast keeps you informed on big
+drops, and anything already in your library is skipped rather than duplicated.
+
+### Activate a whole library at once
+
+<kbd>Ctrl</kbd> <kbd>A</kbd> (<kbd>⌘</kbd> <kbd>A</kbd> on macOS) selects every
+font currently in view — the whole library, or just what your filters and
+search have narrowed it to. Right-click the selection and activate or
+deactivate the lot in one go, with a single undo if you change your mind.
+It's also in the command palette as *Select all*.
+
+### When two fonts share a name
+
+Install a font that clashes with one already in your library and ZFontManager
+says so instead of quietly picking a winner. The detail panel lists every file
+involved, tells you which copy is the active one, and lets you act on each
+file separately — keep it, remove it, or send it to the Trash. System fonts
+are marked as protected and can't be removed either way.
 
 ### A trash can, not a shredder
 
@@ -210,6 +252,11 @@ Four complementary ways to impose order on font chaos:
 - **Filter** by writing system — Latin, Cyrillic, Greek, and others.
 - **Variable fonts only** — one switch to see just the flexible ones.
 - **Sort** by name, style count, or file size.
+
+The sidebar also narrows the library by state: **Activated**, **Activated
+until close**, **Deactivated**, **Last imported** and **System fonts**. Each
+one is reachable from the command palette too, so you can jump straight there
+without reaching for the mouse.
 
 Filters combine, and the empty state always tells you which filters are
 active so you're never staring at a mysteriously empty library.
@@ -331,6 +378,7 @@ same list in a pretty overlay.
 | <kbd>Shift</kbd> <kbd>↑</kbd>/<kbd>↓</kbd> | Extend the selection |
 | <kbd>Ctrl</kbd> + Click | Add a font to the selection |
 | <kbd>Shift</kbd> + Click | Select a range |
+| <kbd>Ctrl</kbd> <kbd>A</kbd> | Select every font in view |
 
 </details>
 
@@ -420,6 +468,14 @@ reactivation.</td>
 </tr>
 </table>
 
+Fonts added with **Add to library** stay where they are on every platform. On
+Linux and macOS the app links them into your font folder so the rest of the
+system can see them; the original file is never moved, copied or deleted.
+
+Two integrations are platform-bound and are hidden where they don't apply:
+**Photoshop / Illustrator** (Windows and macOS) and **Affinity by Canva**
+(Windows and macOS).
+
 > [!IMPORTANT]
 > Some applications only refresh their font list when they start. If a
 > newly activated font doesn't show up in an app that's already running,
@@ -434,15 +490,31 @@ reactivation.</td>
 
 ## 🔒 Privacy
 
-Short version: **there is nothing to worry about, because there is nothing
-being sent.**
+Short version: **out of the box, nothing is sent anywhere.**
 
 - ❌ No account, no sign-up, no license key
 - ❌ No telemetry, no analytics, no crash reporting
-- ❌ No network requests at all during normal use
-- ✅ Your fonts, tags, collections and notes live in local files on your machine
-- ✅ The only time the app touches the internet is when *you* click one of
-  the links on the About page — and that just opens your browser
+- ❌ Nothing about your fonts, tags, collections or notes is ever uploaded —
+  there is no feature that does this, switched on or off
+- ✅ All of it lives in local files on your machine
+- ✅ The only time a fresh install touches the internet is when *you* click a
+  link on the About page, and that just opens your browser
+
+We would rather tell you exactly what the app can talk to than ask you to trust
+an adjective. Here is the complete list — one entry today:
+
+| Feature | Default | What it contacts | Leaves your machine? |
+|---|---|---|---|
+| Affinity auto-activation | **Off** | `localhost:6767` — Affinity's own server, on your computer | **No.** Loopback only |
+
+When that feature is off, the app makes no connection attempt at all: no
+watcher runs, no probe fires when you open Settings. Switching it on lets
+ZFontManager ask the copy of Affinity running beside it which fonts your open
+documents need. That conversation never leaves your computer — no DNS lookup,
+no packet on your network, nothing for an ISP or anyone else to see.
+
+If a future version ever talks to a real server, it will appear in that table,
+it will be off by default, and it will say so before you switch it on.
 
 Don't take our word for it — the entire source code is
 [public](https://github.com/TheHolyOneZ/ZFontManager).
@@ -590,6 +662,18 @@ and the good ones elsewhere cost money.
 </div>
 
 Found it useful? A ⭐ on the repository genuinely helps others discover it.
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome. Two things are worth knowing before you start:
+everything has to work on **Linux, Windows and macOS**, and any interface text
+you touch has to be translated into **all nine languages**.
+
+Both are explained, with the reasoning, in
+**[CONTRIBUTING.md](CONTRIBUTING.md)**. Translations have their own shorter
+guide in **[docs/TRANSLATING.md](docs/TRANSLATING.md)** — no code required.
 
 ---
 

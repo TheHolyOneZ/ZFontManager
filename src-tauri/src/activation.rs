@@ -29,10 +29,55 @@ pub fn sync(state: &mut AppState, path: &str, active: bool) -> Result<(), String
     apply(state, path, active)
 }
 
+pub fn drop_linked_alias(state: &AppState, path: &str) {
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    {
+        let _ = sync_linked_alias(state, path, false);
+    }
+    #[cfg(target_os = "windows")]
+    {
+        let _ = (state, path);
+    }
+}
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+fn sync_linked_alias(state: &AppState, path: &str, active: bool) -> Result<(), String> {
+    use std::fs;
+    use std::path::Path;
+
+    if !state.linked.contains(path) {
+        return Ok(());
+    }
+    let source = Path::new(path);
+    let file_name = source.file_name().ok_or("invalid font path")?;
+    let dir = crate::scanner::effective_managed_dir(state.active_library_dir());
+    if source.parent() == Some(dir.as_path()) {
+        return Ok(());
+    }
+    let alias = dir.join(file_name);
+
+    if active {
+        fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        if fs::symlink_metadata(&alias).is_ok() {
+            return Ok(());
+        }
+        std::os::unix::fs::symlink(source, &alias).map_err(|e| e.to_string())
+    } else {
+        match fs::symlink_metadata(&alias) {
+            Ok(meta) if meta.file_type().is_symlink() => {
+                fs::remove_file(&alias).map_err(|e| e.to_string())
+            }
+            _ => Ok(()),
+        }
+    }
+}
+
 #[cfg(target_os = "linux")]
-fn apply(state: &mut AppState, _path: &str, _active: bool) -> Result<(), String> {
+fn apply(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
     use std::fmt::Write as _;
     use std::fs;
+
+    sync_linked_alias(state, path, active)?;
 
     let dir = dirs::config_dir()
         .ok_or("no config dir")?
@@ -79,6 +124,10 @@ fn apply(state: &mut AppState, _path: &str, _active: bool) -> Result<(), String>
 fn apply(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
     use std::fs;
     use std::path::{Path, PathBuf};
+
+    if state.linked.contains(path) {
+        return sync_linked_alias(state, path, active);
+    }
 
     let parked_dir = crate::store::app_data_dir().join("Deactivated");
     fs::create_dir_all(&parked_dir).map_err(|e| e.to_string())?;

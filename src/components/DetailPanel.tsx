@@ -433,9 +433,9 @@ function ConflictFileCard({ path }: { path: string }) {
     rep?.source === "system"
       ? t("detail.systemFont")
       : rep?.source === "managed"
-        ? "Managed"
+        ? t("detail.sourceManaged")
         : rep?.source === "user"
-          ? "User"
+          ? t("detail.sourceUser")
           : null;
 
   return (

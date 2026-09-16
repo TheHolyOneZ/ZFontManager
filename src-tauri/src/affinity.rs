@@ -542,10 +542,8 @@ pub fn tick(app: &tauri::AppHandle) {
     let Some((enabled, deactivate_on_quit)) = settings_snapshot(app) else {
         return;
     };
-    let running = is_affinity_running();
-    let was = WAS_RUNNING.swap(running, Ordering::SeqCst);
-
     if !enabled {
+        WAS_RUNNING.store(false, Ordering::SeqCst);
         if !session_empty() {
             if let Some(store) = app.try_state::<Store>() {
                 if let Ok(mut state) = store.0.lock() {
@@ -554,13 +552,14 @@ pub fn tick(app: &tauri::AppHandle) {
             }
             emit(app, "deactivated", Vec::new(), None);
         }
-        if !running {
-            if let Ok(mut known) = known_docs().lock() {
-                known.clear();
-            }
+        if let Ok(mut known) = known_docs().lock() {
+            known.clear();
         }
         return;
     }
+
+    let running = is_affinity_running();
+    let was = WAS_RUNNING.swap(running, Ordering::SeqCst);
 
     if running && !was {
         // Affinity just started: query everything.

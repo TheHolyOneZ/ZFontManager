@@ -138,6 +138,7 @@ interface FontStore {
   applyFamilyInApp: (family: string, app: AdobeApp) => Promise<void>;
   setPanelWidth: (w: number) => void;
   selectWith: (family: string, mode: "single" | "toggle" | "range", order: string[]) => void;
+  selectAll: () => void;
   openCompare: (families: string[]) => void;
   closeCompare: () => void;
   setComparePicking: (on: boolean) => void;
@@ -851,6 +852,12 @@ export const useFontStore = create<FontStore>((set, get) => ({
       }
     }
     set({ selection: [family], selectedFamily: family });
+  },
+
+  selectAll: () => {
+    const order = get().visibleOrder;
+    if (order.length === 0) return;
+    set({ selection: [...order], selectedFamily: order[order.length - 1] });
   },
 
   openCompare: (families) => set({ compare: families.slice(0, 4), comparePicking: false }),

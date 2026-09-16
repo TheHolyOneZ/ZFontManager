@@ -4,6 +4,76 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] — 2026-09-16
+
+### Added
+
+- **Import modes.** Dropping fonts in now offers *Add to library* (the file
+  stays where it is and is registered from there) or *Copy to system folder*
+  (copied into the library folder, original removed). On Linux and macOS a
+  linked font is linked into the font folder so the rest of the system can see
+  it — the original is never moved or deleted.
+- **Custom library folder** under Settings, for deciding where copied imports
+  are stored.
+- **Auto-activate for Affinity by Canva** (Windows and macOS). While Affinity
+  runs, fonts its open documents ask for are switched on, and switched back
+  off when it quits. Needs Affinity 3.2+ with *Model Context Protocol* enabled.
+  Off by default. Talks only to `localhost:6767` — nothing leaves the machine.
+- **Auto-activate imported fonts**, an opt-in Settings toggle for batches
+  under 64 fonts.
+- Sidebar filters for **Activated**, **Activated until close**, **Deactivated**,
+  **Last imported** and **System fonts**, each reachable from the command
+  palette.
+- Duplicate detection on import: fonts already in the library are reported and
+  skipped instead of being added twice.
+- Per-file actions in the name-conflict panel.
+- **Select every font in view** with <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>A</kbd>,
+  or *Select all* in the command palette, so a whole library — or whatever the
+  current filters and search have narrowed it to — can be activated or
+  deactivated in one action, with undo.
+
+### Fixed
+
+- Imported fonts were reported to the interface as inactive even when
+  *auto-activate imports* was on and they had in fact been activated, so the
+  library showed the wrong state until the next rescan.
+- The Affinity watcher enumerated every running process every two seconds even
+  when the feature was switched off, which was the default. It now does that
+  only while the feature is enabled, and never starts at all on Linux, where
+  Affinity does not exist.
+- Deactivating a font that had been added with *Add to library* moved the
+  original file out of its folder on macOS. Linked fonts are now linked and
+  unlinked instead, leaving the original untouched.
+- Fonts added with *Add to library* were invisible to other applications on
+  Linux and macOS, because they sat outside the directories those systems
+  scan.
+- Removing a font added with *Add to library* only unregistered it on Windows.
+  On Linux and macOS the font stayed available to other applications after it
+  had been removed from the library.
+- Opening Settings probed for Affinity even when Affinity auto-activation was
+  switched off. Nothing is contacted now unless the feature is on, and the
+  panel says *Disabled* instead of reporting it as offline.
+- The source badge in the name-conflict panel showed *Managed* and *User* in
+  English in every language.
+
+### Changed
+
+- The Privacy section of the README now lists, in a table, every feature that
+  can open a connection, what it contacts and whether anything leaves your
+  machine. Today that is one row, it is off by default, and it is loopback.
+- **`CONTRIBUTING.md`** now sets out what a contribution has to satisfy: it must
+  work on Linux, Windows and macOS; a genuinely platform-bound feature has to be
+  declared, gated, hidden on platforms it cannot serve, and written up in the
+  README; and any new interface text has to land in all nine languages with the
+  plural forms each one requires.
+- README documents the new import modes, the Affinity integration, the
+  state filters in the sidebar and the name-conflict panel, and the Privacy
+  section now states the local-loopback exception instead of claiming no
+  network activity at all.
+- All eight translations are complete again: German, Spanish, French,
+  Japanese, Portuguese (Brazil), Russian, Simplified and Traditional Chinese
+  each cover every string, with the plural forms their language requires.
+
 ## [0.3.0] — 2026-09-11
 
 ### Added

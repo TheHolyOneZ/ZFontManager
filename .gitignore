@@ -1,9 +1,12 @@
-todo.txt
-AGENTS.md
+# dependencies & build output
 node_modules/
 dist/
 src-tauri/target/
-screenshots.af
-screenshots.af~lock~
-# Local Windows helper to start the dev version (not part of the app)
-start-dev.bat
+src-tauri/gen/schemas/
+
+# editor / OS noise
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/

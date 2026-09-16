@@ -124,22 +124,18 @@ async fn install_fonts(
     // New fonts start deactivated on every OS: run them through the regular
     // deactivate path so a later toggle can bring them back.
     // The Settings toggle can opt back into auto-activation for small batches.
+    let mut auto = false;
     if let Ok(mut state) = store.0.lock() {
         if mode == installer::InstallMode::Link {
             for face in &result.installed {
                 state.linked.insert(face.path.clone());
             }
         }
-        let auto = state.auto_activate_imports && result.installed.len() < 64;
+        auto = state.auto_activate_imports && result.installed.len() < 64;
         for face in &result.installed {
             let _ = activation::sync(&mut state, &face.path, auto);
         }
         let _ = store::save(&state);
-        if auto {
-            for face in &mut result.installed {
-                face.active = true;
-            }
-        }
     }
     // Previews load through the asset protocol: allow the folders new files live in.
     for face in &result.installed {
@@ -148,8 +144,10 @@ async fn install_fonts(
             allow_dir(&scope_app, parent);
         }
     }
+    // Report the state activation::sync just put these fonts in. Faces come out
+    // of the parser active by default, so this has to be set either way.
     for face in &mut result.installed {
-        face.active = false;
+        face.active = auto;
     }
     Ok(result)
 }

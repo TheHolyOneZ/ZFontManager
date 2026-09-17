@@ -12,7 +12,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.3.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.5.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -46,6 +46,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
   - [Try a font before committing](#try-a-font-before-committing)
   - [Apply a font in Photoshop or Illustrator](#apply-a-font-in-photoshop-or-illustrator)
   - [Auto-activate for Affinity by Canva](#auto-activate-for-affinity-by-canva)
+  - [Browse and download free fonts](#browse-and-download-free-fonts)
   - [Installing fonts](#installing-fonts)
   - [Activate a whole library at once](#activate-a-whole-library-at-once)
   - [When two fonts share a name](#when-two-fonts-share-a-name)
@@ -187,6 +188,40 @@ Turn it on under **Settings → Affinity by Canva auto activation**. It needs
 > Affinity by Canva ships for Windows and macOS only, so this section is
 > hidden on Linux and the watcher never runs there.
 
+### Browse and download free fonts
+
+Nearly two thousand open-licence families — everything on Google Fonts — from
+inside the app. Switch it on under **Settings → Online font browser**, and an
+**Online** section appears in the sidebar. Search by name, filter by category or
+licence, show variable fonts only, and add a family to your library with one
+click. Downloaded families are tagged *Online* so they're easy to find.
+
+Open a family and you see your sample text rendered live in it, alongside the
+licence — its name, a link to the full text, and the Reserved Font Name where
+the OFL declares one. The preview fetches one face through the same gated
+client; adding the family reuses that file rather than downloading it twice.
+The licence text is stored alongside the font.
+
+This is the first feature that talks to the internet, so it's built carefully:
+
+- **Off by default.** A fresh install never contacts a font provider.
+- **Switching it on sends nothing.** A request goes out only when you open the
+  Online section and search or download — never in the background.
+- **Search is local.** The catalogue is fetched once and cached for seven days;
+  typing filters it on your machine. The provider sees one request per week,
+  not one per keystroke.
+- **Two named hosts, both listed under the toggle:** `api.fontsource.org` for
+  the catalogue and `raw.githubusercontent.com` for the files.
+- **Nothing about your library leaves the machine.** The "in library" badge is
+  computed locally.
+
+Files come straight from the [google/fonts](https://github.com/google/fonts)
+repository — the canonical source everything else mirrors — so you get the
+complete font, not a web-optimised subset. That's why Bunny Fonts and Fontsource's
+own CDN aren't used for downloads: both serve only script-subsetted web files,
+which would install a dozen partial copies of each style. Fontshare isn't
+offered because its licence forbids redistribution.
+
 ### Installing fonts
 
 Drag anything into the window:
@@ -251,6 +286,8 @@ Four complementary ways to impose order on font chaos:
 - **Filter** by classification — Serif, Sans, Mono, Script, Display and more.
 - **Filter** by writing system — Latin, Cyrillic, Greek, and others.
 - **Variable fonts only** — one switch to see just the flexible ones.
+- **Hide fonts the OS won't let you turn off** — on Windows and macOS, drop the
+  system fonts and see only what you can actually act on.
 - **Sort** by name, style count, or file size.
 
 The sidebar also narrows the library by state: **Activated**, **Activated
@@ -472,6 +509,14 @@ Fonts added with **Add to library** stay where they are on every platform. On
 Linux and macOS the app links them into your font folder so the rest of the
 system can see them; the original file is never moved, copied or deleted.
 
+> [!TIP]
+> **On Linux, use the `.deb` or `.rpm`.** They install cleanly and use your own
+> system libraries. An AppImage is not part of every release: the ones GitHub
+> Actions produces need **FUSE 2**, which many current distributions no longer
+> install by default, and they are linked against the build runner's libraries,
+> so older distributions can refuse to start them. When one is offered it's a
+> convenience, not the recommended path.
+
 Two integrations are platform-bound and are hidden where they don't apply:
 **Photoshop / Illustrator** (Windows and macOS) and **Affinity by Canva**
 (Windows and macOS).
@@ -484,7 +529,9 @@ Two integrations are platform-bound and are hidden where they don't apply:
 > [!WARNING]
 > **System fonts are protected.** Fonts your operating system needs to draw
 > its own interface can't be deactivated or trashed from ZFontManager, so
-> you can explore fearlessly.
+> you can explore fearlessly. On Windows and macOS their cards show a small
+> **OS** lock badge instead of a toggle, with the reason on hover. On Linux,
+> fontconfig can exclude any font, so everything gets a toggle.
 
 ---
 
@@ -501,20 +548,23 @@ Short version: **out of the box, nothing is sent anywhere.**
   link on the About page, and that just opens your browser
 
 We would rather tell you exactly what the app can talk to than ask you to trust
-an adjective. Here is the complete list — one entry today:
+an adjective. Here is the complete list:
 
 | Feature | Default | What it contacts | Leaves your machine? |
 |---|---|---|---|
 | Affinity auto-activation | **Off** | `localhost:6767` — Affinity's own server, on your computer | **No.** Loopback only |
+| Online font browser | **Off** | `api.fontsource.org` for the catalogue; `raw.githubusercontent.com` for font files and licences | **Yes** — your IP and the fonts you download, to those two hosts only. Nothing about your existing library. |
 
-When that feature is off, the app makes no connection attempt at all: no
-watcher runs, no probe fires when you open Settings. Switching it on lets
-ZFontManager ask the copy of Affinity running beside it which fonts your open
-documents need. That conversation never leaves your computer — no DNS lookup,
-no packet on your network, nothing for an ISP or anyone else to see.
+When either feature is off, the app makes no connection attempt at all: no
+watcher runs, no probe fires, no catalogue is fetched. The Affinity conversation
+never leaves your computer — no DNS lookup, no packet on your network. The font
+browser does reach two real servers, and the row above says exactly which and
+what they receive: your IP address, the catalogue request, and the fonts you
+choose to download. Both hosts publish a privacy policy, neither is an ad
+network, and nothing is sent until you act.
 
-If a future version ever talks to a real server, it will appear in that table,
-it will be off by default, and it will say so before you switch it on.
+Anything added in future goes in that table, off by default, disclosed before
+you switch it on.
 
 Don't take our word for it — the entire source code is
 [public](https://github.com/TheHolyOneZ/ZFontManager).
@@ -615,12 +665,17 @@ For a live development window instead, use `pnpm tauri dev`.
 1. Bump the version in `package.json`, `src-tauri/Cargo.toml`,
    `src-tauri/tauri.conf.json` and `src/lib/version.ts`, and add a section to
    `CHANGELOG.md`.
-2. Push. The GitHub Actions workflow builds all seven installers — Windows
-   `.exe`/`.msi`, macOS Apple Silicon and Intel `.dmg`, Linux
-   AppImage/`.deb`/`.rpm` — and opens a draft release with them attached.
-3. Download the assets, refresh the download page and checksums on
-   [zsync.eu/zfontmanager](https://zsync.eu/zfontmanager/), paste the
-   changelog section into the draft, publish.
+2. Push. The GitHub Actions workflow builds the installers — Windows
+   `.exe`/`.msi`, macOS Apple Silicon and Intel `.dmg`, Linux `.deb`/`.rpm`,
+   and an AppImage — and opens a draft release with them attached. Ship the
+   AppImage only if it has been tried on a real distribution; leaving it out
+   is fine.
+3. Download the assets and run `node prepare-release.mjs --from <folder>`. It
+   collects the installers into `zfontmanager/releases/`, writes
+   `SHA256SUMS.txt`, and rewrites the download page's version, links, sizes
+   and checksum table. Any installer that isn't shipping is hidden on the
+   page rather than listed. Upload `zfontmanager/`, paste the changelog
+   section into the draft, publish.
 
 </details>
 

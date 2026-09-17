@@ -74,6 +74,63 @@ export interface AppSettings {
   libraryDirEnabled: boolean;
   affinityEnabled: boolean;
   affinityDeactivateOnQuit: boolean;
+  onlineFontsEnabled: boolean;
+}
+
+export interface OnlineFamily {
+  id: string;
+  family: string;
+  category: string;
+  weights: number[];
+  styles: string[];
+  subsets: string[];
+  variable: boolean;
+  license: string;
+  lastModified: string;
+}
+
+export interface OnlineCatalogue {
+  fetchedAt: number;
+  fromCache: boolean;
+  families: OnlineFamily[];
+}
+
+export interface OnlineFile {
+  name: string;
+  style: string;
+  weight: number;
+  filename: string;
+  postScriptName: string;
+  fullName: string;
+  copyright: string;
+}
+
+export interface OnlineFamilyDetail {
+  id: string;
+  family: string;
+  designer: string;
+  category: string;
+  license: string;
+  licenseName: string;
+  licenseUrl: string;
+  reservedFontName: string | null;
+  copyright: string;
+  files: OnlineFile[];
+  licenseText: string;
+  sourceDir: string;
+}
+
+export interface OnlineDownloadResult {
+  family: string;
+  paths: string[];
+  licensePath: string;
+}
+
+export interface OnlineProgress {
+  id: string;
+  file: string;
+  done: number;
+  total: number;
 }
 
 export interface AffinityConnection {
@@ -92,6 +149,12 @@ export const ipc = {
   affinityConnection: () => invoke<AffinityConnection>("affinity_connection"),
   affinitySessionActivate: (paths: string[]) =>
     invoke<string[]>("affinity_session_activate", { paths }),
+  onlineCatalogue: (force: boolean) => invoke<OnlineCatalogue>("online_catalogue", { force }),
+  onlineFamily: (id: string) => invoke<OnlineFamilyDetail>("online_family", { id }),
+  onlineDownload: (id: string) => invoke<OnlineDownloadResult>("online_download", { id }),
+  onlinePreview: (id: string) => invoke<string>("online_preview", { id }),
+  onlineClearStaging: (id: string) => invoke<void>("online_clear_staging", { id }),
+  onlineHosts: () => invoke<string[]>("online_hosts"),
   scanFonts: () => invoke<FontFace[]>("scan_fonts"),
   setFontActive: (path: string, active: boolean) =>
     invoke<void>("set_font_active", { path, active }),

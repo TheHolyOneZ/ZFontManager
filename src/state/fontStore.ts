@@ -8,6 +8,9 @@ import {
   type Classification,
   type FontFace,
   type InstallMode,
+  type OnlineFamily,
+  type OnlineFamilyDetail,
+  type OnlineProgress,
   type ScanProgress,
   type TrashEntry,
 } from "../lib/ipc";
@@ -45,7 +48,8 @@ export type Nav =
   | { kind: "activatedSession" }
   | { kind: "deactivated" }
   | { kind: "system" }
-  | { kind: "lastImported" };
+  | { kind: "lastImported" }
+  | { kind: "online" };
 
 export interface Family {
   name: string;
@@ -86,6 +90,19 @@ interface FontStore {
   paletteOpen: boolean;
   settings: AppSettings;
   affinityConnection: AffinityConnection | null;
+  onlineFamilies: OnlineFamily[] | null;
+  onlineFetchedAt: number | null;
+  onlineLoading: boolean;
+  onlineError: string | null;
+  onlineQuery: string;
+  onlineCategory: string | null;
+  onlineLicense: string | null;
+  onlineVariableOnly: boolean;
+  onlineDetail: OnlineFamilyDetail | null;
+  onlineDetailLoading: boolean;
+  onlinePreviewPath: string | null;
+  onlineDownloading: string | null;
+  onlineProgress: OnlineProgress | null;
 
   adobeAvailable: boolean;
   motionPref: MotionPref;
@@ -109,6 +126,7 @@ interface FontStore {
 
   scriptFilter: string[];
   variableOnly: boolean;
+  toggleableOnly: boolean;
   nav: Nav;
   selectedFamily: string | null;
 
@@ -148,6 +166,14 @@ interface FontStore {
   setPaletteOpen: (open: boolean) => void;
   updateSettings: (settings: AppSettings) => Promise<void>;
   refreshAffinityConnection: () => Promise<void>;
+  loadOnlineCatalogue: (force: boolean) => Promise<void>;
+  setOnlineQuery: (q: string) => void;
+  setOnlineCategory: (c: string | null) => void;
+  setOnlineLicense: (l: string | null) => void;
+  setOnlineVariableOnly: (on: boolean) => void;
+  openOnlineFamily: (id: string) => Promise<void>;
+  closeOnlineFamily: () => void;
+  installOnlineFamily: (id: string) => Promise<void>;
   setMotionPref: (pref: MotionPref) => void;
   setSoundPref: (pref: SoundLevel) => void;
   setThemePref: (pref: ThemePref) => void;
@@ -167,6 +193,7 @@ interface FontStore {
   toggleClassFilter: (c: Classification) => void;
   toggleScriptFilter: (s: string) => void;
   setVariableOnly: (on: boolean) => void;
+  setToggleableOnly: (on: boolean) => void;
   exportLibraryData: (dest: string) => Promise<void>;
   importLibraryData: (src: string) => Promise<void>;
   setNav: (n: Nav) => void;
@@ -217,8 +244,21 @@ export const useFontStore = create<FontStore>((set, get) => ({
   settingsOpen: false,
   helpOpen: false,
   paletteOpen: false,
-  settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false, libraryDir: null, libraryDirEnabled: false, affinityEnabled: false, affinityDeactivateOnQuit: true },
+  settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false, libraryDir: null, libraryDirEnabled: false, affinityEnabled: false, affinityDeactivateOnQuit: true, onlineFontsEnabled: false },
   affinityConnection: null,
+  onlineFamilies: null,
+  onlineFetchedAt: null,
+  onlineLoading: false,
+  onlineError: null,
+  onlineQuery: "",
+  onlineCategory: null,
+  onlineLicense: null,
+  onlineVariableOnly: false,
+  onlineDetail: null,
+  onlineDetailLoading: false,
+  onlinePreviewPath: null,
+  onlineDownloading: null,
+  onlineProgress: null,
   adobeAvailable: false,
   motionPref: "system",
   soundPref: "off",
@@ -236,6 +276,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   classFilter: [],
   scriptFilter: [],
   variableOnly: false,
+  toggleableOnly: false,
   nav: { kind: "library" },
   selectedFamily: null,
   pendingCollectionFor: null,
@@ -345,6 +386,9 @@ export const useFontStore = create<FontStore>((set, get) => ({
       } else if (evt.kind === "error") {
         toast.error(t("toast.affinityError"), evt.message ?? "");
       }
+    });
+    await listen<OnlineProgress>("online:progress", (e) => {
+      set({ onlineProgress: e.payload });
     });
     await get().rescan();
   },
@@ -918,6 +962,68 @@ export const useFontStore = create<FontStore>((set, get) => ({
     }
   },
 
+  loadOnlineCatalogue: async (force) => {
+    if (!get().settings.onlineFontsEnabled) return;
+    if (get().onlineLoading) return;
+    set({ onlineLoading: true, onlineError: null });
+    try {
+      const cat = await ipc.onlineCatalogue(force);
+      set({ onlineFamilies: cat.families, onlineFetchedAt: cat.fetchedAt, onlineLoading: false });
+    } catch (e) {
+      set({ onlineLoading: false, onlineError: String(e) });
+    }
+  },
+
+  setOnlineQuery: (onlineQuery) => set({ onlineQuery }),
+  setOnlineCategory: (onlineCategory) => set({ onlineCategory }),
+  setOnlineLicense: (onlineLicense) => set({ onlineLicense }),
+  setOnlineVariableOnly: (onlineVariableOnly) => set({ onlineVariableOnly }),
+
+  openOnlineFamily: async (id) => {
+    set({ onlineDetailLoading: true, onlineDetail: null, onlinePreviewPath: null });
+    try {
+      const detail = await ipc.onlineFamily(id);
+      set({ onlineDetail: detail, onlineDetailLoading: false });
+    } catch (e) {
+      set({ onlineDetailLoading: false });
+      toast.error(t("toast.onlineDetailFailed"), String(e));
+      return;
+    }
+    try {
+      const path = await ipc.onlinePreview(id);
+      if (get().onlineDetail?.id === id) set({ onlinePreviewPath: path });
+    } catch {
+      set({ onlinePreviewPath: null });
+    }
+  },
+
+  closeOnlineFamily: () => {
+    const { onlineDetail, onlineDownloading } = get();
+    if (onlineDetail && onlineDownloading !== onlineDetail.id) {
+      void ipc.onlineClearStaging(onlineDetail.id);
+    }
+    set({ onlineDetail: null, onlinePreviewPath: null });
+  },
+
+  installOnlineFamily: async (id) => {
+    if (get().onlineDownloading) return;
+    set({ onlineDownloading: id, onlineProgress: null });
+    try {
+      const res = await ipc.onlineDownload(id);
+      await get().installPaths(res.paths, "move");
+      const existing = get().tags[res.family] ?? [];
+      if (!existing.includes("Online")) {
+        await get().setFamilyTags(res.family, [...existing, "Online"]);
+      }
+      await ipc.onlineClearStaging(id);
+      set({ onlineDetail: null, onlinePreviewPath: null });
+    } catch (e) {
+      toast.error(t("toast.onlineDownloadFailed"), String(e));
+    } finally {
+      set({ onlineDownloading: null, onlineProgress: null });
+    }
+  },
+
   setMotionPref: (motionPref) => {
     set({ motionPref });
     applyMotionPref(motionPref);
@@ -999,6 +1105,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
     set({ scriptFilter: cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s] });
   },
   setVariableOnly: (variableOnly) => set({ variableOnly }),
+  setToggleableOnly: (toggleableOnly) => set({ toggleableOnly }),
 
   exportLibraryData: async (dest) => {
     const { tags, collections, favorites, notes } = get();
@@ -1142,6 +1249,7 @@ export function selectVisibleFamilies(s: {
   classFilter: Classification[];
   scriptFilter: string[];
   variableOnly: boolean;
+  toggleableOnly: boolean;
   nav: Nav;
   sort: SortMode;
 }): Family[] {
@@ -1156,6 +1264,9 @@ export function selectVisibleFamilies(s: {
   }
   if (s.variableOnly) {
     out = out.filter((f) => f.isVariable);
+  }
+  if (s.toggleableOnly) {
+    out = out.filter((f) => f.deactivatable);
   }
   if (s.nav.kind === "tag") {
     const tag = s.nav.tag;

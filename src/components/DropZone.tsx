@@ -59,6 +59,9 @@ export function DropZone() {
     });
     const unlistenProgress = listen<InstallProgress>("install:progress", (e) => {
       setProgress(e.payload);
+      if (e.payload.done >= e.payload.total) {
+        setTimeout(() => setProgress(null), 900);
+      }
     });
     return () => {
       void unlistenDrop.then((fn) => fn());

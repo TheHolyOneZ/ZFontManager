@@ -20,11 +20,14 @@ function hash(s: string): string {
 }
 
 function ensureLoaded(face: ZFontFace): void {
-  const name = cssName(face);
+  ensurePathLoaded(cssName(face), face.previewPath ?? face.path);
+}
+
+function ensurePathLoaded(name: string, path: string): void {
   if (cache.has(name)) return;
   cache.set(name, "loading");
 
-  const url = convertFileSrc(face.previewPath ?? face.path);
+  const url = convertFileSrc(path);
   const ff = new FontFace(name, `url("${url}")`);
   ff.load()
     .then(() => {
@@ -66,6 +69,27 @@ export function useFontCss(face: ZFontFace | null): {
     fontFamily: state === "loaded" && name ? name : null,
     failed: state === "failed",
   };
+}
+
+export function usePathFontCss(key: string | null, path: string | null): string | null {
+  const name = key ? `zfm-p-${hash(key)}` : null;
+  const [, bump] = useState(0);
+
+  useEffect(() => {
+    if (!name || !path) return;
+    ensurePathLoaded(name, path);
+    if (cache.get(name) === "loading") {
+      const set = listeners.get(name) ?? new Set();
+      const fn = () => bump((n) => n + 1);
+      set.add(fn);
+      listeners.set(name, set);
+      return () => {
+        set.delete(fn);
+      };
+    }
+  }, [name, path]);
+
+  return name && path && cache.get(name) === "loaded" ? name : null;
 }
 
 export function loadFaceCss(face: ZFontFace): Promise<string> {

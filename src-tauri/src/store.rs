@@ -46,6 +46,8 @@ pub struct AppState {
     /// Deactivate Affinity session fonts when Affinity quits.
     #[serde(default = "default_true")]
     pub affinity_deactivate_on_quit: bool,
+
+    pub online_fonts_enabled: bool,
 }
 
 pub struct Store(pub Mutex<AppState>);

@@ -108,9 +108,11 @@ function FilterMenu() {
   const toggleScriptFilter = useFontStore((s) => s.toggleScriptFilter);
   const variableOnly = useFontStore((s) => s.variableOnly);
   const setVariableOnly = useFontStore((s) => s.setVariableOnly);
+  const toggleableOnly = useFontStore((s) => s.toggleableOnly);
+  const setToggleableOnly = useFontStore((s) => s.setToggleableOnly);
   const [open, setOpen] = useState(false);
 
-  const activeCount = classFilter.length + scriptFilter.length + (variableOnly ? 1 : 0);
+  const activeCount = classFilter.length + scriptFilter.length + (variableOnly ? 1 : 0) + (toggleableOnly ? 1 : 0);
 
   return (
     <div className="sort-wrap">
@@ -181,6 +183,17 @@ function FilterMenu() {
                 >
                   <span>{t("filter.variableOnly")}</span>
                   {variableOnly && <Check size={13} strokeWidth={2} />}
+                </button>
+              </li>
+              <li>
+                <button
+                  role="option"
+                  aria-selected={toggleableOnly}
+                  className={toggleableOnly ? "sort-item sort-active" : "sort-item"}
+                  onClick={() => setToggleableOnly(!toggleableOnly)}
+                >
+                  <span>{t("filter.toggleableOnly")}</span>
+                  {toggleableOnly && <Check size={13} strokeWidth={2} />}
                 </button>
               </li>
             </motion.ul>

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { AlertTriangle, ChevronRight, Star } from "lucide-react";
+import { AlertTriangle, ChevronRight, Lock, Star } from "lucide-react";
 import { memo, useState } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { spring, springSnappy, springSoft, staggerDelay } from "../design/springs";
@@ -182,12 +182,18 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
         >
           <Star size={14} strokeWidth={1.5} />
         </motion.button>
-        <PillToggle
-          on={family.active}
-          disabled={!family.deactivatable}
-          onChange={(on) => void setFamilyActive(family.name, on)}
-          label={t(family.active ? "card.deactivate" : "card.activate", { name: family.name })}
-        />
+        {family.deactivatable ? (
+          <PillToggle
+            on={family.active}
+            onChange={(on) => void setFamilyActive(family.name, on)}
+            label={t(family.active ? "card.deactivate" : "card.activate", { name: family.name })}
+          />
+        ) : (
+          <span className="card-os-lock" title={t("card.osManaged")} aria-label={t("card.osManaged")}>
+            <Lock size={11} strokeWidth={1.75} />
+            {t("card.osManagedShort")}
+          </span>
+        )}
       </header>
 
       <div className="card-preview" style={{ minHeight: size * 1.35 }}>

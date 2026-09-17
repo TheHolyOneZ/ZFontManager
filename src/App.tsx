@@ -10,6 +10,7 @@ import { FontList } from "./components/FontList";
 import { Sidebar } from "./components/Sidebar";
 import { TopBar } from "./components/TopBar";
 import { TrashView } from "./components/TrashView";
+import { OnlineView } from "./components/OnlineView";
 import { AboutView } from "./components/AboutView";
 import { WaterfallView } from "./components/WaterfallView";
 import { CompareOverlay } from "./components/CompareOverlay";
@@ -114,15 +115,16 @@ function MainContent() {
   const classFilter = useFontStore((s) => s.classFilter);
   const scriptFilter = useFontStore((s) => s.scriptFilter);
   const variableOnly = useFontStore((s) => s.variableOnly);
+  const toggleableOnly = useFontStore((s) => s.toggleableOnly);
   const sort = useFontStore((s) => s.sort);
 
   const families = useMemo(
     () =>
       selectVisibleFamilies({
         fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search,
-        classFilter, scriptFilter, variableOnly, nav, sort,
+        classFilter, scriptFilter, variableOnly, toggleableOnly, nav, sort,
       }),
-    [fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search, classFilter, scriptFilter, variableOnly, nav, sort],
+    [fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search, classFilter, scriptFilter, variableOnly, toggleableOnly, nav, sort],
   );
 
   useEffect(() => {
@@ -131,6 +133,7 @@ function MainContent() {
 
   if (nav.kind === "trash") return <TrashView />;
   if (nav.kind === "about") return <AboutView />;
+  if (nav.kind === "online") return <OnlineView />;
   if (phase === "scanning") return <ScanSkeleton />;
   if (families.length === 0)
     return (
@@ -140,7 +143,8 @@ function MainContent() {
           search.trim().length > 0 ||
           classFilter.length > 0 ||
           scriptFilter.length > 0 ||
-          variableOnly
+          variableOnly ||
+          toggleableOnly
         }
       />
     );

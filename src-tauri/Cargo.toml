@@ -1,6 +1,6 @@
 [package]
 name = "zfontmanager"
-version = "0.4.0"
+version = "0.5.0"
 description = "Cross-platform font manager: preview, tag, activate/deactivate, and install fonts"
 authors = ["TheHolyOneZ"]
 license = "GPL-3.0-only"
@@ -30,9 +30,9 @@ zip = { version = "2", default-features = false, features = ["deflate"] }
 thiserror = "2"
 notify = "7"
 rodio = { version = "0.19", default-features = false }
-reqwest = { version = "0.13.5", default-features = false, features = ["json", "stream"] }
+reqwest = { version = "0.13.5", default-features = false, features = ["json", "stream", "rustls"] }
 sysinfo = "0.38.4"
-tokio = { version = "1.53.1", features = ["time"] }
+tokio = { version = "1.53.1", features = ["time", "rt"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.59", features = ["Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging", "Win32_System_Registry", "Win32_Foundation"] }

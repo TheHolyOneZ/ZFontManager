@@ -4,6 +4,65 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] — 2026-09-17
+
+### Added
+
+- **Online font browser.** Search nearly two thousand open-licence families —
+  the whole Google Fonts catalogue — and add any of them to the library with
+  one click, from a new *Online* section in the sidebar. Filter by category,
+  licence and variable-only. Each family shows its designer, licence, a link to
+  the full licence text and its Reserved Font Name before you download; the
+  licence text is stored alongside the font. Downloaded families are tagged
+  *Online* automatically and marked *In library* in the browser afterwards.
+
+  This is the first feature that contacts a real server, so the rules are
+  strict and enforced in one place. Off by default. Switching it on sends
+  nothing — a request goes out only when you open the section and search or
+  download; there is no background refresh and no probe on startup. The
+  catalogue is fetched once from `api.fontsource.org` and cached for seven
+  days; search runs locally against that cache, debounced, so the provider
+  sees one request a week rather than one per keystroke. Font files and
+  licences come from the `google/fonts` repository via
+  `raw.githubusercontent.com` — the canonical source, and the only one that
+  serves complete fonts rather than per-script web subsets. Both hosts are
+  named under the toggle. Every request passes through a single client that
+  refuses if the setting is off, rejects any host not on that two-entry list,
+  follows no redirects, and identifies itself as ZFontManager.
+
+  The licence shown is read from the repository directory the files are
+  actually fetched from, so it is by construction the licence that ships beside
+  the font; the catalogue's licence field only decides which directory to try
+  first.
+
+  Opening a family shows a live preview of your current sample text in that
+  font. One face — the Regular — is fetched for the preview through the same
+  gated client, and if you then add the family the download reuses that file
+  rather than fetching it again. Closing the family without adding it removes
+  the preview file.
+
+  Bunny Fonts and Fontsource's own CDN were evaluated and rejected as download
+  sources: both serve only WOFF/WOFF2 or per-script subsets, which Windows
+  cannot install and which would put a dozen partial copies of each style in
+  the OS. Fontshare was rejected because the ITF Free Font Licence forbids
+  redistribution.
+
+- **System fonts now say why they can't be turned off.** On Windows and macOS
+  the operating system owns its own fonts, and until now a system font showed
+  a dimmed activation toggle that looked switched on but did nothing. It now
+  shows a small lock badge reading *OS*, with the full explanation on hover:
+  managed by the operating system, can't be turned off. On Linux, where
+  fontconfig can exclude any font, the toggle is unchanged.
+- **Hide them entirely.** The filter menu gains *Hide fonts the OS won't let
+  you turn off*, so the library can show only what you can actually act on.
+  It counts toward the filter badge and clears with the other filters.
+
+### Changed
+
+- `reqwest` now carries a TLS backend (`rustls`, using the OS trust store). It
+  was built without one, which was fine for the Affinity integration's loopback
+  HTTP but would have failed on any `https://` request.
+
 ## [0.4.0] — 2026-09-16
 
 ### Added

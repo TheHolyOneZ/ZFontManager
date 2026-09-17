@@ -365,6 +365,26 @@ export function SettingsOverlay() {
             )}
 
             <section className="settings-section">
+              <div className="detail-heading">{t("settings.online")}</div>
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">{t("settings.onlineEnable")}</div>
+                  <div className="settings-sub">{t("settings.onlineEnableSub")}</div>
+                </div>
+                <PillToggle
+                  on={settings.onlineFontsEnabled}
+                  onChange={(on) => {
+                    void updateSettings({ ...settings, onlineFontsEnabled: on });
+                    if (!on) useFontStore.setState({ onlineFamilies: null, onlineDetail: null });
+                  }}
+                  label={t("settings.onlineEnable")}
+                />
+              </div>
+              <div className="settings-sub settings-hosts detail-mono">{t("settings.onlineHosts")}</div>
+              <div className="settings-sub">{t("settings.onlineHelp")}</div>
+            </section>
+
+            <section className="settings-section">
               <div className="detail-heading">{t("settings.libraryData")}</div>
               <div className="settings-row">
                 <div>

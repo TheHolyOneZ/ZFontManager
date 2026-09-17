@@ -3,6 +3,8 @@ mod adobe;
 mod affinity;
 mod font_types;
 mod installer;
+mod net;
+mod online;
 mod parser;
 mod registry;
 mod scanner;
@@ -202,6 +204,60 @@ fn affinity_session_activate(
     store::save(&state)?;
     affinity::note_activated(activated.clone());
     first_err.map_or(Ok(activated), Err)
+}
+
+#[tauri::command]
+async fn online_catalogue(store: State<'_, Store>, force: bool) -> Result<online::CatalogueResponse, String> {
+    let client = {
+        let state = store.0.lock().map_err(|e| e.to_string())?;
+        net::client(&state)?
+    };
+    online::fontsource::catalogue(&client, force).await
+}
+
+#[tauri::command]
+async fn online_family(store: State<'_, Store>, id: String) -> Result<online::FamilyDetail, String> {
+    let client = {
+        let state = store.0.lock().map_err(|e| e.to_string())?;
+        net::client(&state)?
+    };
+    online::github::detail(&client, &id).await
+}
+
+#[tauri::command]
+async fn online_download(
+    app: tauri::AppHandle,
+    store: State<'_, Store>,
+    id: String,
+) -> Result<online::DownloadResult, String> {
+    let client = {
+        let state = store.0.lock().map_err(|e| e.to_string())?;
+        net::client(&state)?
+    };
+    online::github::download(&app, &client, &id).await
+}
+
+#[tauri::command]
+async fn online_preview(app: tauri::AppHandle, store: State<'_, Store>, id: String) -> Result<String, String> {
+    let client = {
+        let state = store.0.lock().map_err(|e| e.to_string())?;
+        net::client(&state)?
+    };
+    let path = online::github::preview(&client, &id).await?;
+    if let Some(parent) = std::path::Path::new(&path).parent() {
+        allow_dir(&app, parent);
+    }
+    Ok(path)
+}
+
+#[tauri::command]
+fn online_clear_staging(id: String) {
+    online::github::clear_staging(&id);
+}
+
+#[tauri::command]
+fn online_hosts() -> Vec<String> {
+    net::ALLOWED_HOSTS.iter().map(|h| h.to_string()).collect()
 }
 
 #[tauri::command]
@@ -452,6 +508,7 @@ struct Settings {
     library_dir_enabled: bool,
     affinity_enabled: bool,
     affinity_deactivate_on_quit: bool,
+    online_fonts_enabled: bool,
 }
 
 #[tauri::command]
@@ -465,6 +522,7 @@ fn get_settings(store: State<Store>) -> Result<Settings, String> {
         library_dir_enabled: state.library_dir_enabled,
         affinity_enabled: state.affinity_enabled,
         affinity_deactivate_on_quit: state.affinity_deactivate_on_quit,
+        online_fonts_enabled: state.online_fonts_enabled,
     })
 }
 
@@ -483,6 +541,7 @@ fn set_settings(
         state.library_dir_enabled = settings.library_dir_enabled;
         state.affinity_enabled = settings.affinity_enabled;
         state.affinity_deactivate_on_quit = settings.affinity_deactivate_on_quit;
+        state.online_fonts_enabled = settings.online_fonts_enabled;
         store::save(&state)?;
     }
     allow_dir(
@@ -634,6 +693,12 @@ pub fn run() {
             list_trash,
             affinity_connection,
             affinity_session_activate,
+            online_catalogue,
+            online_family,
+            online_download,
+            online_preview,
+            online_clear_staging,
+            online_hosts,
             restore_from_trash,
             delete_trash_entry,
             empty_trash,

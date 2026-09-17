@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Clock, FolderOpen, History, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
+import { Clock, FolderOpen, Globe, History, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { openContextMenu } from "../design/primitives/ContextMenu";
 import { spring, springSoft, staggerDelay } from "../design/springs";
@@ -133,6 +133,7 @@ export function Sidebar() {
   const favorites = useFontStore((s) => s.favorites);
   const lastImported = useFontStore((s) => s.lastImported);
   const trash = useFontStore((s) => s.trash);
+  const onlineEnabled = useFontStore((s) => s.settings.onlineFontsEnabled);
   const deleteCollection = useFontStore((s) => s.deleteCollection);
   const renameCollection = useFontStore((s) => s.renameCollection);
   const setFamilyTags = useFontStore((s) => s.setFamilyTags);
@@ -326,6 +327,14 @@ export function Sidebar() {
       )}
 
       <div className="sidebar-footer">
+        {onlineEnabled && (
+          <NavRow
+            nav={{ kind: "online" }}
+            icon={<Globe size={15} strokeWidth={1.5} />}
+            label={t("side.online")}
+            index={i++}
+          />
+        )}
         <NavRow
           nav={{ kind: "trash" }}
           icon={<Trash2 size={15} strokeWidth={1.5} />}

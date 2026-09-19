@@ -4,6 +4,19 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.5.1] — 2026-09-19
+
+### Fixed
+
+- **The sidebar now scrolls.** It had no scroll region at all, so once Browse,
+  Collections and Tags together grew taller than the window, everything past
+  the bottom edge was silently cut off — the Tags section first, then Trash,
+  About and Shortcuts. 0.4.0 made this easy to hit by adding four rows to
+  Browse. Browse, Collections and Tags now scroll; Trash, About and Shortcuts
+  stay pinned at the bottom. Affected every platform.
+- The onboarding tour scrolls its target into view before drawing the
+  spotlight, so a step can no longer point at something below the window edge.
+
 ## [0.5.0] — 2026-09-17
 
 ### Added
@@ -198,3 +211,4 @@ Earlier releases predate this changelog. Their installers remain available on
 the [download page](https://zsync.eu/zfontmanager/).
 
 [0.3.0]: https://github.com/TheHolyOneZ/ZFontManager/releases/tag/v0.3.0
+[0.5.1]: https://github.com/TheHolyOneZ/ZFontManager/releases/tag/v0.5.1

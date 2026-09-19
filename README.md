@@ -12,7 +12,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.5.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.5.1-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)

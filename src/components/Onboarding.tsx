@@ -92,6 +92,7 @@ function useTargetRect(selector: string | undefined, step: number) {
     const find = () => {
       const el = document.querySelector(selector);
       if (el) {
+        el.scrollIntoView({ block: "nearest" });
         setRect(el.getBoundingClientRect());
       } else if (tries++ < 40) {
 

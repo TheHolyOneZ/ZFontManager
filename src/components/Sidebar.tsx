@@ -178,153 +178,155 @@ export function Sidebar() {
       animate={{ x: 0, opacity: 1 }}
       transition={springSoft}
     >
-      <div className="sidebar-section">
-        <div className="sidebar-heading">{t("side.browse")}</div>
-        <NavRow
-          nav={{ kind: "library" }}
-          icon={<Library size={15} strokeWidth={1.5} />}
-          label={t("side.library")}
-          count={familyCount}
-          index={i++}
-        />
-        <NavRow
-          nav={{ kind: "favorites" }}
-          icon={<Star size={15} strokeWidth={1.5} />}
-          label={t("side.favorites")}
-          count={favorites.length}
-          index={i++}
-        />
-        <NavRow
-          nav={{ kind: "lastImported" }}
-          icon={<History size={15} strokeWidth={1.5} />}
-          label={t("side.lastImported")}
-          count={lastImported.length}
-          index={i++}
-        />
-        <NavRow
-          nav={{ kind: "activated" }}
-          icon={<Power size={15} strokeWidth={1.5} />}
-          label={t("side.activated")}
-          count={activatedCount}
-          index={i++}
-        />
-        <NavRow
-          nav={{ kind: "activatedSession" }}
-          icon={<Clock size={15} strokeWidth={1.5} />}
-          label={t("side.activatedUntilClose")}
-          count={sessionCount}
-          index={i++}
-        />
-        <NavRow
-          nav={{ kind: "deactivated" }}
-          icon={<PowerOff size={15} strokeWidth={1.5} />}
-          label={t("side.deactivated")}
-          count={deactivatedCount}
-          index={i++}
-        />
-        <NavRow
-          nav={{ kind: "system" }}
-          icon={<Monitor size={15} strokeWidth={1.5} />}
-          label={t("side.system")}
-          count={systemCount}
-          index={i++}
-        />
-      </div>
-
-      <div className="sidebar-section">
-        <div className="sidebar-heading sidebar-heading-row">
-          <span>{t("side.collections")}</span>
-          <motion.button
-            className="sidebar-add"
-            aria-label={t("side.newCollection")}
-            onClick={() => setCreating(true)}
-            whileTap={{ scale: 0.9 }}
-          >
-            <Plus size={13} strokeWidth={2} />
-          </motion.button>
-        </div>
-        {creating && (
-          <NewCollectionInput
-            onDone={() => {
-              setCreating(false);
-              useFontStore.setState({ pendingCollectionFor: null });
-            }}
-          />
-        )}
-        {collectionNames.map((name) =>
-          renaming === name ? (
-            <RenameInput
-              key={name}
-              initial={name}
-              onCommit={(next) => {
-                setRenaming(null);
-                void renameCollection(name, next);
-              }}
-              onCancel={() => setRenaming(null)}
-            />
-          ) : (
-            <NavRow
-              key={name}
-              nav={{ kind: "collection", name }}
-              icon={<FolderOpen size={15} strokeWidth={1.5} />}
-              label={name}
-              count={(collections[name] ?? []).length}
-              index={i++}
-              onContextMenu={(e) =>
-                openContextMenu(e, [
-                  { label: translate("menu.rename"), action: () => setRenaming(name) },
-                  {
-                    label: translate("menu.exportFontList"),
-                    action: () => {
-                      const map = familiesFor(fonts, tags);
-                      const fams = (collections[name] ?? [])
-                        .map((n) => map.get(n))
-                        .filter((f): f is Family => Boolean(f));
-                      void exportFontList(fams, name);
-                    },
-                  },
-                  { kind: "separator" },
-                  {
-                    label: translate("menu.deleteCollection"),
-                    danger: true,
-                    action: () => void deleteCollection(name),
-                  },
-                ])
-              }
-            />
-          ),
-        )}
-        {collectionNames.length === 0 && !creating && (
-          <button className="sidebar-hint" onClick={() => setCreating(true)}>
-            {t("side.firstCollection")}
-          </button>
-        )}
-      </div>
-
-      {tagCounts.size > 0 && (
+      <div className="sidebar-scroll">
         <div className="sidebar-section">
-          <div className="sidebar-heading">{t("side.tags")}</div>
-          {[...tagCounts.entries()].map(([tag, count]) => (
-            <NavRow
-              key={tag}
-              nav={{ kind: "tag", tag }}
-              icon={<Tag size={15} strokeWidth={1.5} />}
-              label={tag}
-              count={count}
-              index={i++}
-              onContextMenu={(e) =>
-                openContextMenu(e, [
-                  {
-                    label: translate("menu.removeTagEverywhere", { tag }),
-                    danger: true,
-                    action: () => removeTagEverywhere(tag),
-                  },
-                ])
-              }
-            />
-          ))}
+          <div className="sidebar-heading">{t("side.browse")}</div>
+          <NavRow
+            nav={{ kind: "library" }}
+            icon={<Library size={15} strokeWidth={1.5} />}
+            label={t("side.library")}
+            count={familyCount}
+            index={i++}
+          />
+          <NavRow
+            nav={{ kind: "favorites" }}
+            icon={<Star size={15} strokeWidth={1.5} />}
+            label={t("side.favorites")}
+            count={favorites.length}
+            index={i++}
+          />
+          <NavRow
+            nav={{ kind: "lastImported" }}
+            icon={<History size={15} strokeWidth={1.5} />}
+            label={t("side.lastImported")}
+            count={lastImported.length}
+            index={i++}
+          />
+          <NavRow
+            nav={{ kind: "activated" }}
+            icon={<Power size={15} strokeWidth={1.5} />}
+            label={t("side.activated")}
+            count={activatedCount}
+            index={i++}
+          />
+          <NavRow
+            nav={{ kind: "activatedSession" }}
+            icon={<Clock size={15} strokeWidth={1.5} />}
+            label={t("side.activatedUntilClose")}
+            count={sessionCount}
+            index={i++}
+          />
+          <NavRow
+            nav={{ kind: "deactivated" }}
+            icon={<PowerOff size={15} strokeWidth={1.5} />}
+            label={t("side.deactivated")}
+            count={deactivatedCount}
+            index={i++}
+          />
+          <NavRow
+            nav={{ kind: "system" }}
+            icon={<Monitor size={15} strokeWidth={1.5} />}
+            label={t("side.system")}
+            count={systemCount}
+            index={i++}
+          />
         </div>
-      )}
+
+        <div className="sidebar-section">
+          <div className="sidebar-heading sidebar-heading-row">
+            <span>{t("side.collections")}</span>
+            <motion.button
+              className="sidebar-add"
+              aria-label={t("side.newCollection")}
+              onClick={() => setCreating(true)}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Plus size={13} strokeWidth={2} />
+            </motion.button>
+          </div>
+          {creating && (
+            <NewCollectionInput
+              onDone={() => {
+                setCreating(false);
+                useFontStore.setState({ pendingCollectionFor: null });
+              }}
+            />
+          )}
+          {collectionNames.map((name) =>
+            renaming === name ? (
+              <RenameInput
+                key={name}
+                initial={name}
+                onCommit={(next) => {
+                  setRenaming(null);
+                  void renameCollection(name, next);
+                }}
+                onCancel={() => setRenaming(null)}
+              />
+            ) : (
+              <NavRow
+                key={name}
+                nav={{ kind: "collection", name }}
+                icon={<FolderOpen size={15} strokeWidth={1.5} />}
+                label={name}
+                count={(collections[name] ?? []).length}
+                index={i++}
+                onContextMenu={(e) =>
+                  openContextMenu(e, [
+                    { label: translate("menu.rename"), action: () => setRenaming(name) },
+                    {
+                      label: translate("menu.exportFontList"),
+                      action: () => {
+                        const map = familiesFor(fonts, tags);
+                        const fams = (collections[name] ?? [])
+                          .map((n) => map.get(n))
+                          .filter((f): f is Family => Boolean(f));
+                        void exportFontList(fams, name);
+                      },
+                    },
+                    { kind: "separator" },
+                    {
+                      label: translate("menu.deleteCollection"),
+                      danger: true,
+                      action: () => void deleteCollection(name),
+                    },
+                  ])
+                }
+              />
+            ),
+          )}
+          {collectionNames.length === 0 && !creating && (
+            <button className="sidebar-hint" onClick={() => setCreating(true)}>
+              {t("side.firstCollection")}
+            </button>
+          )}
+        </div>
+
+        {tagCounts.size > 0 && (
+          <div className="sidebar-section">
+            <div className="sidebar-heading">{t("side.tags")}</div>
+            {[...tagCounts.entries()].map(([tag, count]) => (
+              <NavRow
+                key={tag}
+                nav={{ kind: "tag", tag }}
+                icon={<Tag size={15} strokeWidth={1.5} />}
+                label={tag}
+                count={count}
+                index={i++}
+                onContextMenu={(e) =>
+                  openContextMenu(e, [
+                    {
+                      label: translate("menu.removeTagEverywhere", { tag }),
+                      danger: true,
+                      action: () => removeTagEverywhere(tag),
+                    },
+                  ])
+                }
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="sidebar-footer">
         {onlineEnabled && (

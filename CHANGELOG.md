@@ -4,6 +4,72 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] — 2026-09-21
+
+Everything here comes from one report by a tester running Fedora on a 1366x768
+ThinkPad. 
+
+### Added
+
+- **Interface scale.** ZFontManager now measures the usable area of your screen
+  at startup and picks a scale that fits the whole interface into it, so a
+  small or low-resolution display shows the entire layout instead of a cropped
+  one. Settings → Appearance → *Interface scale* overrides it: **Auto**, or a
+  fixed 80–125% if you would rather decide, which also serves anyone on a large
+  display who simply wants the interface bigger.
+- **Reduce transparency.** A new Appearance setting that replaces the frosted
+  glass with solid panels. It is easier to read, it is the accessible choice,
+  and it removes the most expensive thing the app draws — which makes a real
+  difference on older integrated graphics.
+- **Filter by file format.** OpenType, TrueType, WOFF and WOFF2, in the filter
+  menu alongside classification and language support.
+- **Filter by typographic feature.** Swashes, stylistic alternates,
+  discretionary ligatures, small caps, oldstyle figures and fractions. The
+  feature list is now read while the library is indexed rather than only when a
+  font is selected, so it can be filtered on. If you are hunting for faces with
+  alternate letterforms, this is the fastest way to find them.
+- **Find fonts containing a specific character.** Type any character into the
+  filter menu and the library narrows to the fonts whose character map covers
+  it. The search reads every font file, so it runs on demand rather than
+  continuously, and it reports the codepoint it resolved your character to.
+- **Glyph count.** Shown in the inspector, and available as a sort order.
+- **Collapsible sidebar sections.** Browse, Collections and Tags each fold away,
+  and stay folded between launches.
+- **Sort by glyph count**, next to name, styles and size.
+
+### Fixed
+
+- **The window could open taller than the screen.** The default size is right
+  for the displays the app was designed against, but nothing checked whether it
+  fitted. On a 1366x768 screen roughly a hundred pixels of the app sat below
+  the bottom edge once the desktop panel was counted, which among other things
+  hid the inspector's Tags section. The window is now measured against the
+  monitor's usable area — panels, docks and taskbars excluded — and clamped and
+  centred to fit. The configured default is unchanged, so nothing moves on a
+  display that was already big enough.
+- **The context menu could not be scrolled.** It had no height limit, so with
+  enough tags the "Tag all" menu grew past the screen and lost its top. It now
+  scrolls, and can no longer be positioned off the top or left edge.
+- **Panels turned unreadable when the compositor could not blur.** Every
+  overlay — the context menu, Compare, Settings, the selection bar — was a
+  ten-percent-white surface that relied entirely on a backdrop blur to become
+  legible. Where that blur silently does nothing, the panel was a haze. The new
+  *Reduce transparency* setting makes them solid.
+- **No resize handles.** ZFontManager draws its own title bar, and drawing your
+  own means the window has no resize border unless you provide one. There was
+  none, so the edges were a one-pixel guessing game. All four edges and corners
+  are now grabbable, with the right cursor on each. This affected Windows and
+  macOS too.
+- **The online font browser ignored the preview size slider**, rendering every
+  preview at a fixed size while the rest of the library followed the control.
+
+### Notes
+
+- The tiny flickering squares reported on Intel HD 4000 with the crocus driver
+  are not drawn by the app and were not reproducible away from that hardware.
+  *Reduce transparency* removes the most likely trigger; if you see them, please
+  try it and say whether it helps.
+
 ## [0.5.1] — 2026-09-19
 
 ### Fixed
@@ -212,3 +278,4 @@ the [download page](https://zsync.eu/zfontmanager/).
 
 [0.3.0]: https://github.com/TheHolyOneZ/ZFontManager/releases/tag/v0.3.0
 [0.5.1]: https://github.com/TheHolyOneZ/ZFontManager/releases/tag/v0.5.1
+[0.6.0]: https://github.com/TheHolyOneZ/ZFontManager/releases/tag/v0.6.0

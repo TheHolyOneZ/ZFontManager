@@ -767,6 +767,12 @@ export function DetailPanel() {
                     <dd>{family.scripts.map(scriptLabel).join(", ")}</dd>
                   </>
                 )}
+                {family.glyphCount > 0 && (
+                  <>
+                    <dt>{t("detail.glyphCount")}</dt>
+                    <dd className="tabular">{family.glyphCount.toLocaleString()}</dd>
+                  </>
+                )}
                 <dt>{t("detail.fileSize")}</dt>
                 <dd className="tabular">{formatBytes(family.totalSize)}</dd>
                 {family.foundry && (

@@ -208,6 +208,51 @@ input:focus {
   box-shadow: none;
 }
 
+:root[data-transparency="reduced"] {
+  --e1: #16161c;
+  --e2: #1c1c23;
+  --e3: #22222a;
+  --e4: #272730;
+  --glass-border: rgba(255, 255, 255, 0.11);
+  --settings-glass-grad: linear-gradient(165deg, #23232b, #1e1e26 45%, #212129);
+}
+
+:root[data-theme="light"][data-transparency="reduced"],
+:root[data-transparency="reduced"]:not([data-theme="dark"]) {
+  --e1: #e4e6ee;
+  --e2: #dee0e9;
+  --e3: #fdfdff;
+  --e4: #ffffff;
+  --glass-border: rgba(22, 22, 32, 0.14);
+  --settings-glass-grad: linear-gradient(165deg, #fdfdff, #f6f7fb 45%, #fafaff);
+}
+
+:root[data-transparency="reduced"] .glass,
+:root[data-transparency="reduced"] .glass-e3,
+:root[data-transparency="reduced"] .sidebar,
+:root[data-transparency="reduced"] .detail,
+:root[data-transparency="reduced"] .settings-panel,
+:root[data-transparency="reduced"] .titlebar-sep,
+:root[data-transparency="reduced"] .dropchoice,
+:root[data-transparency="reduced"] .waterfall-text,
+:root[data-transparency="reduced"] .compare-backdrop,
+:root[data-transparency="reduced"] .settings-backdrop,
+:root[data-transparency="reduced"] .palette-backdrop,
+:root[data-transparency="reduced"] .online-detail-backdrop {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root[data-transparency="reduced"] .sidebar,
+:root[data-transparency="reduced"] .detail,
+:root[data-transparency="reduced"] .titlebar {
+  background: var(--e1);
+}
+
+:root[data-transparency="reduced"] .ctx-menu {
+  background: var(--e3);
+}
+
 .glass {
   background: var(--e1);
   backdrop-filter: blur(24px) saturate(140%) brightness(1.05);

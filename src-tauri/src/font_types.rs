@@ -64,6 +64,8 @@ pub struct FontFace {
     pub classification: Classification,
 
     pub scripts: Vec<String>,
+    pub features: Vec<String>,
+    pub glyph_count: u16,
     pub file_size: u64,
     pub source: FontSource,
     pub deactivatable: bool,

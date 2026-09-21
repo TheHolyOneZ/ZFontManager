@@ -115,6 +115,33 @@ fn classify(face: &ttf_parser::Face, family: &str) -> Classification {
     }
 }
 
+fn layout_features(face: &ttf_parser::Face) -> Vec<String> {
+    const KEEP: [&str; 18] = [
+        "liga", "dlig", "calt", "smcp", "c2sc", "onum", "lnum", "tnum", "pnum", "frac", "ordn",
+        "sups", "subs", "zero", "salt", "swsh", "titl", "hist",
+    ];
+    let mut tags: Vec<String> = Vec::new();
+    let mut collect = |table: Option<ttf_parser::opentype_layout::LayoutTable>| {
+        if let Some(t) = table {
+            for f in t.features {
+                let tag = String::from_utf8_lossy(&f.tag.to_bytes()).into_owned();
+                let stylistic_set = tag.len() == 4
+                    && tag.starts_with("ss")
+                    && tag[2..].chars().all(|c| c.is_ascii_digit())
+                    && tag[2..] != *"00";
+                if KEEP.contains(&tag.as_str()) || stylistic_set {
+                    tags.push(tag);
+                }
+            }
+        }
+    };
+    collect(face.tables().gsub);
+    collect(face.tables().gpos);
+    tags.sort_unstable();
+    tags.dedup();
+    tags
+}
+
 fn parse_face(
     data: &[u8],
     index: u32,
@@ -150,6 +177,7 @@ fn parse_face(
 
     let classification = classify(&face, &family);
     let scripts = script_coverage(&face);
+    let features = layout_features(&face);
     let path_str = path.to_string_lossy().into_owned();
     Some(FontFace {
         id: format!("{}#{}", path_str, index),
@@ -170,6 +198,8 @@ fn parse_face(
         monospaced: face.is_monospaced(),
         classification,
         scripts,
+        features,
+        glyph_count: face.number_of_glyphs(),
         file_size,
         source,
         deactivatable: crate::activation::can_deactivate(source),
@@ -211,6 +241,8 @@ pub fn parse_font_file(path: &Path, source: FontSource) -> Vec<FontFace> {
             monospaced: false,
             classification: Classification::Unknown,
             scripts: Vec::new(),
+            features: Vec::new(),
+            glyph_count: 0,
             file_size,
             source,
             deactivatable: crate::activation::can_deactivate(source),

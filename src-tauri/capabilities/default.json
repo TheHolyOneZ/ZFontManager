@@ -2,7 +2,9 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-show",
@@ -10,11 +12,20 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-close",
     "core:window:allow-start-dragging",
+    "core:window:allow-start-resize-dragging",
+    "core:webview:allow-set-webview-zoom",
     "core:event:default",
     "opener:default",
     {
       "identifier": "opener:allow-reveal-item-in-dir",
-      "allow": [{ "path": "**" }, { "path": "/**" }]
+      "allow": [
+        {
+          "path": "**"
+        },
+        {
+          "path": "/**"
+        }
+      ]
     },
     "dialog:default",
     "fs:default"

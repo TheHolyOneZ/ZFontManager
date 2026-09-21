@@ -372,6 +372,131 @@ fn set_favorite(store: State<Store>, family: String, favorite: bool) -> Result<(
     store::save(&state)
 }
 
+const DESIGN_W: f64 = 1280.0;
+const DESIGN_H: f64 = 820.0;
+const SCALE_STEPS: [f64; 4] = [0.8, 0.85, 0.9, 1.0];
+
+fn auto_ui_scale(avail_w: f64, avail_h: f64) -> f64 {
+    let raw = (avail_w / DESIGN_W).min(avail_h / DESIGN_H);
+    let mut chosen = SCALE_STEPS[0];
+    for step in SCALE_STEPS {
+        if step <= raw + 0.0001 {
+            chosen = step;
+        }
+    }
+    chosen
+}
+
+fn fit_window(window: &tauri::WebviewWindow, scale_pref: Option<f64>) {
+    let Ok(Some(monitor)) = window.current_monitor() else {
+        if let Some(scale) = scale_pref {
+            let _ = window.set_zoom(scale);
+        }
+        return;
+    };
+    let dpi = monitor.scale_factor();
+    if !(dpi > 0.0) {
+        return;
+    }
+    let work = monitor.work_area();
+    let avail_w = work.size.width as f64 / dpi;
+    let avail_h = work.size.height as f64 / dpi;
+    if !(avail_w > 0.0) || !(avail_h > 0.0) {
+        return;
+    }
+
+    if let Ok(size) = window.inner_size() {
+        let cur_w = size.width as f64 / dpi;
+        let cur_h = size.height as f64 / dpi;
+        let w = cur_w.min(avail_w);
+        let h = cur_h.min(avail_h);
+        if w < cur_w - 0.5 || h < cur_h - 0.5 {
+            let _ = window.set_size(tauri::LogicalSize::new(w, h));
+        }
+        let x = work.position.x as f64 / dpi + (avail_w - w).max(0.0) / 2.0;
+        let y = work.position.y as f64 / dpi + (avail_h - h).max(0.0) / 2.0;
+        let _ = window.set_position(tauri::LogicalPosition::new(x, y));
+    }
+
+    let scale = scale_pref.unwrap_or_else(|| auto_ui_scale(avail_w, avail_h));
+    let _ = window.set_zoom(scale);
+}
+
+#[tauri::command]
+fn set_ui_scale(window: tauri::WebviewWindow, scale: Option<f64>) -> Result<f64, String> {
+    let clamped = scale.map(|s| s.clamp(0.5, 2.0));
+    fit_window_scale_only(&window, clamped)
+}
+
+fn fit_window_scale_only(window: &tauri::WebviewWindow, scale_pref: Option<f64>) -> Result<f64, String> {
+    let resolved = match scale_pref {
+        Some(s) => s,
+        None => {
+            let monitor = window
+                .current_monitor()
+                .map_err(|e| e.to_string())?
+                .ok_or("no monitor")?;
+            let dpi = monitor.scale_factor();
+            let work = monitor.work_area();
+            auto_ui_scale(
+                work.size.width as f64 / dpi,
+                work.size.height as f64 / dpi,
+            )
+        }
+    };
+    window.set_zoom(resolved).map_err(|e| e.to_string())?;
+    Ok(resolved)
+}
+
+#[tauri::command]
+async fn fonts_with_char(paths: Vec<String>, codepoint: u32) -> Result<Vec<String>, String> {
+    let Some(ch) = char::from_u32(codepoint) else {
+        return Err("not a Unicode character".into());
+    };
+    tauri::async_runtime::spawn_blocking(move || sweep_charset(&paths, ch))
+        .await
+        .map_err(|e| e.to_string())
+}
+
+fn sweep_charset(paths: &[String], ch: char) -> Vec<String> {
+    let workers = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(4)
+        .min(8)
+        .max(1);
+    let chunk = paths.len().div_ceil(workers).max(1);
+    std::thread::scope(|scope| {
+        let handles: Vec<_> = paths
+            .chunks(chunk)
+            .map(|group| {
+                scope.spawn(move || {
+                    let mut found = Vec::new();
+                    for path in group {
+                        let Ok(data) = std::fs::read(path) else {
+                            continue;
+                        };
+                        let count = ttf_parser::fonts_in_collection(&data).unwrap_or(1);
+                        let covered = (0..count).any(|i| {
+                            ttf_parser::Face::parse(&data, i)
+                                .map(|f| f.glyph_index(ch).is_some())
+                                .unwrap_or(false)
+                        });
+                        if covered {
+                            found.push(path.clone());
+                        }
+                    }
+                    found
+                })
+            })
+            .collect();
+        handles
+            .into_iter()
+            .filter_map(|h| h.join().ok())
+            .flatten()
+            .collect::<Vec<String>>()
+    })
+}
+
 #[tauri::command]
 fn get_charset(path: String, face_index: u32) -> Result<Vec<u32>, String> {
     let data = std::fs::read(&path).map_err(|e| e.to_string())?;
@@ -649,6 +774,11 @@ pub fn run() {
     activation::reconcile(&mut state);
 
     let watch_enabled = state.watch_enabled;
+    let ui_scale_pref = state
+        .prefs
+        .get("uiScale")
+        .and_then(|v| v.as_f64())
+        .map(|s| s.clamp(0.5, 2.0));
     let extra_dirs = state.extra_dirs.clone();
     let library_dir = state.active_library_dir().map(|s| s.to_owned());
     let linked_dirs: Vec<String> = state.linked.iter().cloned().collect();
@@ -660,6 +790,9 @@ pub fn run() {
         .manage(Store(std::sync::Mutex::new(state)))
         .manage(watcher::WatchHandle(std::sync::Mutex::new(None)))
         .setup(move |app| {
+            if let Some(window) = app.get_webview_window("main") {
+                fit_window(&window, ui_scale_pref);
+            }
             allow_previews(app.handle(), &extra_dirs);
             allow_dir(
                 app.handle(),
@@ -720,6 +853,8 @@ pub fn run() {
             set_note,
             play_sound,
             get_charset,
+            fonts_with_char,
+            set_ui_scale,
             get_prefs,
             set_prefs,
             get_settings,

@@ -10,6 +10,7 @@ import {
   FolderPlus,
   Languages,
   MessageSquarePlus,
+  Scaling,
   SunMoon,
   Volume2,
   X,
@@ -42,6 +43,11 @@ export function SettingsOverlay() {
   const updateSettings = useFontStore((s) => s.updateSettings);
   const motionPref = useFontStore((s) => s.motionPref);
   const setMotionPref = useFontStore((s) => s.setMotionPref);
+  const transparencyPref = useFontStore((s) => s.transparencyPref);
+  const setTransparencyPref = useFontStore((s) => s.setTransparencyPref);
+  const uiScale = useFontStore((s) => s.uiScale);
+  const appliedScale = useFontStore((s) => s.appliedScale);
+  const setUiScale = useFontStore((s) => s.setUiScale);
   const soundPref = useFontStore((s) => s.soundPref);
   const setSoundPref = useFontStore((s) => s.setSoundPref);
   const themePref = useFontStore((s) => s.themePref);
@@ -445,6 +451,48 @@ export function SettingsOverlay() {
                   onChange={(on) => setMotionPref(on ? "reduced" : "system")}
                   label={t("settings.reduceMotion")}
                 />
+              </div>
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">
+                    <Eye size={13} strokeWidth={1.5} /> {t("settings.reduceTransparency")}
+                  </div>
+                  <div className="settings-sub">{t("settings.reduceTransparencySub")}</div>
+                </div>
+                <PillToggle
+                  on={transparencyPref === "reduced"}
+                  onChange={(on) => setTransparencyPref(on ? "reduced" : "full")}
+                  label={t("settings.reduceTransparency")}
+                />
+              </div>
+              <div className="settings-row settings-col">
+                <div>
+                  <div className="settings-label">
+                    <Scaling size={13} strokeWidth={1.5} /> {t("settings.uiScale")}
+                  </div>
+                  <div className="settings-sub">
+                    {uiScale === "auto"
+                      ? t("settings.uiScaleAutoSub", { percent: Math.round(appliedScale * 100) })
+                      : t("settings.uiScaleSub")}
+                  </div>
+                </div>
+                <div
+                  className="view-toggle sound-toggle scale-toggle"
+                  role="radiogroup"
+                  aria-label={t("settings.uiScale")}
+                >
+                  {(["auto", 0.8, 0.9, 1, 1.1, 1.25] as const).map((step) => (
+                    <button
+                      key={String(step)}
+                      role="radio"
+                      aria-checked={uiScale === step}
+                      className={`view-btn sound-btn ${uiScale === step ? "view-btn-active" : ""}`}
+                      onClick={() => setUiScale(step)}
+                    >
+                      {step === "auto" ? t("settings.uiScaleAuto") : `${Math.round(step * 100)}%`}
+                    </button>
+                  ))}
+                </div>
               </div>
             </section>
 

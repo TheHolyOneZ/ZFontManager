@@ -60,8 +60,8 @@ function MenuPanel({ x, y, items }: { x: number; y: number; items: MenuItem[] })
     if (!el) return;
     const r = el.getBoundingClientRect();
     setPos({
-      x: Math.min(x, window.innerWidth - r.width - 8),
-      y: Math.min(y, window.innerHeight - r.height - 8),
+      x: Math.max(8, Math.min(x, window.innerWidth - r.width - 8)),
+      y: Math.max(8, Math.min(y, window.innerHeight - r.height - 8)),
     });
   }, [x, y]);
 

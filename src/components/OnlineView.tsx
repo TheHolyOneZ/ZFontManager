@@ -4,7 +4,7 @@ import { Download, ExternalLink, Globe, RefreshCw, Search, Settings2, X } from "
 import { useEffect, useMemo, useRef, useState } from "react";
 import { spring, springSnappy, staggerDelay } from "../design/springs";
 import { PillToggle } from "../design/primitives/PillToggle";
-import { useFontStore } from "../state/fontStore";
+import { SIZES, useFontStore } from "../state/fontStore";
 import { useT, type TKey } from "../lib/i18n";
 import { usePathFontCss } from "../lib/fontLoader";
 import type { OnlineFamily } from "../lib/ipc";
@@ -47,6 +47,7 @@ export function OnlineView() {
   const progress = useFontStore((s) => s.onlineProgress);
   const previewPath = useFontStore((s) => s.onlinePreviewPath);
   const sampleText = useFontStore((s) => s.sampleText);
+  const sizeIndex = useFontStore((s) => s.sizeIndex);
   const previewFamily = usePathFontCss(detail ? detail.id : null, previewPath);
   const installedFamilies = useFontStore((s) => s.fonts);
 
@@ -246,7 +247,10 @@ export function OnlineView() {
 
                   <div className="online-preview" aria-live="polite">
                     {previewFamily ? (
-                      <p className="online-preview-text" style={{ fontFamily: `"${previewFamily}"` }}>
+                      <p
+                        className="online-preview-text"
+                        style={{ fontFamily: `"${previewFamily}"`, fontSize: SIZES[sizeIndex] }}
+                      >
                         {sampleText.trim() || detail.family}
                       </p>
                     ) : (

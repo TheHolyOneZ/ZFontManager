@@ -31,6 +31,8 @@ export interface FontFace {
   monospaced: boolean;
   classification: Classification;
   scripts: string[];
+  features: string[];
+  glyphCount: number;
   fileSize: number;
   source: FontSource;
   deactivatable: boolean;
@@ -200,4 +202,7 @@ export const ipc = {
     invoke<string>("apply_font_in_app", { app, postscriptName, label }),
   getPrefs: () => invoke<Record<string, unknown> | null>("get_prefs"),
   setPrefs: (prefs: Record<string, unknown>) => invoke<void>("set_prefs", { prefs }),
+  fontsWithChar: (paths: string[], codepoint: number) =>
+    invoke<string[]>("fonts_with_char", { paths, codepoint }),
+  setUiScale: (scale: number | null) => invoke<number>("set_ui_scale", { scale }),
 };

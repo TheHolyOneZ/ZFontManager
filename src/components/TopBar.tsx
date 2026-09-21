@@ -14,16 +14,21 @@ import {
 import { useState, type CSSProperties } from "react";
 import { springSnappy, springSoft } from "../design/springs";
 import { SIZES, useFontStore, type SortMode } from "../state/fontStore";
-import type { Classification } from "../lib/ipc";
+import type { Classification, FontFormat } from "../lib/ipc";
 import { useT, type TKey } from "../lib/i18n";
 
-const SORT_MODES = ["name", "styles", "size"] as const satisfies readonly SortMode[];
+const SORT_MODES = ["name", "styles", "size", "glyphs"] as const satisfies readonly SortMode[];
 
 const SORT_KEYS: Record<SortMode, TKey> = {
   name: "sort.name",
   styles: "sort.styles",
   size: "sort.size",
+  glyphs: "sort.glyphs",
 };
+
+const FORMAT_FILTERS = ["otf", "ttf", "woff", "woff2"] as const;
+
+const FEATURE_FILTERS = ["swsh", "salt", "dlig", "smcp", "onum", "frac"] as const;
 
 function SortMenu() {
   const t = useT();
@@ -110,9 +115,23 @@ function FilterMenu() {
   const setVariableOnly = useFontStore((s) => s.setVariableOnly);
   const toggleableOnly = useFontStore((s) => s.toggleableOnly);
   const setToggleableOnly = useFontStore((s) => s.setToggleableOnly);
+  const formatFilter = useFontStore((s) => s.formatFilter);
+  const toggleFormat = useFontStore((s) => s.toggleFormat);
+  const featureFilter = useFontStore((s) => s.featureFilter);
+  const toggleFeature = useFontStore((s) => s.toggleFeature);
+  const charFilter = useFontStore((s) => s.charFilter);
+  const charSearching = useFontStore((s) => s.charSearching);
+  const setCharFilter = useFontStore((s) => s.setCharFilter);
   const [open, setOpen] = useState(false);
 
-  const activeCount = classFilter.length + scriptFilter.length + (variableOnly ? 1 : 0) + (toggleableOnly ? 1 : 0);
+  const activeCount =
+    classFilter.length +
+    scriptFilter.length +
+    formatFilter.length +
+    featureFilter.length +
+    (charFilter ? 1 : 0) +
+    (variableOnly ? 1 : 0) +
+    (toggleableOnly ? 1 : 0);
 
   return (
     <div className="sort-wrap">
@@ -173,6 +192,71 @@ function FilterMenu() {
                   </button>
                 </li>
               ))}
+              <li className="sort-sep" role="none" />
+              <li className="filter-heading" role="none">
+                {t("filter.fileFormat")}
+              </li>
+              {FORMAT_FILTERS.map((fmt) => (
+                <li key={fmt}>
+                  <button
+                    role="option"
+                    aria-selected={formatFilter.includes(fmt)}
+                    className={formatFilter.includes(fmt) ? "sort-item sort-active" : "sort-item"}
+                    onClick={() => toggleFormat(fmt as FontFormat)}
+                  >
+                    <span>{t(`format.${fmt}`)}</span>
+                    {formatFilter.includes(fmt) && <Check size={13} strokeWidth={2} />}
+                  </button>
+                </li>
+              ))}
+              <li className="sort-sep" role="none" />
+              <li className="filter-heading" role="none">
+                {t("filter.typography")}
+              </li>
+              {FEATURE_FILTERS.map((tag) => (
+                <li key={tag}>
+                  <button
+                    role="option"
+                    aria-selected={featureFilter.includes(tag)}
+                    className={featureFilter.includes(tag) ? "sort-item sort-active" : "sort-item"}
+                    onClick={() => toggleFeature(tag)}
+                  >
+                    <span>{t(`feat.${tag}`)}</span>
+                    {featureFilter.includes(tag) && <Check size={13} strokeWidth={2} />}
+                  </button>
+                </li>
+              ))}
+              <li className="sort-sep" role="none" />
+              <li className="filter-heading" role="none">
+                {t("filter.containsChar")}
+              </li>
+              <li className="filter-charrow" role="none">
+                <input
+                  className="filter-charinput"
+                  value={charFilter}
+                  maxLength={2}
+                  spellCheck={false}
+                  placeholder={t("filter.containsCharPlaceholder")}
+                  aria-label={t("filter.containsChar")}
+                  onChange={(e) => setCharFilter(e.target.value)}
+                />
+                <span className="filter-charnote">
+                  {charSearching
+                    ? t("filter.containsCharSearching")
+                    : charFilter
+                      ? `U+${charFilter.codePointAt(0)!.toString(16).toUpperCase().padStart(4, "0")}`
+                      : t("filter.containsCharHint")}
+                </span>
+                {charFilter && (
+                  <button
+                    className="search-clear"
+                    onClick={() => setCharFilter("")}
+                    aria-label={t("filter.containsCharClear")}
+                  >
+                    <X size={13} strokeWidth={2} />
+                  </button>
+                )}
+              </li>
               <li className="sort-sep" role="none" />
               <li>
                 <button

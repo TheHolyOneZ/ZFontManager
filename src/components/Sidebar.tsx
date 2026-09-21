@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Clock, FolderOpen, Globe, History, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
+import { ChevronDown, Clock, FolderOpen, Globe, History, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { openContextMenu } from "../design/primitives/ContextMenu";
 import { spring, springSoft, staggerDelay } from "../design/springs";
@@ -160,6 +160,8 @@ export function Sidebar() {
     (f) => f.faces.length > 0 && f.faces.every((face) => face.source === "system"),
   ).length;
   const tagCounts = allTags(tags);
+  const collapsed = useFontStore((s) => s.collapsedSections);
+  const toggleSection = useFontStore((s) => s.toggleSection);
   const collectionNames = Object.keys(collections).sort((a, b) => a.localeCompare(b));
 
   const removeTagEverywhere = (tag: string) => {
@@ -179,8 +181,21 @@ export function Sidebar() {
       transition={springSoft}
     >
       <div className="sidebar-scroll">
-        <div className="sidebar-section">
-          <div className="sidebar-heading">{t("side.browse")}</div>
+        <div className={`sidebar-section ${collapsed.includes("browse") ? "sidebar-collapsed" : ""}`}>
+          <div className="sidebar-heading sidebar-heading-row">
+            <button
+              className="sidebar-toggle"
+              onClick={() => toggleSection("browse")}
+              aria-expanded={!collapsed.includes("browse")}
+            >
+              <span className="sidebar-chevron">
+                <ChevronDown size={12} strokeWidth={2} />
+              </span>
+              <span>{t("side.browse")}</span>
+            </button>
+          </div>
+          {!collapsed.includes("browse") && (
+          <>
           <NavRow
             nav={{ kind: "library" }}
             icon={<Library size={15} strokeWidth={1.5} />}
@@ -230,11 +245,22 @@ export function Sidebar() {
             count={systemCount}
             index={i++}
           />
+          </>
+          )}
         </div>
 
-        <div className="sidebar-section">
+        <div className={`sidebar-section ${collapsed.includes("collections") ? "sidebar-collapsed" : ""}`}>
           <div className="sidebar-heading sidebar-heading-row">
-            <span>{t("side.collections")}</span>
+            <button
+              className="sidebar-toggle"
+              onClick={() => toggleSection("collections")}
+              aria-expanded={!collapsed.includes("collections")}
+            >
+              <span className="sidebar-chevron">
+                <ChevronDown size={12} strokeWidth={2} />
+              </span>
+              <span>{t("side.collections")}</span>
+            </button>
             <motion.button
               className="sidebar-add"
               aria-label={t("side.newCollection")}
@@ -303,9 +329,21 @@ export function Sidebar() {
         </div>
 
         {tagCounts.size > 0 && (
-          <div className="sidebar-section">
-            <div className="sidebar-heading">{t("side.tags")}</div>
-            {[...tagCounts.entries()].map(([tag, count]) => (
+          <div className={`sidebar-section ${collapsed.includes("tags") ? "sidebar-collapsed" : ""}`}>
+            <div className="sidebar-heading sidebar-heading-row">
+              <button
+                className="sidebar-toggle"
+                onClick={() => toggleSection("tags")}
+                aria-expanded={!collapsed.includes("tags")}
+              >
+                <span className="sidebar-chevron">
+                  <ChevronDown size={12} strokeWidth={2} />
+                </span>
+                <span>{t("side.tags")}</span>
+              </button>
+            </div>
+            {!collapsed.includes("tags") &&
+              [...tagCounts.entries()].map(([tag, count]) => (
               <NavRow
                 key={tag}
                 nav={{ kind: "tag", tag }}

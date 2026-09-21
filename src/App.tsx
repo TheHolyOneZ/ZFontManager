@@ -3,6 +3,7 @@ import { MotionConfig, motion } from "motion/react";
 import { Clock, FolderOpen, History, Monitor, Power, PowerOff, SearchX, Star, Tag as TagIcon, Type } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { DetailPanel } from "./components/DetailPanel";
+import { ResizeGrips } from "./components/ResizeGrips";
 import { Titlebar } from "./components/Titlebar";
 import { DropZone } from "./components/DropZone";
 import { FontGrid } from "./components/FontGrid";
@@ -116,15 +117,20 @@ function MainContent() {
   const scriptFilter = useFontStore((s) => s.scriptFilter);
   const variableOnly = useFontStore((s) => s.variableOnly);
   const toggleableOnly = useFontStore((s) => s.toggleableOnly);
+  const formatFilter = useFontStore((s) => s.formatFilter);
+  const featureFilter = useFontStore((s) => s.featureFilter);
+  const charFilter = useFontStore((s) => s.charFilter);
+  const charMatches = useFontStore((s) => s.charMatches);
   const sort = useFontStore((s) => s.sort);
 
   const families = useMemo(
     () =>
       selectVisibleFamilies({
         fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search,
-        classFilter, scriptFilter, variableOnly, toggleableOnly, nav, sort,
+        classFilter, scriptFilter, formatFilter, featureFilter, charFilter, charMatches,
+        variableOnly, toggleableOnly, nav, sort,
       }),
-    [fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search, classFilter, scriptFilter, variableOnly, toggleableOnly, nav, sort],
+    [fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search, classFilter, scriptFilter, formatFilter, featureFilter, charFilter, charMatches, variableOnly, toggleableOnly, nav, sort],
   );
 
   useEffect(() => {
@@ -143,6 +149,9 @@ function MainContent() {
           search.trim().length > 0 ||
           classFilter.length > 0 ||
           scriptFilter.length > 0 ||
+          formatFilter.length > 0 ||
+          featureFilter.length > 0 ||
+          charFilter.length > 0 ||
           variableOnly ||
           toggleableOnly
         }
@@ -293,6 +302,7 @@ export default function App() {
       <ContextMenuHost />
       <DuplicateDialog />
       <Toaster />
+      <ResizeGrips />
     </MotionConfig>
   );
 }

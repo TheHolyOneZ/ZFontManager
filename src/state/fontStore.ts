@@ -7,6 +7,7 @@ import {
   type AppSettings,
   type Classification,
   type FontFace,
+  type FontFormat,
   type InstallMode,
   type OnlineFamily,
   type OnlineFamilyDetail,
@@ -36,7 +37,9 @@ let initStarted = false;
 
 export type ViewMode = "grid" | "list" | "waterfall";
 export type MotionPref = "system" | "reduced";
-export type SortMode = "name" | "styles" | "size";
+export type TransparencyPref = "full" | "reduced";
+export type UiScale = "auto" | number;
+export type SortMode = "name" | "styles" | "size" | "glyphs";
 export type Nav =
   | { kind: "library" }
   | { kind: "trash" }
@@ -63,6 +66,8 @@ export interface Family {
   foundry: string | null;
   classification: Classification;
   scripts: string[];
+  features: string[];
+  glyphCount: number;
 }
 
 interface FontStore {
@@ -106,6 +111,9 @@ interface FontStore {
 
   adobeAvailable: boolean;
   motionPref: MotionPref;
+  transparencyPref: TransparencyPref;
+  uiScale: UiScale;
+  appliedScale: number;
   soundPref: SoundLevel;
   themePref: ThemePref;
   localePref: LocalePref;
@@ -125,6 +133,12 @@ interface FontStore {
   classFilter: Classification[];
 
   scriptFilter: string[];
+  formatFilter: FontFormat[];
+  featureFilter: string[];
+  charFilter: string;
+  charMatches: string[] | null;
+  charSearching: boolean;
+  collapsedSections: string[];
   variableOnly: boolean;
   toggleableOnly: boolean;
   nav: Nav;
@@ -175,6 +189,12 @@ interface FontStore {
   closeOnlineFamily: () => void;
   installOnlineFamily: (id: string) => Promise<void>;
   setMotionPref: (pref: MotionPref) => void;
+  setTransparencyPref: (pref: TransparencyPref) => void;
+  setUiScale: (scale: UiScale) => void;
+  toggleFormat: (f: FontFormat) => void;
+  toggleFeature: (tag: string) => void;
+  setCharFilter: (ch: string) => void;
+  toggleSection: (id: string) => void;
   setSoundPref: (pref: SoundLevel) => void;
   setThemePref: (pref: ThemePref) => void;
   setLocalePref: (pref: LocalePref) => void;
@@ -204,6 +224,10 @@ function applyMotionPref(pref: MotionPref) {
   document.documentElement.dataset.motion = pref;
 }
 
+function applyTransparencyPref(pref: TransparencyPref) {
+  document.documentElement.dataset.transparency = pref;
+}
+
 let prefsTimer: ReturnType<typeof setTimeout> | undefined;
 function persistPrefs(get: () => FontStore) {
   clearTimeout(prefsTimer);
@@ -216,6 +240,9 @@ function persistPrefs(get: () => FontStore) {
       sort: s.sort,
       panelWidth: s.panelWidth,
       motionPref: s.motionPref,
+      transparencyPref: s.transparencyPref,
+      uiScale: s.uiScale === "auto" ? null : s.uiScale,
+      collapsedSections: s.collapsedSections,
       soundPref: s.soundPref,
       themePref: s.themePref,
       localePref: s.localePref,
@@ -263,6 +290,9 @@ export const useFontStore = create<FontStore>((set, get) => ({
   motionPref: "system",
   soundPref: "off",
   themePref: "dark",
+  transparencyPref: "full",
+  uiScale: "auto",
+  appliedScale: 1,
   localePref: getLocalePref(),
   bulkTagFor: null,
   onboarded: false,
@@ -275,7 +305,13 @@ export const useFontStore = create<FontStore>((set, get) => ({
   search: "",
   classFilter: [],
   scriptFilter: [],
+  formatFilter: [],
+  featureFilter: [],
+  charFilter: "",
+  charMatches: null,
+  charSearching: false,
   variableOnly: false,
+  collapsedSections: [],
   toggleableOnly: false,
   nav: { kind: "library" },
   selectedFamily: null,
@@ -298,7 +334,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
         )
           ? (prefs.viewMode as ViewMode)
           : "grid",
-        sort: (["name", "styles", "size"] as const).includes(prefs.sort as SortMode)
+        sort: (["name", "styles", "size", "glyphs"] as const).includes(prefs.sort as SortMode)
           ? (prefs.sort as SortMode)
           : "name",
         panelWidth:
@@ -306,6 +342,11 @@ export const useFontStore = create<FontStore>((set, get) => ({
             ? Math.min(560, Math.max(300, prefs.panelWidth))
             : 348,
         motionPref: prefs.motionPref === "reduced" ? "reduced" : "system",
+        transparencyPref: prefs.transparencyPref === "reduced" ? "reduced" : "full",
+        uiScale: typeof prefs.uiScale === "number" ? prefs.uiScale : "auto",
+        collapsedSections: Array.isArray(prefs.collapsedSections)
+          ? (prefs.collapsedSections as unknown[]).filter((n): n is string => typeof n === "string")
+          : [],
         soundPref: (["off", "subtle", "on"] as const).includes(prefs.soundPref as SoundLevel)
           ? (prefs.soundPref as SoundLevel)
           : "off",
@@ -325,6 +366,13 @@ export const useFontStore = create<FontStore>((set, get) => ({
     }
     applyTheme(get().themePref);
     applyMotionPref(get().motionPref);
+    applyTransparencyPref(get().transparencyPref);
+    try {
+      const scale = get().uiScale;
+      set({ appliedScale: await ipc.setUiScale(scale === "auto" ? null : scale) });
+    } catch {
+
+    }
     try {
       set({ settings: await ipc.getSettings() });
     } catch {
@@ -408,6 +456,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       // Drop last-imported entries that no longer exist.
       const names = new Set(fonts.map((f) => f.family));
       const keptImported = get().lastImported.filter((n) => names.has(n));
+      if (get().charFilter) set({ charMatches: null, charSearching: false });
       if (keptImported.length !== get().lastImported.length) set({ lastImported: keptImported });
       // Drop session entries that no longer exist or are no longer active.
       const alive = new Set(fonts.filter((f) => f.active).map((f) => f.family));
@@ -1105,6 +1154,60 @@ export const useFontStore = create<FontStore>((set, get) => ({
     set({ scriptFilter: cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s] });
   },
   setVariableOnly: (variableOnly) => set({ variableOnly }),
+  toggleFormat: (f) => {
+    const cur = get().formatFilter;
+    set({ formatFilter: cur.includes(f) ? cur.filter((x) => x !== f) : [...cur, f] });
+  },
+  toggleFeature: (tag) => {
+    const cur = get().featureFilter;
+    set({ featureFilter: cur.includes(tag) ? cur.filter((x) => x !== tag) : [...cur, tag] });
+  },
+  setCharFilter: (ch) => {
+    const first = [...ch.trim()][0] ?? "";
+    if (!first) {
+      set({ charFilter: "", charMatches: null, charSearching: false });
+      return;
+    }
+    const cp = first.codePointAt(0);
+    if (cp === undefined) return;
+    set({ charFilter: first, charSearching: true });
+    const paths = [...new Set(get().fonts.map((f) => f.path))];
+    void ipc
+      .fontsWithChar(paths, cp)
+      .then((hits) => {
+        if (get().charFilter !== first) return;
+        const hitSet = new Set(hits);
+        const families = new Set(
+          get().fonts.filter((f) => hitSet.has(f.path)).map((f) => f.family),
+        );
+        set({ charMatches: [...families], charSearching: false });
+      })
+      .catch((e) => {
+        if (get().charFilter !== first) return;
+        set({ charMatches: [], charSearching: false });
+        toast.error(t("toast.charSearchFailed"), String(e));
+      });
+  },
+  toggleSection: (id) => {
+    const cur = get().collapsedSections;
+    set({ collapsedSections: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] });
+    persistPrefs(get);
+  },
+  setTransparencyPref: (transparencyPref) => {
+    set({ transparencyPref });
+    applyTransparencyPref(transparencyPref);
+    persistPrefs(get);
+  },
+  setUiScale: (uiScale) => {
+    set({ uiScale });
+    persistPrefs(get);
+    void ipc
+      .setUiScale(uiScale === "auto" ? null : uiScale)
+      .then((applied) => set({ appliedScale: applied }))
+      .catch(() => {
+
+      });
+  },
   setToggleableOnly: (toggleableOnly) => set({ toggleableOnly }),
 
   exportLibraryData: async (dest) => {
@@ -1215,6 +1318,8 @@ export function computeFamilies(
         foundry: null,
         classification: "unknown",
         scripts: [],
+        features: [],
+        glyphCount: 0,
       };
       map.set(f.family, fam);
     }
@@ -1227,6 +1332,10 @@ export function computeFamilies(
     for (const s of f.scripts ?? []) {
       if (!fam.scripts.includes(s)) fam.scripts.push(s);
     }
+    for (const ft of f.features ?? []) {
+      if (!fam.features.includes(ft)) fam.features.push(ft);
+    }
+    fam.glyphCount = Math.max(fam.glyphCount, f.glyphCount ?? 0);
     fam.active ||= f.active;
     fam.deactivatable ||= f.deactivatable;
     fam.totalSize += f.fileSize;
@@ -1248,6 +1357,10 @@ export function selectVisibleFamilies(s: {
   search: string;
   classFilter: Classification[];
   scriptFilter: string[];
+  formatFilter: FontFormat[];
+  featureFilter: string[];
+  charFilter: string;
+  charMatches: string[] | null;
   variableOnly: boolean;
   toggleableOnly: boolean;
   nav: Nav;
@@ -1261,6 +1374,16 @@ export function selectVisibleFamilies(s: {
   }
   if (s.scriptFilter.length > 0) {
     out = out.filter((f) => s.scriptFilter.every((sc) => f.scripts.includes(sc)));
+  }
+  if (s.formatFilter.length > 0) {
+    out = out.filter((f) => f.formats.some((fmt) => s.formatFilter.includes(fmt as FontFormat)));
+  }
+  if (s.featureFilter.length > 0) {
+    out = out.filter((f) => s.featureFilter.every((tag) => f.features.includes(tag)));
+  }
+  if (s.charFilter) {
+    const hits = s.charMatches;
+    out = hits === null ? [] : out.filter((f) => hits.includes(f.name));
   }
   if (s.variableOnly) {
     out = out.filter((f) => f.isVariable);
@@ -1310,6 +1433,9 @@ export function selectVisibleFamilies(s: {
       break;
     case "size":
       out.sort((a, b) => b.totalSize - a.totalSize || a.name.localeCompare(b.name));
+      break;
+    case "glyphs":
+      out.sort((a, b) => b.glyphCount - a.glyphCount || a.name.localeCompare(b.name));
       break;
     default:
       out.sort((a, b) => a.name.localeCompare(b.name));

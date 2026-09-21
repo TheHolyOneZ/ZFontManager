@@ -12,7 +12,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.5.1-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.6.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -285,15 +285,23 @@ Four complementary ways to impose order on font chaos:
 - **Search** by name, live as you type (press <kbd>/</kbd> to jump to the box).
 - **Filter** by classification — Serif, Sans, Mono, Script, Display and more.
 - **Filter** by writing system — Latin, Cyrillic, Greek, and others.
+- **Filter** by file format — OpenType, TrueType, WOFF and WOFF2.
+- **Filter** by typographic feature — swashes, stylistic alternates,
+  discretionary ligatures, small caps, oldstyle figures and fractions. If you
+  are looking for faces with alternate letterforms, start here.
+- **Filter** by character — type any character and the library narrows to the
+  fonts that actually have a glyph for it. This one reads every font file, so
+  it runs when you ask rather than continuously.
 - **Variable fonts only** — one switch to see just the flexible ones.
 - **Hide fonts the OS won't let you turn off** — on Windows and macOS, drop the
   system fonts and see only what you can actually act on.
-- **Sort** by name, style count, or file size.
+- **Sort** by name, style count, file size, or glyph count.
 
 The sidebar also narrows the library by state: **Activated**, **Activated
 until close**, **Deactivated**, **Last imported** and **System fonts**. Each
 one is reachable from the command palette too, so you can jump straight there
-without reaching for the mouse.
+without reaching for the mouse. Its Browse, Collections and Tags sections each
+fold away if you would rather not see them, and stay folded next time.
 
 Filters combine, and the empty state always tells you which filters are
 active so you're never staring at a mysteriously empty library.
@@ -326,8 +334,8 @@ Click any family and the detail panel slides in:
   enable them in your design app
 - **Character map** — every glyph the font actually contains; click a
   character to copy it
-- **The practical facts** — format, file size, file path, license info when
-  the font declares one, plus your tags and notes
+- **The practical facts** — format, glyph count, file size, file path, license
+  info when the font declares one, plus your tags and notes
 
 ### Export a specimen sheet
 
@@ -354,6 +362,14 @@ browser, it works exactly the way you expect.
   Three levels: on, subtle, or off.
 - **Reduced motion** — replaces the springy animations with quick fades,
   independently of (or together with) your system-wide preference.
+- **Reduced transparency** — swaps the frosted glass for solid panels. Easier
+  to read, and it removes the most expensive thing the app draws, which is
+  worth a lot on older integrated graphics.
+- **Interface scale** — ZFontManager measures the usable area of your screen at
+  startup and picks a scale that fits the whole interface into it, so a small
+  or low-resolution display shows the entire layout rather than a cropped one.
+  Leave it on Auto or pin it between 80% and 125% yourself; larger settings are
+  just as useful on a big display.
 - A **first-launch tour** glides a spotlight over the interface and teaches
   the essentials in a minute. Replayable anytime from Settings.
 
@@ -516,10 +532,21 @@ system can see them; the original file is never moved, copied or deleted.
 > install by default, and they are linked against the build runner's libraries,
 > so older distributions can refuse to start them. When one is offered it's a
 > convenience, not the recommended path.
+>
+> The RPM registers itself as `z-font-manager`, so `rpm -q z-font-manager` is
+> what reports the installed version even though the file is named
+> `ZFontManager-<version>-1.x86_64.rpm`.
 
 Two integrations are platform-bound and are hidden where they don't apply:
 **Photoshop / Illustrator** (Windows and macOS) and **Affinity by Canva**
 (Windows and macOS).
+
+> [!TIP]
+> **On a small or low-resolution screen**, ZFontManager fits itself to the
+> usable area of your display at startup and scales the interface to match, so
+> nothing lands under a panel or off the bottom edge. Settings → Appearance →
+> *Interface scale* if you would rather set it yourself. On an older graphics
+> chip, *Reduce transparency* in the same section is worth turning on.
 
 > [!IMPORTANT]
 > Some applications only refresh their font list when they start. If a

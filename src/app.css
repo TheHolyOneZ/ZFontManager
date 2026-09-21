@@ -108,6 +108,20 @@
   min-height: 0;
 }
 
+.resize-grip {
+  position: fixed;
+  z-index: 200;
+  -webkit-app-region: no-drag;
+}
+.resize-n { top: 0; left: 12px; right: 12px; height: 4px; cursor: n-resize; }
+.resize-s { bottom: 0; left: 12px; right: 12px; height: 4px; cursor: s-resize; }
+.resize-w { left: 0; top: 8px; bottom: 8px; width: 4px; cursor: w-resize; }
+.resize-e { right: 0; top: 8px; bottom: 8px; width: 3px; cursor: e-resize; }
+.resize-nw { top: 0; left: 0; width: 12px; height: 12px; cursor: nw-resize; }
+.resize-ne { top: 0; right: 0; width: 12px; height: 12px; cursor: ne-resize; }
+.resize-sw { bottom: 0; left: 0; width: 12px; height: 12px; cursor: sw-resize; }
+.resize-se { bottom: 0; right: 0; width: 12px; height: 12px; cursor: se-resize; }
+
 .sidebar {
   width: 248px;
   flex-shrink: 0;
@@ -462,6 +476,30 @@
   min-width: 176px;
   max-height: min(480px, calc(100vh - 140px));
   overflow-y: auto;
+}
+.filter-charrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 9px 6px;
+}
+.filter-charinput {
+  width: 42px;
+  flex-shrink: 0;
+  padding: 4px 6px;
+  border-radius: 5px;
+  border: 1px solid var(--glass-border);
+  background: var(--e1);
+  color: var(--text-primary);
+  font-size: var(--fs-16);
+  text-align: center;
+}
+.filter-charnote {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-10);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
 }
 .filter-heading {
   padding: 6px 11px 2px;
@@ -1621,6 +1659,9 @@
   z-index: 81;
   min-width: 200px;
   max-width: 280px;
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border-radius: 6px;
   padding: 4px;
   transform-origin: top left;
@@ -1697,6 +1738,27 @@
   box-shadow: 0 0 8px var(--accent-glow-soft);
 }
 
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+}
+.sidebar-chevron {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: transform var(--t-quick) ease;
+}
+.sidebar-collapsed .sidebar-chevron {
+  transform: rotate(-90deg);
+}
 .sidebar-heading-row {
   display: flex;
   align-items: center;
@@ -3117,6 +3179,13 @@
   font-size: var(--fs-11);
   font-weight: 500;
   padding: 5px 10px;
+}
+.scale-toggle {
+  width: 100%;
+}
+.scale-toggle .sound-btn {
+  flex: 1;
+  padding: 5px 4px;
 }
 
 .bulktag-panel {

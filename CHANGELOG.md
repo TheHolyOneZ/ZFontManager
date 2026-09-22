@@ -4,6 +4,19 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.1] — 2026-09-22
+
+### Added
+
+- **Show only your own fonts.** A new *Show* filter at the top of the filter
+  menu switches between all fonts, system fonts, and the fonts you installed
+  yourself. On a machine with several hundred system faces, finding the ones
+  you added by hand no longer means scrolling past everything the OS shipped.
+  It composes with the other filters, so you can narrow to your own fonts and
+  then filter those by format, feature or character.
+
+  Requested by a user who found their own fonts hard to pick out of the list.
+
 ## [0.6.0] — 2026-09-21
 
 Everything here comes from one report by a tester running Fedora on a 1366x768

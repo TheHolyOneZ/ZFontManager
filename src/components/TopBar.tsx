@@ -29,6 +29,7 @@ const SORT_KEYS: Record<SortMode, TKey> = {
 const FORMAT_FILTERS = ["otf", "ttf", "woff", "woff2"] as const;
 
 const FEATURE_FILTERS = ["swsh", "salt", "dlig", "smcp", "onum", "frac"] as const;
+const SOURCE_FILTERS = ["all", "system", "user"] as const;
 
 function SortMenu() {
   const t = useT();
@@ -119,6 +120,8 @@ function FilterMenu() {
   const toggleFormat = useFontStore((s) => s.toggleFormat);
   const featureFilter = useFontStore((s) => s.featureFilter);
   const toggleFeature = useFontStore((s) => s.toggleFeature);
+  const sourceFilter = useFontStore((s) => s.sourceFilter);
+  const setSourceFilter = useFontStore((s) => s.setSourceFilter);
   const charFilter = useFontStore((s) => s.charFilter);
   const charSearching = useFontStore((s) => s.charSearching);
   const setCharFilter = useFontStore((s) => s.setCharFilter);
@@ -129,6 +132,7 @@ function FilterMenu() {
     scriptFilter.length +
     formatFilter.length +
     featureFilter.length +
+    (sourceFilter !== "all" ? 1 : 0) +
     (charFilter ? 1 : 0) +
     (variableOnly ? 1 : 0) +
     (toggleableOnly ? 1 : 0);
@@ -159,6 +163,23 @@ function FilterMenu() {
               exit={{ opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.13 } }}
               transition={springSnappy}
             >
+              <li className="filter-heading" role="none">
+                {t("filter.show")}
+              </li>
+              {SOURCE_FILTERS.map((src) => (
+                <li key={src}>
+                  <button
+                    role="option"
+                    aria-selected={sourceFilter === src}
+                    className={sourceFilter === src ? "sort-item sort-active" : "sort-item"}
+                    onClick={() => setSourceFilter(src)}
+                  >
+                    <span>{t(`source.${src}`)}</span>
+                    {sourceFilter === src && <Check size={13} strokeWidth={2} />}
+                  </button>
+                </li>
+              ))}
+              <li className="sort-sep" role="none" />
               <li className="filter-heading" role="none">
                 {t("filter.classification")}
               </li>

@@ -40,6 +40,8 @@ export type MotionPref = "system" | "reduced";
 export type TransparencyPref = "full" | "reduced";
 export type UiScale = "auto" | number;
 export type SortMode = "name" | "styles" | "size" | "glyphs";
+export type SourceFilter = "all" | "system" | "user";
+
 export type Nav =
   | { kind: "library" }
   | { kind: "trash" }
@@ -135,6 +137,7 @@ interface FontStore {
   scriptFilter: string[];
   formatFilter: FontFormat[];
   featureFilter: string[];
+  sourceFilter: SourceFilter;
   charFilter: string;
   charMatches: string[] | null;
   charSearching: boolean;
@@ -193,6 +196,7 @@ interface FontStore {
   setUiScale: (scale: UiScale) => void;
   toggleFormat: (f: FontFormat) => void;
   toggleFeature: (tag: string) => void;
+  setSourceFilter: (v: SourceFilter) => void;
   setCharFilter: (ch: string) => void;
   toggleSection: (id: string) => void;
   setSoundPref: (pref: SoundLevel) => void;
@@ -307,6 +311,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   scriptFilter: [],
   formatFilter: [],
   featureFilter: [],
+  sourceFilter: "all",
   charFilter: "",
   charMatches: null,
   charSearching: false,
@@ -1162,6 +1167,9 @@ export const useFontStore = create<FontStore>((set, get) => ({
     const cur = get().featureFilter;
     set({ featureFilter: cur.includes(tag) ? cur.filter((x) => x !== tag) : [...cur, tag] });
   },
+  setSourceFilter: (v) => {
+    set({ sourceFilter: v });
+  },
   setCharFilter: (ch) => {
     const first = [...ch.trim()][0] ?? "";
     if (!first) {
@@ -1359,6 +1367,7 @@ export function selectVisibleFamilies(s: {
   scriptFilter: string[];
   formatFilter: FontFormat[];
   featureFilter: string[];
+  sourceFilter: SourceFilter;
   charFilter: string;
   charMatches: string[] | null;
   variableOnly: boolean;
@@ -1380,6 +1389,12 @@ export function selectVisibleFamilies(s: {
   }
   if (s.featureFilter.length > 0) {
     out = out.filter((f) => s.featureFilter.every((tag) => f.features.includes(tag)));
+  }
+  if (s.sourceFilter === "system") {
+    out = out.filter((f) => f.faces.length > 0 && f.faces.every((fc) => fc.source === "system"));
+  }
+  if (s.sourceFilter === "user") {
+    out = out.filter((f) => f.faces.some((fc) => fc.source !== "system"));
   }
   if (s.charFilter) {
     const hits = s.charMatches;

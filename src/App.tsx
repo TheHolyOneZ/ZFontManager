@@ -119,6 +119,7 @@ function MainContent() {
   const toggleableOnly = useFontStore((s) => s.toggleableOnly);
   const formatFilter = useFontStore((s) => s.formatFilter);
   const featureFilter = useFontStore((s) => s.featureFilter);
+  const sourceFilter = useFontStore((s) => s.sourceFilter);
   const charFilter = useFontStore((s) => s.charFilter);
   const charMatches = useFontStore((s) => s.charMatches);
   const sort = useFontStore((s) => s.sort);
@@ -127,10 +128,10 @@ function MainContent() {
     () =>
       selectVisibleFamilies({
         fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search,
-        classFilter, scriptFilter, formatFilter, featureFilter, charFilter, charMatches,
+        classFilter, scriptFilter, formatFilter, featureFilter, sourceFilter, charFilter, charMatches,
         variableOnly, toggleableOnly, nav, sort,
       }),
-    [fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search, classFilter, scriptFilter, formatFilter, featureFilter, charFilter, charMatches, variableOnly, toggleableOnly, nav, sort],
+    [fonts, tags, collections, favorites, sessionActivated, lastImported, notes, search, classFilter, scriptFilter, formatFilter, featureFilter, sourceFilter, charFilter, charMatches, variableOnly, toggleableOnly, nav, sort],
   );
 
   useEffect(() => {
@@ -151,6 +152,7 @@ function MainContent() {
           scriptFilter.length > 0 ||
           formatFilter.length > 0 ||
           featureFilter.length > 0 ||
+          sourceFilter !== "all" ||
           charFilter.length > 0 ||
           variableOnly ||
           toggleableOnly

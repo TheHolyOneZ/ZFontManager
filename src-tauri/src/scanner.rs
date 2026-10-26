@@ -1,6 +1,7 @@
 use crate::font_types::{FontFace, FontSource};
 use crate::parser;
 use serde::Serialize;
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use tauri::Emitter;
 use walkdir::WalkDir;
@@ -114,4 +115,61 @@ pub fn scan_all(app: &tauri::AppHandle, extra: &[String], managed: &Path) -> Vec
     faces.sort_by(|a, b| a.id.cmp(&b.id));
     faces.dedup_by(|a, b| a.id == b.id);
     faces
+}
+
+pub fn merge_linked(mut faces: Vec<FontFace>, linked: &HashSet<String>) -> Vec<FontFace> {
+    let mut linked_faces = Vec::new();
+    let mut targets = HashSet::new();
+    for path in linked {
+        let p = Path::new(path);
+        if !p.is_file() {
+            continue;
+        }
+        if let Ok(real) = std::fs::canonicalize(p) {
+            targets.insert(real);
+        }
+        linked_faces.extend(parser::parse_font_file(p, FontSource::Managed));
+    }
+    if linked_faces.is_empty() {
+        return faces;
+    }
+    let ids: HashSet<&str> = linked_faces.iter().map(|f| f.id.as_str()).collect();
+    faces.retain(|f| !ids.contains(f.id.as_str()) && !is_alias_of(Path::new(&f.path), &targets));
+    faces.extend(linked_faces);
+    faces
+}
+
+fn is_alias_of(path: &Path, targets: &HashSet<PathBuf>) -> bool {
+    std::fs::symlink_metadata(path).is_ok_and(|m| m.file_type().is_symlink())
+        && std::fs::canonicalize(path).is_ok_and(|real| targets.contains(&real))
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn managed_symlink_is_alias_of_linked_original() {
+        let tmp = std::env::temp_dir().join(format!("zfm-alias-{}", std::process::id()));
+        let library = tmp.join("library");
+        std::fs::create_dir_all(&library).unwrap();
+        let original = tmp.join("Original.otf");
+        let other = tmp.join("Other.otf");
+        std::fs::write(&original, b"font").unwrap();
+        std::fs::write(&other, b"font").unwrap();
+        let alias = library.join("Original.otf");
+        let copy = library.join("Copy.otf");
+        std::os::unix::fs::symlink(&original, &alias).unwrap();
+        std::fs::write(&copy, b"font").unwrap();
+        let unrelated = library.join("Other.otf");
+        std::os::unix::fs::symlink(&other, &unrelated).unwrap();
+
+        let targets: HashSet<PathBuf> = [std::fs::canonicalize(&original).unwrap()].into();
+        assert!(is_alias_of(&alias, &targets));
+        assert!(!is_alias_of(&original, &targets));
+        assert!(!is_alias_of(&copy, &targets));
+        assert!(!is_alias_of(&unrelated, &targets));
+
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
 }

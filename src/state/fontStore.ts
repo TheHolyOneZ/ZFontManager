@@ -169,6 +169,7 @@ interface FontStore {
   deleteCollection: (name: string) => Promise<void>;
   renameCollection: (from: string, to: string) => Promise<void>;
   toggleFamilyInCollection: (collection: string, family: string) => Promise<void>;
+  toggleFamiliesInCollection: (collection: string, families: string[]) => Promise<void>;
   toggleFavorite: (family: string) => Promise<void>;
   setFamilyNote: (family: string, note: string) => Promise<void>;
   setFamiliesActiveBulk: (families: string[], active: boolean) => Promise<void>;
@@ -811,6 +812,21 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.setCollection(collection, families);
     } catch (e) {
       set({ collections: prev });
+      toast.error(t("toast.couldntUpdateCollection"), String(e));
+    }
+  },
+
+  toggleFamiliesInCollection: async (collection, names) => {
+    const prev = get().collections;
+    const current = prev[collection] ?? [];
+    const families = names.every((f) => current.includes(f))
+      ? current.filter((f) => !names.includes(f))
+      : [...new Set([...current, ...names])];
+    set({ collections: { ...prev, [collection]: families } });
+    try {
+      await ipc.setCollection(collection, families);
+    } catch (e) {
+      set({ collections: { ...get().collections, [collection]: current } });
       toast.error(t("toast.couldntUpdateCollection"), String(e));
     }
   },

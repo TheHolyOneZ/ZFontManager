@@ -4,6 +4,33 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.8.1] — 2026-10-26
+
+### Fixed
+
+- **Linux and macOS: a linked font was reported as a name conflict with
+  itself.** A font added with **Add to library** stays where it is, and
+  activating it puts a link to it in the library folder. The scan followed
+  that link and found the font a second time, so the original and the link
+  showed up as two files with the same name and every activated linked font
+  got a conflict badge. A link that points at a linked font is now recognised
+  as the same font and the library keeps one entry with the original path, so
+  activating and deactivating work as before. A real second copy of a font is
+  still reported.
+
+  Reported by chinchah-lab, with the exact code path. (#21)
+
+### Changed
+
+- **Collections and tags can be picked several at a time.** Ticking a
+  collection or tag in the right-click menu no longer closes it, so a font, or
+  a selection of fonts, can go into several collections in one go. Each tick
+  shows straight away; Esc or a click outside closes the menu. If saving a
+  collection for a selection fails, the change is now undone and reported
+  instead of failing silently.
+
+  Suggested by emuspawn. (#20)
+
 ## [0.8.0] — 2026-10-23
 
 ### Fixed

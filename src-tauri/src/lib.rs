@@ -30,27 +30,12 @@ async fn scan_fonts(app: tauri::AppHandle) -> Result<Vec<FontFace>, String> {
         )
     };
     let managed = scanner::effective_managed_dir(library_dir.as_deref());
-    let mut faces = tauri::async_runtime::spawn_blocking({
+    let faces = tauri::async_runtime::spawn_blocking({
         let app = app.clone();
-        move || scanner::scan_all(&app, &extra, &managed)
+        move || scanner::merge_linked(scanner::scan_all(&app, &extra, &managed), &linked)
     })
     .await
     .map_err(|e| e.to_string())?;
-
-    let mut linked_faces = Vec::new();
-    for path in &linked {
-        let p = std::path::Path::new(path);
-        if !p.is_file() {
-            continue;
-        }
-        linked_faces.extend(parser::parse_font_file(p, FontSource::Managed));
-    }
-    if !linked_faces.is_empty() {
-        let ids: std::collections::HashSet<&str> =
-            linked_faces.iter().map(|f| f.id.as_str()).collect();
-        faces.retain(|f| !ids.contains(f.id.as_str()));
-        faces.extend(linked_faces);
-    }
 
     diag::index_library(&faces);
     let probe = activation::probe();

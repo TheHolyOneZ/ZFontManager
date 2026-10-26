@@ -143,18 +143,7 @@ function buildBulkMenu(names: string[]): MenuItem[] {
         kind: "check",
         label: name,
         checked: names.every((f) => (s.collections[name] ?? []).includes(f)),
-        action: () => {
-          const current = s.collections[name] ?? [];
-          const all = names.every((f) => current.includes(f));
-          const next = all
-            ? current.filter((f) => !names.includes(f))
-            : [...new Set([...current, ...names])];
-          void ipc.setCollection(name, next).then(() =>
-            useFontStore.setState({
-              collections: { ...useFontStore.getState().collections, [name]: next },
-            }),
-          );
-        },
+        action: () => void s.toggleFamiliesInCollection(name, names),
       }),
     ),
     { kind: "separator" },

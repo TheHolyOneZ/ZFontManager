@@ -16,4 +16,6 @@ strip-comments.mjs
 /release.txt
 /Issue-18.txt
 /.npmrc
+/release/
 /.gitignore
+/Issues/

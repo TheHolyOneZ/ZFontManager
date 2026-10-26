@@ -54,6 +54,7 @@ function MenuPanel({ x, y, items }: { x: number; y: number; items: MenuItem[] })
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ x, y });
   const close = useMenuStore((s) => s.close);
+  const [flipped, setFlipped] = useState<ReadonlySet<MenuItem>>(() => new Set());
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -108,20 +109,25 @@ function MenuPanel({ x, y, items }: { x: number; y: number; items: MenuItem[] })
               {item.label}
             </div>
           );
-        if (item.kind === "check")
+        if (item.kind === "check") {
+          const checked = item.checked !== flipped.has(item);
           return (
             <button
               key={i}
               role="menuitemcheckbox"
-              aria-checked={item.checked}
+              aria-checked={checked}
               className="ctx-item"
               onClick={() => {
                 item.action();
-                close();
+                setFlipped((prev) => {
+                  const next = new Set(prev);
+                  if (!next.delete(item)) next.add(item);
+                  return next;
+                });
               }}
             >
-              <span className={`ctx-checkbox ${item.checked ? "ctx-checked" : ""}`}>
-                {item.checked && (
+              <span className={`ctx-checkbox ${checked ? "ctx-checked" : ""}`}>
+                {checked && (
                   <motion.span
                     style={{ display: "grid", placeItems: "center" }}
                     initial={{ scale: 0.4, opacity: 0 }}
@@ -135,6 +141,7 @@ function MenuPanel({ x, y, items }: { x: number; y: number; items: MenuItem[] })
               <span className="ctx-label">{item.label}</span>
             </button>
           );
+        }
         return (
           <button
             key={i}

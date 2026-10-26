@@ -1,22 +1,3 @@
-/**
- * check-locales.mjs
- *
- * Validates every file in src/locales against en.json, which is the source of truth:
- *   - reports keys a locale is missing (they fall back to English at runtime)
- *   - reports keys a locale has that English does not (usually a typo)
- *   - reports {placeholder} mismatches, which WOULD break the UI
- *
- * Plural keys (name_one, name_other, …) are checked per language: each locale only
- * needs the categories its own plural rules can produce, so Japanese needs just
- * _other while Russian needs _one, _few and _many.
- *
- * Usage:
- *   node check-locales.mjs
- *
- * Exit code is 1 only for placeholder mismatches and unknown keys. Missing keys
- * are reported as coverage, not failure — a partial translation is welcome.
- */
-
 import { readFileSync, readdirSync } from "fs";
 import { basename, join } from "path";
 import { exit } from "process";

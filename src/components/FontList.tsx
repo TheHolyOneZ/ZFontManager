@@ -1,3 +1,4 @@
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
@@ -24,6 +25,7 @@ export function FontList({ families }: { families: Family[] }) {
   });
 
   const selectedFamily = useFontStore((s) => s.selectedFamily);
+  const covers = useFontStore((s) => s.covers);
   useEffect(() => {
     if (!selectedFamily) return;
     const idx = families.findIndex((f) => f.name === selectedFamily);
@@ -71,7 +73,19 @@ export function FontList({ families }: { families: Family[] }) {
                 }}
                 onContextMenu={(e) => openContextMenu(e, buildFamilyMenu(fam))}
               >
-                <span className="row-name">{fam.name}</span>
+                <span className="row-name">
+                  {covers[fam.name] && (
+                    <img
+                      className="row-cover-thumb"
+                      src={convertFileSrc(covers[fam.name])}
+                      alt=""
+                      draggable={false}
+                      loading="lazy"
+                      onError={(e) => (e.currentTarget.style.display = "none")}
+                    />
+                  )}
+                  {fam.name}
+                </span>
                 <span className="col-styles tabular">{fam.faces.length}</span>
                 <span className="col-format">
                   <FormatBadge format={fam.formats[0]} isVariable={fam.isVariable} />

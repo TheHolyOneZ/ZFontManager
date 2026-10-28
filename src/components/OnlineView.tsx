@@ -8,16 +8,11 @@ import { SIZES, useFontStore } from "../state/fontStore";
 import { useT, type TKey } from "../lib/i18n";
 import { usePathFontCss } from "../lib/fontLoader";
 import type { OnlineFamily } from "../lib/ipc";
+import { NerdBrowser } from "./NerdBrowser";
+import { ago } from "../lib/ago";
 
 const CATEGORIES = ["sans-serif", "serif", "display", "handwriting", "monospace", "icons"] as const;
 const LICENSES = ["OFL-1.1", "Apache-2.0", "UFL-1.0"] as const;
-
-function ago(fetchedAt: number, t: ReturnType<typeof useT>): string {
-  const secs = Math.max(0, Math.floor(Date.now() / 1000) - fetchedAt);
-  if (secs < 3600) return t("online.updatedMinutes", { count: Math.max(1, Math.floor(secs / 60)) });
-  if (secs < 86400) return t("online.updatedHours", { count: Math.floor(secs / 3600) });
-  return t("online.updatedDays", { count: Math.floor(secs / 86400) });
-}
 
 function catKey(c: string): TKey {
   return (CATEGORIES.includes(c as (typeof CATEGORIES)[number]) ? `online.cat.${c}` : "online.cat.other") as TKey;
@@ -31,6 +26,46 @@ function licenseShort(spdx: string): string {
 }
 
 export function OnlineView() {
+  const t = useT();
+  const enabled = useFontStore((s) => s.settings.onlineFontsEnabled);
+  const source = useFontStore((s) => s.onlineSource);
+  const setSource = useFontStore((s) => s.setOnlineSource);
+  const setSettingsOpen = useFontStore((s) => s.setSettingsOpen);
+
+  if (!enabled) {
+    return (
+      <motion.div className="empty-state" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={spring}>
+        <span className="empty-tile"><Globe size={26} strokeWidth={1.5} /></span>
+        <h2>{t("online.offTitle")}</h2>
+        <p>{t("online.offBody")}</p>
+        <button className="online-cta" onClick={() => setSettingsOpen(true)}>
+          <Settings2 size={14} strokeWidth={1.5} /> {t("online.openSettings")}
+        </button>
+      </motion.div>
+    );
+  }
+
+  return (
+    <div className="online-shell">
+      <div className="online-sources" role="tablist" aria-label={t("online.sources")}>
+        {(["google", "nerd"] as const).map((src) => (
+          <button
+            key={src}
+            role="tab"
+            aria-selected={source === src}
+            className={`online-chip${source === src ? " online-chip-on" : ""}`}
+            onClick={() => setSource(src)}
+          >
+            {t(src === "google" ? "online.source.google" : "online.source.nerd")}
+          </button>
+        ))}
+      </div>
+      {source === "nerd" ? <NerdBrowser /> : <GoogleBrowser />}
+    </div>
+  );
+}
+
+function GoogleBrowser() {
   const t = useT();
   const enabled = useFontStore((s) => s.settings.onlineFontsEnabled);
   const families = useFontStore((s) => s.onlineFamilies);
@@ -59,7 +94,6 @@ export function OnlineView() {
   const openFamily = useFontStore((s) => s.openOnlineFamily);
   const closeFamily = useFontStore((s) => s.closeOnlineFamily);
   const install = useFontStore((s) => s.installOnlineFamily);
-  const setSettingsOpen = useFontStore((s) => s.setSettingsOpen);
 
   const [draft, setDraft] = useState(query);
   const timer = useRef<number | null>(null);
@@ -91,19 +125,6 @@ export function OnlineView() {
       return true;
     });
   }, [families, query, category, license, variableOnly]);
-
-  if (!enabled) {
-    return (
-      <motion.div className="empty-state" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={spring}>
-        <span className="empty-tile"><Globe size={26} strokeWidth={1.5} /></span>
-        <h2>{t("online.offTitle")}</h2>
-        <p>{t("online.offBody")}</p>
-        <button className="online-cta" onClick={() => setSettingsOpen(true)}>
-          <Settings2 size={14} strokeWidth={1.5} /> {t("online.openSettings")}
-        </button>
-      </motion.div>
-    );
-  }
 
   if (error && !families) {
     return (

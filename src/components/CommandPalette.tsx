@@ -4,6 +4,7 @@ import {
   Columns2,
   Command,
   FolderOpen,
+  GalleryVerticalEnd,
   History,
   Info,
   Keyboard,
@@ -154,6 +155,12 @@ export function CommandPalette() {
         label: t("palette.viewWaterfall"),
         icon: <Rows3 size={14} strokeWidth={1.5} />,
         run: () => s.setViewMode("waterfall"),
+      },
+      {
+        id: "view-cards",
+        label: t("palette.viewCards"),
+        icon: <GalleryVerticalEnd size={14} strokeWidth={1.5} />,
+        run: () => s.setViewMode("cards"),
       },
       ...(["dark", "light", "system"] as const).map(
         (mode): Cmd => ({

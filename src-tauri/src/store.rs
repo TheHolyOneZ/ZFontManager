@@ -41,6 +41,8 @@ pub struct AppState {
     pub affinity_deactivate_on_quit: bool,
 
     pub online_fonts_enabled: bool,
+
+    pub covers: HashMap<String, String>,
 }
 
 pub struct Store(pub Mutex<AppState>);
@@ -74,6 +76,10 @@ pub fn app_data_dir() -> PathBuf {
 
 pub fn trash_dir() -> PathBuf {
     app_data_dir().join("Trash")
+}
+
+pub fn covers_dir() -> PathBuf {
+    app_data_dir().join("Covers")
 }
 
 pub fn load() -> AppState {

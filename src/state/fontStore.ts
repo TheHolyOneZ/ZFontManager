@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { listen } from "@tauri-apps/api/event";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import {
   ipc,
   type AdobeApp,
@@ -9,6 +10,8 @@ import {
   type FontFace,
   type FontFormat,
   type InstallMode,
+  type NerdFamily,
+  type NerdVariant,
   type OnlineFamily,
   type OnlineFamilyDetail,
   type OnlineProgress,
@@ -33,7 +36,8 @@ export const SIZES = [8, 14, 18, 24, 32, 48, 64, 96] as const;
 
 let initStarted = false;
 
-export type ViewMode = "grid" | "list" | "waterfall";
+export type ViewMode = "grid" | "list" | "waterfall" | "cards";
+export type OnlineSource = "google" | "nerd";
 export type MotionPref = "system" | "reduced";
 export type TransparencyPref = "full" | "reduced";
 export type UiScale = "auto" | number;
@@ -82,6 +86,7 @@ interface FontStore {
   sessionActivated: string[];
   lastImported: string[];
   notes: Record<string, string>;
+  covers: Record<string, string>;
   trash: TrashEntry[];
   panelWidth: number;
 
@@ -110,6 +115,14 @@ interface FontStore {
   onlinePreviewPath: string | null;
   onlineDownloading: string | null;
   onlineProgress: OnlineProgress | null;
+  onlineSource: OnlineSource;
+  nerdFamilies: NerdFamily[] | null;
+  nerdFetchedAt: number | null;
+  nerdRelease: string | null;
+  nerdLoading: boolean;
+  nerdError: string | null;
+  nerdDetail: NerdFamily | null;
+  nerdPreviewPath: string | null;
 
   adobeAvailable: boolean;
   motionPref: MotionPref;
@@ -195,6 +208,13 @@ interface FontStore {
   openOnlineFamily: (id: string) => Promise<void>;
   closeOnlineFamily: () => void;
   installOnlineFamily: (id: string) => Promise<void>;
+  setOnlineSource: (source: OnlineSource) => void;
+  loadNerdCatalogue: (force: boolean) => Promise<void>;
+  openNerdFamily: (id: string) => Promise<void>;
+  closeNerdFamily: () => void;
+  installNerdFamily: (id: string, variants: NerdVariant[]) => Promise<void>;
+  chooseCover: (family: string) => Promise<void>;
+  removeCover: (family: string) => Promise<void>;
   setMotionPref: (pref: MotionPref) => void;
   setTransparencyPref: (pref: TransparencyPref) => void;
   setCloseToTray: (v: boolean) => void;
@@ -274,6 +294,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   sessionActivated: [],
   lastImported: [],
   notes: {},
+  covers: {},
   trash: [],
   panelWidth: 348,
   selection: [],
@@ -298,6 +319,14 @@ export const useFontStore = create<FontStore>((set, get) => ({
   onlinePreviewPath: null,
   onlineDownloading: null,
   onlineProgress: null,
+  onlineSource: "google",
+  nerdFamilies: null,
+  nerdFetchedAt: null,
+  nerdRelease: null,
+  nerdLoading: false,
+  nerdError: null,
+  nerdDetail: null,
+  nerdPreviewPath: null,
   adobeAvailable: false,
   motionPref: "system",
   soundPref: "off",
@@ -344,7 +373,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       set({
         sampleText: typeof prefs.sampleText === "string" ? prefs.sampleText : get().sampleText,
         sizeIndex: typeof prefs.sizeIndex === "number" ? prefs.sizeIndex : get().sizeIndex,
-        viewMode: (["grid", "list", "waterfall"] as const).includes(
+        viewMode: (["grid", "list", "waterfall", "cards"] as const).includes(
           prefs.viewMode as ViewMode,
         )
           ? (prefs.viewMode as ViewMode)
@@ -457,15 +486,16 @@ export const useFontStore = create<FontStore>((set, get) => ({
   rescan: async () => {
     set({ phase: "scanning" });
     try {
-      const [fonts, tags, collections, favorites, notes, trash] = await Promise.all([
+      const [fonts, tags, collections, favorites, notes, covers, trash] = await Promise.all([
         ipc.scanFonts(),
         ipc.getTags(),
         ipc.getCollections(),
         ipc.getFavorites(),
         ipc.getNotes(),
+        ipc.getCovers(),
         ipc.listTrash(),
       ]);
-      set({ fonts, tags, collections, favorites, notes, trash, phase: "ready" });
+      set({ fonts, tags, collections, favorites, notes, covers, trash, phase: "ready" });
       const names = new Set(fonts.map((f) => f.family));
       const keptImported = get().lastImported.filter((n) => names.has(n));
       if (get().charFilter) set({ charMatches: null, charSearching: false });
@@ -831,6 +861,44 @@ export const useFontStore = create<FontStore>((set, get) => ({
     }
   },
 
+  chooseCover: async (family) => {
+    const picked = await openDialog({
+      multiple: false,
+      directory: false,
+      title: t("cover.pickTitle", { name: family }),
+      filters: [{ name: t("cover.images"), extensions: ["png", "jpg", "jpeg", "webp", "gif", "bmp"] }],
+    });
+    if (typeof picked !== "string") return;
+    try {
+      const path = await ipc.setCover(family, picked);
+      set({ covers: { ...get().covers, [family]: path } });
+      toast.success(
+        t("toast.coverSet", { name: family }),
+        t("toast.coverSetSub"),
+        undefined,
+        get().viewMode === "cards"
+          ? undefined
+          : { label: t("toast.showCards"), run: () => get().setViewMode("cards") },
+      );
+    } catch (e) {
+      toast.error(t("toast.couldntSetCover"), String(e));
+    }
+  },
+
+  removeCover: async (family) => {
+    const prev = get().covers;
+    if (!prev[family]) return;
+    const next = { ...prev };
+    delete next[family];
+    set({ covers: next });
+    try {
+      await ipc.removeCover(family);
+    } catch (e) {
+      set({ covers: prev });
+      toast.error(t("toast.couldntSetCover"), String(e));
+    }
+  },
+
   toggleFavorite: async (family) => {
     const prev = get().favorites;
     const favorite = !prev.includes(family);
@@ -1088,6 +1156,59 @@ export const useFontStore = create<FontStore>((set, get) => ({
       }
       await ipc.onlineClearStaging(id);
       set({ onlineDetail: null, onlinePreviewPath: null });
+    } catch (e) {
+      toast.error(t("toast.onlineDownloadFailed"), String(e));
+    } finally {
+      set({ onlineDownloading: null, onlineProgress: null });
+    }
+  },
+
+  setOnlineSource: (onlineSource) => set({ onlineSource }),
+
+  loadNerdCatalogue: async (force) => {
+    if (!get().settings.onlineFontsEnabled) return;
+    if (get().nerdLoading) return;
+    set({ nerdLoading: true, nerdError: null });
+    try {
+      const cat = await ipc.nerdCatalogue(force);
+      set({ nerdFamilies: cat.families, nerdFetchedAt: cat.fetchedAt, nerdRelease: cat.release, nerdLoading: false });
+    } catch (e) {
+      set({ nerdLoading: false, nerdError: String(e) });
+    }
+  },
+
+  openNerdFamily: async (id) => {
+    const fam = get().nerdFamilies?.find((f) => f.id === id) ?? null;
+    set({ nerdDetail: fam, nerdPreviewPath: null });
+    if (!fam) return;
+    try {
+      const path = await ipc.nerdPreview(id);
+      if (get().nerdDetail?.id === id) set({ nerdPreviewPath: path });
+    } catch {
+      set({ nerdPreviewPath: null });
+    }
+  },
+
+  closeNerdFamily: () => {
+    const { nerdDetail, onlineDownloading } = get();
+    if (nerdDetail && onlineDownloading !== `nerd:${nerdDetail.id}`) {
+      void ipc.nerdClearStaging(nerdDetail.id);
+    }
+    set({ nerdDetail: null, nerdPreviewPath: null });
+  },
+
+  installNerdFamily: async (id, variants) => {
+    if (get().onlineDownloading || variants.length === 0) return;
+    set({ onlineDownloading: `nerd:${id}`, onlineProgress: null });
+    try {
+      const res = await ipc.nerdDownload(id, variants);
+      await get().installPaths(res.paths, "move");
+      for (const family of res.families) {
+        const existing = get().tags[family] ?? [];
+        if (!existing.includes("Online")) await get().setFamilyTags(family, [...existing, "Online"]);
+      }
+      await ipc.nerdClearStaging(id);
+      set({ nerdDetail: null, nerdPreviewPath: null });
     } catch (e) {
       toast.error(t("toast.onlineDownloadFailed"), String(e));
     } finally {

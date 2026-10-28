@@ -7,6 +7,7 @@ import { ResizeGrips } from "./components/ResizeGrips";
 import { Titlebar } from "./components/Titlebar";
 import { DropZone } from "./components/DropZone";
 import { FontGrid } from "./components/FontGrid";
+import { CardView } from "./components/CardView";
 import { FontList } from "./components/FontList";
 import { Sidebar } from "./components/Sidebar";
 import { TopBar } from "./components/TopBar";
@@ -160,6 +161,7 @@ function MainContent() {
       />
     );
   if (viewMode === "waterfall") return <WaterfallView families={families} />;
+  if (viewMode === "cards") return <CardView families={families} />;
   return viewMode === "grid" ? (
     <FontGrid families={families} />
   ) : (

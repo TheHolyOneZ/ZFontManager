@@ -4,6 +4,7 @@ import {
   Check,
   Columns2,
   Filter,
+  GalleryVerticalEnd,
   LayoutGrid,
   List,
   RefreshCw,
@@ -11,7 +12,7 @@ import {
   Type,
   X,
 } from "lucide-react";
-import { useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { springSnappy, springSoft } from "../design/springs";
 import { SIZES, useFontStore, type SortMode } from "../state/fontStore";
 import type { Classification, FontFormat } from "../lib/ipc";
@@ -44,10 +45,12 @@ function SortMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-label={t(SORT_KEYS[sort])}
+        title={t(SORT_KEYS[sort])}
         whileTap={{ scale: 0.96 }}
       >
         <ArrowUpDown size={13} strokeWidth={1.5} />
-        <span>{t(SORT_KEYS[sort])}</span>
+        <span className="topbar-label">{t(SORT_KEYS[sort])}</span>
       </motion.button>
       <AnimatePresence>
         {open && (
@@ -361,7 +364,7 @@ function CompareButton() {
       whileTap={{ scale: 0.96 }}
     >
       <Columns2 size={14} strokeWidth={1.5} />
-      <span>
+      <span className="topbar-label">
         {armed
           ? t("compare.buttonCount", { count: Math.min(selection.length, 4) })
           : picking
@@ -385,9 +388,23 @@ export function TopBar() {
 
   const fill = (sizeIndex / (SIZES.length - 1)) * 100;
 
+  const barRef = useRef<HTMLElement>(null);
+  const [width, setWidth] = useState(Infinity);
+  useLayoutEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    setWidth(el.clientWidth);
+    const ro = new ResizeObserver(() => setWidth(el.clientWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const stacked = width < 880;
+  const compact = stacked ? width < 640 : width < 1000;
+
   return (
     <motion.header
-      className="topbar"
+      ref={barRef}
+      className={`topbar ${stacked ? "topbar-stacked" : ""} ${compact ? "topbar-compact" : ""}`}
       initial={{ y: -32, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ ...springSoft, delay: 0.06 }}
@@ -424,6 +441,8 @@ export function TopBar() {
         />
       </div>
 
+      {stacked && <span className="topbar-break" aria-hidden="true" />}
+
       <div className="topbar-size" style={{ "--fill": `${fill}%` } as CSSProperties}>
         <input
           type="range"
@@ -446,10 +465,12 @@ export function TopBar() {
       <RescanButton />
 
       <div className="view-toggle" role="tablist" aria-label={t("top.viewMode")}>
-        {(["grid", "list"] as const).map((mode) => (
+        {(["grid", "list", "cards"] as const).map((mode) => (
           <motion.button
             key={mode}
             role="tab"
+            aria-label={t(mode === "grid" ? "palette.viewGrid" : mode === "list" ? "palette.viewList" : "palette.viewCards")}
+            title={t(mode === "grid" ? "palette.viewGrid" : mode === "list" ? "palette.viewList" : "palette.viewCards")}
             aria-selected={viewMode === mode}
             className={`view-btn ${viewMode === mode ? "view-btn-active" : ""}`}
             onClick={() => setViewMode(mode)}
@@ -457,8 +478,10 @@ export function TopBar() {
           >
             {mode === "grid" ? (
               <LayoutGrid size={15} strokeWidth={1.5} />
-            ) : (
+            ) : mode === "list" ? (
               <List size={15} strokeWidth={1.5} />
+            ) : (
+              <GalleryVerticalEnd size={15} strokeWidth={1.5} />
             )}
           </motion.button>
         ))}

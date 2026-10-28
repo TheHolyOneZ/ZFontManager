@@ -11,7 +11,7 @@ pub const RAW_BASE: &str = "https://raw.githubusercontent.com/google/fonts/main"
 
 const DIRS: [&str; 3] = ["ofl", "apache", "ufl"];
 
-fn encode_segment(s: &str) -> String {
+pub(super) fn encode_segment(s: &str) -> String {
     let mut out = String::with_capacity(s.len() * 3);
     for b in s.bytes() {
         let keep = b.is_ascii_alphanumeric() || matches!(b, b'-' | b'.' | b'_' | b'~');
@@ -143,6 +143,7 @@ pub async fn download(app: &tauri::AppHandle, client: &reqwest::Client, id: &str
                 file: f.filename.clone(),
                 done: i,
                 total,
+                bytes: false,
             },
         );
         let dest = fetch_into_staging(client, &det, &slug, f).await?;
@@ -155,6 +156,7 @@ pub async fn download(app: &tauri::AppHandle, client: &reqwest::Client, id: &str
             file: String::new(),
             done: total,
             total,
+            bytes: false,
         },
     );
 
@@ -167,6 +169,7 @@ pub async fn download(app: &tauri::AppHandle, client: &reqwest::Client, id: &str
     fs::write(&license_path, format!("{header}{}", det.license_text)).map_err(|e| e.to_string())?;
 
     Ok(DownloadResult {
+        families: vec![det.family.clone()],
         family: det.family,
         paths,
         license_path: license_path.to_string_lossy().into_owned(),

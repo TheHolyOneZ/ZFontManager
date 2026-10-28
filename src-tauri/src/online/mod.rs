@@ -1,6 +1,7 @@
 pub mod fontsource;
 pub mod github;
 pub mod metadata_pb;
+pub mod nerd;
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -57,6 +58,7 @@ pub struct FamilyDetail {
 #[serde(rename_all = "camelCase")]
 pub struct DownloadResult {
     pub family: String,
+    pub families: Vec<String>,
     pub paths: Vec<String>,
     pub license_path: String,
 }
@@ -68,6 +70,7 @@ pub struct DownloadProgress {
     pub file: String,
     pub done: usize,
     pub total: usize,
+    pub bytes: bool,
 }
 
 pub fn online_dir() -> PathBuf {

@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.8.1-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.9.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +99,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.8.1** — see the
+> ZFontManager is currently at **version 0.9.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -125,13 +125,22 @@ Fonts with many weights and italics are grouped into a single family card.
 Expand the card and every style — Light, Regular, Bold, Black, the italics —
 renders live underneath.
 
-Three views, switchable from the top bar:
+Four views, switchable from the top bar:
 
 | View | What it's for |
 |---|---|
 | **Grid** | Big, comfortable cards — the browsing view |
 | **List** | Compact rows with style count, format and size — the overview |
+| **Cards** | A gallery of tiles with a cover image per family — browse by picture |
 | **Waterfall** | One family shown at every size at once — the type-nerd view |
+
+Any family can have a cover image — a specimen poster, a screenshot, anything
+that helps you recognise it. Pick one from the right-click menu, the detail
+panel or the button on a tile in the Cards view. It shows as a thumbnail on the
+font's card in Grid and List, as a banner at the top of the detail panel, and
+as the whole tile in the Cards view. The image is copied into the
+app's data folder, so moving or deleting the original doesn't lose it. Families
+without a cover show their name in their own typeface instead.
 
 ### Activate &amp; deactivate — the killer feature
 
@@ -224,6 +233,15 @@ the OFL declares one. The preview fetches one face through the same gated
 client; adding the family reuses that file rather than downloading it twice.
 The licence text is stored alongside the font.
 
+A second tab lists every [Nerd Font](https://www.nerdfonts.com/) — the patched
+programming fonts with thousands of extra icons for terminals, editors and
+status bars. Pick which variants you want (**Nerd Font**, **Mono** for strict
+terminals, **Propo** for interfaces) and add the family with one click. The
+catalogue and the archives come from the official
+[ryanoasis/nerd-fonts](https://github.com/ryanoasis/nerd-fonts) release; every
+archive is checked against the SHA-256 checksum published with that release
+before anything is installed, and the font's licence files are kept with it.
+
 This is the first feature that talks to the internet, so it's built carefully:
 
 - **Off by default.** A fresh install never contacts a font provider.
@@ -232,8 +250,10 @@ This is the first feature that talks to the internet, so it's built carefully:
 - **Search is local.** The catalogue is fetched once and cached for seven days;
   typing filters it on your machine. The provider sees one request per week,
   not one per keystroke.
-- **Two named hosts, both listed under the toggle:** `api.fontsource.org` for
-  the catalogue and `raw.githubusercontent.com` for the files.
+- **Named hosts, all listed under the toggle:** `api.fontsource.org` for the
+  Google Fonts catalogue, `raw.githubusercontent.com` for files and previews,
+  and `github.com` with `release-assets.githubusercontent.com` for the Nerd
+  Fonts releases.
 - **Nothing about your library leaves the machine.** The "in library" badge is
   computed locally.
 
@@ -612,15 +632,15 @@ an adjective. Here is the complete list:
 | Feature | Default | What it contacts | Leaves your machine? |
 |---|---|---|---|
 | Affinity auto-activation | **Off** | `localhost:6767` — Affinity's own server, on your computer | **No.** Loopback only |
-| Online font browser | **Off** | `api.fontsource.org` for the catalogue; `raw.githubusercontent.com` for font files and licences | **Yes** — your IP and the fonts you download, to those two hosts only. Nothing about your existing library. |
+| Online font browser | **Off** | `api.fontsource.org` for the Google Fonts catalogue; `raw.githubusercontent.com` for font files and licences; `github.com` and `release-assets.githubusercontent.com` for Nerd Fonts releases | **Yes** — your IP and the fonts you download, to those hosts only. Nothing about your existing library. |
 
 When either feature is off, the app makes no connection attempt at all: no
 watcher runs, no probe fires, no catalogue is fetched. The Affinity conversation
 never leaves your computer — no DNS lookup, no packet on your network. The font
-browser does reach two real servers, and the row above says exactly which and
-what they receive: your IP address, the catalogue request, and the fonts you
-choose to download. Both hosts publish a privacy policy, neither is an ad
-network, and nothing is sent until you act.
+browser does reach real servers — Fontsource and GitHub — and the row above
+says exactly which and what they receive: your IP address, the catalogue
+request, and the fonts you choose to download. Both publish a privacy policy,
+neither is an ad network, and nothing is sent until you act.
 
 Anything added in future goes in that table, off by default, disclosed before
 you switch it on.

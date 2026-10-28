@@ -124,6 +124,7 @@ export interface OnlineFamilyDetail {
 
 export interface OnlineDownloadResult {
   family: string;
+  families: string[];
   paths: string[];
   licensePath: string;
 }
@@ -133,7 +134,33 @@ export interface OnlineProgress {
   file: string;
   done: number;
   total: number;
+  bytes: boolean;
 }
+
+export interface NerdFamily {
+  id: string;
+  family: string;
+  patchedName: string;
+  original: string;
+  description: string;
+  license: string;
+  licenseName: string;
+  licenseShort: string;
+  reservedName: boolean;
+  monospaced: boolean;
+  version: string;
+  previewSource: string;
+  sha256: string;
+}
+
+export interface NerdCatalogue {
+  fetchedAt: number;
+  fromCache: boolean;
+  release: string;
+  families: NerdFamily[];
+}
+
+export type NerdVariant = "standard" | "mono" | "propo";
 
 export interface AffinityConnection {
   reachable: boolean;
@@ -157,6 +184,14 @@ export const ipc = {
   onlinePreview: (id: string) => invoke<string>("online_preview", { id }),
   onlineClearStaging: (id: string) => invoke<void>("online_clear_staging", { id }),
   onlineHosts: () => invoke<string[]>("online_hosts"),
+  nerdCatalogue: (force: boolean) => invoke<NerdCatalogue>("nerd_catalogue", { force }),
+  nerdPreview: (id: string) => invoke<string>("nerd_preview", { id }),
+  nerdDownload: (id: string, variants: NerdVariant[]) =>
+    invoke<OnlineDownloadResult>("nerd_download", { id, variants }),
+  nerdClearStaging: (id: string) => invoke<void>("nerd_clear_staging", { id }),
+  getCovers: () => invoke<Record<string, string>>("get_covers"),
+  setCover: (family: string, source: string) => invoke<string>("set_cover", { family, source }),
+  removeCover: (family: string) => invoke<void>("remove_cover", { family }),
   scanFonts: () => invoke<FontFace[]>("scan_fonts"),
   setFontActive: (path: string, active: boolean) =>
     invoke<void>("set_font_active", { path, active }),

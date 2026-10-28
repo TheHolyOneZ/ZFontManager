@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
-import { AlertTriangle, Copy, Download, ExternalLink, FolderOpen, GripVertical, Plus, RotateCcw, Scale, Star, Trash2, X } from "lucide-react";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { AlertTriangle, Copy, Download, ExternalLink, FolderOpen, GripVertical, ImageOff, ImagePlus, Plus, RotateCcw, Scale, Star, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { spring, springSoft } from "../design/springs";
@@ -310,6 +311,74 @@ function GlyphMap({
         </button>
       )}
     </>
+  );
+}
+
+function CoverBanner({ family }: { family: string }) {
+  const t = useT();
+  const cover = useFontStore((s) => s.covers[family]);
+  const chooseCover = useFontStore((s) => s.chooseCover);
+  const removeCover = useFontStore((s) => s.removeCover);
+  const [broken, setBroken] = useState(false);
+  useEffect(() => setBroken(false), [cover]);
+  if (!cover || broken) return null;
+  return (
+    <motion.section
+      className="detail-cover-banner"
+      variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
+    >
+      <img src={convertFileSrc(cover)} alt="" draggable={false} onError={() => setBroken(true)} />
+      <div className="detail-cover-banner-actions">
+        <button aria-label={t("cover.change")} title={t("cover.change")} onClick={() => void chooseCover(family)}>
+          <ImagePlus size={14} strokeWidth={1.5} />
+        </button>
+        <button aria-label={t("cover.remove")} title={t("cover.remove")} onClick={() => void removeCover(family)}>
+          <ImageOff size={14} strokeWidth={1.5} />
+        </button>
+      </div>
+    </motion.section>
+  );
+}
+
+function CoverSection({ family }: { family: string }) {
+  const t = useT();
+  const hasCover = useFontStore((s) => Boolean(s.covers[family]));
+  if (hasCover) return null;
+  return (
+    <motion.section
+      variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
+    >
+      <div className="detail-heading">{t("detail.cover")}</div>
+      <CoverEditor family={family} />
+    </motion.section>
+  );
+}
+
+function CoverEditor({ family }: { family: string }) {
+  const t = useT();
+  const cover = useFontStore((s) => s.covers[family]);
+  const chooseCover = useFontStore((s) => s.chooseCover);
+  const removeCover = useFontStore((s) => s.removeCover);
+  return (
+    <div className="detail-cover">
+      {cover ? (
+        <img className="detail-cover-thumb" src={convertFileSrc(cover)} alt="" draggable={false} />
+      ) : (
+        <span className="detail-cover-thumb detail-cover-empty">
+          <ImageOff size={18} strokeWidth={1.5} />
+        </span>
+      )}
+      <div className="detail-cover-actions">
+        <button className="online-chip" onClick={() => void chooseCover(family)}>
+          <ImagePlus size={12} strokeWidth={1.5} /> {t(cover ? "cover.change" : "cover.set")}
+        </button>
+        {cover && (
+          <button className="online-chip" onClick={() => void removeCover(family)}>
+            {t("cover.remove")}
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -646,6 +715,8 @@ export function DetailPanel() {
               </button>
             </motion.header>
 
+            <CoverBanner family={family.name} />
+
             <motion.section
               className="detail-specimen"
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
@@ -923,6 +994,8 @@ export function DetailPanel() {
               <div className="detail-heading">{t("detail.notes")}</div>
               <NoteEditor family={family.name} />
             </motion.section>
+
+            <CoverSection family={family.name} />
 
             {canUninstall && (
               <motion.button

@@ -4,6 +4,57 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.9.0] — 2026-10-28
+
+### Added
+
+- **Nerd Fonts in the online browser.** The Online section has a second tab
+  that lists every font in the latest official
+  [Nerd Fonts](https://www.nerdfonts.com/) release (72 families today,
+  JetBrainsMono, Noto, FiraCode and Hack among them), with search, the
+  original font each one is patched from, its licence and a live preview.
+  Pick the variants you want — **Nerd Font**, **Mono** for terminals that
+  need every icon in one cell, **Propo** for interfaces — and add the family
+  with one click. The archive comes straight from the
+  ryanoasis/nerd-fonts release and is checked against the SHA-256 checksum
+  published with it before anything is installed. The licence files from the
+  archive are saved with the font, and fonts whose original name is reserved
+  show why Nerd Fonts renamed them (Source Code Pro becomes SauceCodePro).
+  The preview shows the original font, so opening a family downloads one small
+  file instead of the whole archive.
+
+  Suggested by VortexFlickens. (#24)
+
+- **Cover images and a Cards view.** Any family can now have a cover image —
+  a specimen poster, a screenshot, anything that helps you recognise it. Set
+  it from the right-click menu, the new Cover section in the detail panel, or
+  the button on a tile. A cover shows as a thumbnail on the font's card in the
+  Grid and List views and as a banner at the top of the detail panel, with
+  buttons to change or remove it. The new **Cards** view in the top bar shows
+  the library as a gallery of tiles with those covers; families without one
+  show their name in their own typeface. Covers are copied into the app's data
+  folder, so moving or deleting the original image doesn't lose them. PNG,
+  JPEG, WebP, GIF and BMP files up to 25 MB are accepted, and the file's
+  contents are checked, not just its extension.
+
+  Suggested by Domi94sosa. (#23)
+
+### Changed
+
+- The online browser now also contacts `github.com` and
+  `release-assets.githubusercontent.com`, for the Nerd Fonts releases. Both
+  are listed under the toggle in Settings, still only when you open the Nerd
+  Fonts tab or download, and redirects are only followed to these listed
+  hosts.
+- **The search and sample text fields no longer shrink to nothing.** With the
+  detail panel open or in a small window, they used to be squeezed down to
+  their icons. The top bar now adapts to its width: the Sort and Compare
+  buttons drop their labels first, and when it gets tighter the two fields
+  move onto their own full-width row above the other controls.
+- The view buttons in the top bar have labels for screen readers and a
+  tooltip.
+- All nine languages have the new strings.
+
 ## [0.8.1] — 2026-10-26
 
 ### Fixed

@@ -1,3 +1,4 @@
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { AnimatePresence, motion } from "motion/react";
 import { AlertTriangle, ChevronRight, Lock, Star } from "lucide-react";
 import { memo, useState } from "react";
@@ -84,6 +85,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
   const toggleFavorite = useFontStore((s) => s.toggleFavorite);
   const hasActiveConflict = useFontStore((s) => activeConflictsFor(s.fonts).has(family.name));
   const hasDormantConflict = useFontStore((s) => conflictsFor(s.fonts).has(family.name));
+  const cover = useFontStore((s) => s.covers[family.name]);
   const [expanded, setExpanded] = useState(false);
 
   const size = SIZES[sizeIndex];
@@ -197,7 +199,18 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
         )}
       </header>
 
-      <div className="card-preview" style={{ minHeight: size * 1.35 }}>
+      <div className={`card-preview ${cover ? "card-preview-cover" : ""}`} style={{ minHeight: size * 1.35 }}>
+        {cover && (
+          <img
+            className="card-cover-thumb"
+            src={convertFileSrc(cover)}
+            alt=""
+            draggable={false}
+            loading="lazy"
+            style={{ height: Math.max(44, Math.min(size * 1.35, 88)) }}
+            onError={(e) => (e.currentTarget.style.display = "none")}
+          />
+        )}
         <AnimatePresence mode="wait">
           {fontFamily ? (
             <motion.p

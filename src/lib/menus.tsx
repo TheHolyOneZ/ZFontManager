@@ -9,6 +9,8 @@ import {
   FolderOpen,
   FolderPlus,
   Image as ImageIcon,
+  ImageOff,
+  ImagePlus,
   PenTool,
   Power,
   Star,
@@ -243,6 +245,21 @@ export function buildFamilyMenu(family: Family): MenuItem[] {
       icon: <FolderPlus size={14} strokeWidth={1.5} />,
       action: () => useFontStore.setState({ pendingCollectionFor: family.name }),
     },
+    { kind: "separator" },
+    {
+      label: t(s.covers[family.name] ? "cover.change" : "cover.set"),
+      icon: <ImagePlus size={14} strokeWidth={1.5} />,
+      action: () => void s.chooseCover(family.name),
+    },
+    ...(s.covers[family.name]
+      ? [
+          {
+            label: t("cover.remove"),
+            icon: <ImageOff size={14} strokeWidth={1.5} />,
+            action: () => void s.removeCover(family.name),
+          } satisfies MenuItem,
+        ]
+      : []),
     { kind: "separator" },
     {
       label: t("menu.exportFamily"),

@@ -1,6 +1,7 @@
 mod activation;
 mod adobe;
 mod affinity;
+mod covers;
 mod diag;
 mod font_types;
 mod installer;
@@ -238,6 +239,50 @@ fn online_clear_staging(id: String) {
 }
 
 #[tauri::command]
+async fn nerd_catalogue(store: State<'_, Store>, force: bool) -> Result<online::nerd::NerdCatalogueResponse, String> {
+    let client = {
+        let state = store.0.lock().map_err(|e| e.to_string())?;
+        net::client(&state)?
+    };
+    online::nerd::catalogue(&client, force).await
+}
+
+#[tauri::command]
+async fn nerd_preview(app: tauri::AppHandle, store: State<'_, Store>, id: String) -> Result<String, String> {
+    let client = {
+        let state = store.0.lock().map_err(|e| e.to_string())?;
+        net::client(&state)?
+    };
+    let path = online::nerd::preview(&client, &id).await?;
+    if let Some(parent) = std::path::Path::new(&path).parent() {
+        allow_dir(&app, parent);
+    }
+    Ok(path)
+}
+
+#[tauri::command]
+async fn nerd_download(
+    app: tauri::AppHandle,
+    store: State<'_, Store>,
+    id: String,
+    variants: Vec<String>,
+) -> Result<online::DownloadResult, String> {
+    let client = {
+        let state = store.0.lock().map_err(|e| e.to_string())?;
+        net::client(&state)?
+    };
+    let report = move |p: online::DownloadProgress| {
+        let _ = tauri::Emitter::emit(&app, "online:progress", p);
+    };
+    online::nerd::download(&report, &client, &id, &variants).await
+}
+
+#[tauri::command]
+fn nerd_clear_staging(id: String) {
+    online::nerd::clear_staging(&id);
+}
+
+#[tauri::command]
 fn online_hosts() -> Vec<String> {
     net::ALLOWED_HOSTS.iter().map(|h| h.to_string()).collect()
 }
@@ -334,6 +379,28 @@ fn set_note(store: State<Store>, family: String, note: String) -> Result<(), Str
     } else {
         state.notes.insert(family, note);
     }
+    store::save(&state)
+}
+
+#[tauri::command]
+fn get_covers(store: State<Store>) -> Result<HashMap<String, String>, String> {
+    let state = store.0.lock().map_err(|e| e.to_string())?;
+    Ok(covers::all(&state))
+}
+
+#[tauri::command]
+fn set_cover(app: tauri::AppHandle, store: State<Store>, family: String, source: String) -> Result<String, String> {
+    let mut state = store.0.lock().map_err(|e| e.to_string())?;
+    let path = covers::set(&mut state, &family, std::path::Path::new(&source))?;
+    store::save(&state)?;
+    allow_dir(&app, &store::covers_dir());
+    Ok(path)
+}
+
+#[tauri::command]
+fn remove_cover(store: State<Store>, family: String) -> Result<(), String> {
+    let mut state = store.0.lock().map_err(|e| e.to_string())?;
+    covers::remove(&mut state, &family);
     store::save(&state)
 }
 
@@ -874,6 +941,7 @@ pub fn run() {
                 });
             }
             allow_previews(app.handle(), &extra_dirs);
+            allow_dir(app.handle(), &store::covers_dir());
             allow_dir(
                 app.handle(),
                 &scanner::effective_managed_dir(library_dir.as_deref()),
@@ -914,6 +982,10 @@ pub fn run() {
             online_preview,
             online_clear_staging,
             online_hosts,
+            nerd_catalogue,
+            nerd_preview,
+            nerd_download,
+            nerd_clear_staging,
             restore_from_trash,
             delete_trash_entry,
             empty_trash,
@@ -930,6 +1002,9 @@ pub fn run() {
             write_binary_file,
             get_features,
             get_favorites,
+            get_covers,
+            set_cover,
+            remove_cover,
             set_favorite,
             get_notes,
             set_note,

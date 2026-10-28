@@ -94,7 +94,7 @@ jobs:
 
   build-macos-intel:
     name: macOS Intel x64 (cross-compiled)
-    runs-on: macos-latest
+    runs-on: macos-15
 
     steps:
       - name: Checkout
@@ -157,7 +157,7 @@ jobs:
 
   build-macos-silicon:
     name: macOS Apple Silicon
-    runs-on: macos-latest
+    runs-on: macos-15
 
     steps:
       - name: Checkout
@@ -309,7 +309,7 @@ jobs:
           PUBLISHED=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
             --jq "[.[] | select(.tag_name==\"$TAG\" and .draft==false)] | length")
           if [ "$PUBLISHED" != "0" ]; then
-            echo "::error::A published release $TAG already exists. Bump the version in src-tauri/tauri.conf.json (and package.json, Cargo.toml, src/lib/version.ts) before building."
+            echo "::error::A published release $TAG already exists."
             exit 1
           fi
 
@@ -352,10 +352,3 @@ jobs:
           draft: true
           prerelease: false
           files: release/*
-          body: |
-            **Draft** — all seven installers are attached (Windows .exe/.msi,
-            macOS Apple Silicon + Intel .dmg, Linux AppImage/.deb/.rpm).
-
-            To publish: download the assets, refresh the download page and
-            checksums on the website with the local release tooling, paste the
-            matching section of `CHANGELOG.md` here, and publish this draft.

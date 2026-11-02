@@ -7,6 +7,7 @@ import { spring, springSoft } from "../design/springs";
 import { useFontCss, formatBytes, pathBasename } from "../lib/fontLoader";
 import { familiesFor, conflictsFor, useFontStore } from "../state/fontStore";
 import { ipc, type FontFace, type VariationAxis } from "../lib/ipc";
+import { styleGroups, type StyleGroup } from "../lib/familyState";
 import { toast } from "../design/primitives/Toast";
 import { FormatBadge } from "./FamilyCard";
 import { exportFace, exportFamily } from "../lib/menus";
@@ -24,25 +25,39 @@ function copyName(text: string, what: string) {
 
 const WATERFALL = [14, 20, 28, 40, 56];
 
+function activeStyles(faces: FontFace[]): { active: number; total: number } {
+  const groups = styleGroups(faces).filter((g) => !g.webOnly);
+  return { active: groups.filter((g) => g.active).length, total: groups.length };
+}
+
 function StyleRow({
-  face,
+  group,
   family,
   selected,
   onSelect,
   synthesize,
 }: {
-  face: FontFace;
+  group: StyleGroup;
   family: string;
   selected: boolean;
   onSelect: () => void;
   synthesize: boolean;
 }) {
   const t = useT();
+  const face = group.lead;
   const { fontFamily } = useFontCss(face);
+  const setStyleActive = useFontStore((s) => s.setStyleActive);
   return (
-    <motion.button
+    <motion.div
+      role="button"
+      tabIndex={0}
       className={`style-row ${selected ? "style-selected" : ""}`}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget || (e.key !== "Enter" && e.key !== " ")) return;
+        e.preventDefault();
+        onSelect();
+      }}
       aria-pressed={selected}
       whileTap={{ scale: 0.99 }}
     >
@@ -54,9 +69,11 @@ function StyleRow({
           fontWeight: synthesize ? face.weight : undefined,
         }}
       >
-        {face.style}
+        {group.style}
       </span>
-      <span className="style-fmt">{face.format.toUpperCase()}</span>
+      <span className="style-fmt" title={group.webOnly ? t("style.webOnlyHint") : undefined}>
+        {group.formats.map((f) => f.toUpperCase()).join(" · ")}
+      </span>
       <motion.span
         role="button"
         tabIndex={0}
@@ -76,7 +93,19 @@ function StyleRow({
       >
         <Download size={13} strokeWidth={1.5} />
       </motion.span>
-    </motion.button>
+      {group.deactivatable ? (
+        <PillToggle
+          on={group.active}
+          mixed={group.partial}
+          onChange={(on) => void setStyleActive(family, group.key, on)}
+          label={t(group.active ? "style.deactivate" : "style.activate", { family, style: group.style })}
+        />
+      ) : group.webOnly ? (
+        <span className="face-web" title={t("style.webOnlyHint")}>
+          {t("style.webOnly")}
+        </span>
+      ) : null}
+    </motion.div>
   );
 }
 
@@ -734,7 +763,7 @@ export function DetailPanel() {
               <span className="specimen-meta">
                 <span className="specimen-style">{lead.style}</span>
                 <span className="specimen-sub tabular">
-                  {t("detail.stylesCount", { count: family.faces.length })} ·{" "}
+                  {t("detail.stylesCount", { count: family.styleCount })} ·{" "}
                   {family.formats.join(" · ").toUpperCase()}
                 </span>
               </span>
@@ -759,11 +788,11 @@ export function DetailPanel() {
               <div>
                 <div className="activate-label">
                   {family.partial
-                    ? t("detail.partial", { active: family.activeCount, total: family.faces.length })
+                    ? t("detail.partial", activeStyles(family.faces))
                     : t(family.active ? "detail.active" : "detail.inactive")}
                 </div>
                 <div className="activate-sub">
-                  {t(family.deactivatable ? "detail.visibleElsewhere" : "detail.systemFont")}
+                  {t(family.deactivatable ? "detail.visibleElsewhere" : family.webOnly ? "style.webOnlyHint" : "detail.systemFont")}
                 </div>
               </div>
               <PillToggle
@@ -841,7 +870,7 @@ export function DetailPanel() {
             >
               <dl>
                 <dt>{t("detail.styles")}</dt>
-                <dd className="tabular">{family.faces.length}</dd>
+                <dd className="tabular">{family.styleCount}</dd>
                 <dt>{t("detail.format")}</dt>
                 <dd>{family.formats.join(", ").toUpperCase()}</dd>
                 {family.classification !== "unknown" && (
@@ -926,14 +955,14 @@ export function DetailPanel() {
                 </button>
               </div>
               <div className="style-list">
-                {family.faces.map((face) => (
+                {styleGroups(family.faces).map((group) => (
                   <StyleRow
-                    key={face.id}
-                    face={face}
+                    key={group.key}
+                    group={group}
                     family={family.name}
-                    selected={lead?.id === face.id}
-                    onSelect={() => setStyleId(face.id)}
-                    synthesize={family.faces.filter((f) => f.path === face.path).length > 1}
+                    selected={group.faces.some((f) => f.id === lead?.id)}
+                    onSelect={() => setStyleId(group.lead.id)}
+                    synthesize={family.faces.filter((f) => f.path === group.lead.path).length > 1}
                   />
                 ))}
               </div>

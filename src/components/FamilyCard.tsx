@@ -1,7 +1,7 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { AnimatePresence, motion } from "motion/react";
 import { AlertTriangle, ChevronRight, Lock, Star } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { spring, springSnappy, springSoft, staggerDelay } from "../design/springs";
 import { useFontCss } from "../lib/fontLoader";
@@ -9,7 +9,7 @@ import { buildFamilyMenu } from "../lib/menus";
 import { openContextMenu } from "../design/primitives/ContextMenu";
 import { activeConflictsFor, conflictsFor, SIZES, useFontStore, type Family } from "../state/fontStore";
 import { playStar } from "../lib/sound";
-import type { FontFace } from "../lib/ipc";
+import { styleGroups, type StyleGroup } from "../lib/familyState";
 import { useT } from "../lib/i18n";
 
 export function FormatBadge({ format, isVariable }: { format: string; isVariable: boolean }) {
@@ -18,20 +18,24 @@ export function FormatBadge({ format, isVariable }: { format: string; isVariable
 }
 
 function FacePreview({
-  face,
+  group,
+  family,
   text,
   size,
   index,
   synthesize,
 }: {
-  face: FontFace;
+  group: StyleGroup;
+  family: string;
   text: string;
   size: number;
   index: number;
   synthesize: boolean;
 }) {
   const t = useT();
+  const face = group.lead;
   const { fontFamily, failed } = useFontCss(face);
+  const setStyleActive = useFontStore((s) => s.setStyleActive);
   return (
     <motion.div
       className="face-row"
@@ -39,7 +43,7 @@ function FacePreview({
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...spring, delay: staggerDelay(index) }}
     >
-      <span className="face-style">{face.style}</span>
+      <span className="face-style">{group.style}</span>
       <AnimatePresence mode="wait">
         {fontFamily ? (
           <motion.span
@@ -70,6 +74,25 @@ function FacePreview({
           />
         )}
       </AnimatePresence>
+      <span className="face-formats">
+        {group.formats.map((fmt) => (
+          <span key={fmt} className={`face-fmt ${fmt === "woff" || fmt === "woff2" ? "face-fmt-web" : ""}`}>
+            {fmt.toUpperCase()}
+          </span>
+        ))}
+      </span>
+      {group.deactivatable ? (
+        <PillToggle
+          on={group.active}
+          mixed={group.partial}
+          onChange={(on) => void setStyleActive(family, group.key, on)}
+          label={t(group.active ? "style.deactivate" : "style.activate", { family, style: group.style })}
+        />
+      ) : group.webOnly ? (
+        <span className="face-web" title={t("style.webOnlyHint")}>
+          {t("style.webOnly")}
+        </span>
+      ) : null}
     </motion.div>
   );
 }
@@ -86,7 +109,9 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
   const hasActiveConflict = useFontStore((s) => activeConflictsFor(s.fonts).has(family.name));
   const hasDormantConflict = useFontStore((s) => conflictsFor(s.fonts).has(family.name));
   const cover = useFontStore((s) => s.covers[family.name]);
-  const [expanded, setExpanded] = useState(false);
+  const expandAll = useFontStore((s) => s.expandStyles);
+  const [expanded, setExpanded] = useState(expandAll);
+  useEffect(() => setExpanded(expandAll), [expandAll]);
 
   const size = SIZES[sizeIndex];
   const lead = family.faces.find((f) => f.style === "Regular") ?? family.faces[0];
@@ -147,7 +172,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
               <ChevronRight size={13} strokeWidth={1.5} />
             </motion.span>
             <span className="tabular">
-              {t("card.stylesCount", { count: family.faces.length })}
+              {t("card.stylesCount", { count: family.styleCount })}
             </span>
           </motion.button>
         )}
@@ -191,6 +216,10 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
             onChange={(on) => void setFamilyActive(family.name, on)}
             label={t(family.active ? "card.deactivate" : "card.activate", { name: family.name })}
           />
+        ) : family.webOnly ? (
+          <span className="face-web" title={t("style.webOnlyHint")}>
+            {t("style.webOnly")}
+          </span>
         ) : (
           <span className="card-os-lock" title={t("card.osManaged")} aria-label={t("card.osManaged")}>
             <Lock size={11} strokeWidth={1.75} />
@@ -251,14 +280,15 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
             exit={{ height: 0, opacity: 0, transition: { ...springSnappy } }}
             transition={springSoft}
           >
-            {family.faces.map((face, i) => (
+            {styleGroups(family.faces).map((group, i) => (
               <FacePreview
-                key={face.id}
-                face={face}
+                key={group.key}
+                group={group}
+                family={family.name}
                 text={text}
                 size={size}
                 index={i}
-                synthesize={family.faces.filter((f) => f.path === face.path).length > 1}
+                synthesize={family.faces.filter((f) => f.path === group.lead.path).length > 1}
               />
             ))}
           </motion.div>

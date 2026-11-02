@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.9.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.10.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +99,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.9.0** — see the
+> ZFontManager is currently at **version 0.10.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -113,7 +113,10 @@ ZFontManager is the answer to both:
 On first launch, ZFontManager scans the standard font locations on your
 system — both the system-wide ones and your personal user fonts — and builds
 your library automatically. You can add extra folders to watch in Settings,
-and the app notices when new fonts appear in them.
+and the app notices when new fonts appear in them. Each watched folder also
+gets its own entry in the sidebar, with a count, so you can open just the
+fonts from that folder — a folder per client, per language or per project —
+and still search, filter and sort inside it.
 
 Every font family is shown **in its own typeface**, not as a generic name in
 a list. Type any sentence into the preview box at the top — your brand name,
@@ -123,7 +126,11 @@ poster size.
 
 Fonts with many weights and italics are grouped into a single family card.
 Expand the card and every style — Light, Regular, Bold, Black, the italics —
-renders live underneath.
+renders live underneath. The **Expand all styles** button in the top bar opens
+every card at once and is remembered between sessions, so the whole library
+can be browsed style by style. A style that exists in several formats — the
+same Regular as TTF, OTF and WOFF2, say — is still one style, with each format
+shown as a small badge on its row.
 
 Four views, switchable from the top bar:
 
@@ -155,6 +162,9 @@ to sleep. Flip the toggle again and it's back.
 - Toggle a single family with one click (or press <kbd>Space</kbd>)
 - Select many families and activate/deactivate them all at once
 - Deactivated fonts stay in your library, gently dimmed, ready to wake up
+- Turn single styles on or off: every style row in an expanded card and in
+  the detail panel has its own switch, so a twelve-style family can put just
+  Regular and Bold into your design app's font menu
 - A family with only some styles on shows a half-way switch and "Partly
   active · 3 of 12 styles", so it never passes for fully active. One click
   turns on the rest
@@ -588,6 +598,13 @@ system can see them; the original file is never moved, copied or deleted.
 > The RPM registers itself as `z-font-manager`, so `rpm -q z-font-manager` is
 > what reports the installed version even though the file is named
 > `ZFontManager-<version>-1.x86_64.rpm`.
+
+**Web fonts (WOFF and WOFF2)** are read like any other font, so they group
+with the TTF or OTF of the same typeface instead of showing up as extra
+styles. On Linux, fontconfig loads them, so they get a switch like everything
+else. Windows and macOS can't install them as desktop fonts: there they're
+listed with a *Web font* badge, left out of the family's on/off state, and
+never sent to the system.
 
 Two integrations are platform-bound and are hidden where they don't apply:
 **Photoshop / Illustrator** (Windows and macOS) and **Affinity by Canva**

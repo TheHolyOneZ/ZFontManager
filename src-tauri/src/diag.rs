@@ -70,7 +70,7 @@ pub fn session_start() {
 }
 
 pub fn face_names(path: &Path) -> Vec<FaceNames> {
-    let Ok(data) = fs::read(path) else {
+    let Ok(data) = crate::parser::read_sfnt(path) else {
         return Vec::new();
     };
     let count = ttf_parser::fonts_in_collection(&data).unwrap_or(1);
@@ -115,7 +115,7 @@ pub fn name_clashes(
 
 pub fn postscript_index(faces: &[crate::font_types::FontFace]) -> HashMap<String, Vec<String>> {
     let mut index: HashMap<String, Vec<String>> = HashMap::new();
-    for face in faces {
+    for face in faces.iter().filter(|f| !crate::parser::is_web_format(f.format)) {
         let Some(ps) = face.postscript_name.as_deref().filter(|s| !s.is_empty()) else {
             continue;
         };

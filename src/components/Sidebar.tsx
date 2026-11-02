@@ -1,16 +1,20 @@
 import { motion } from "motion/react";
-import { ChevronDown, Clock, FolderOpen, Globe, History, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
+import { ChevronDown, Clock, Folder, FolderOpen, Globe, History, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { openContextMenu } from "../design/primitives/ContextMenu";
 import { spring, springSoft, staggerDelay } from "../design/springs";
 import { allTags, familiesFor, useFontStore, type Family, type Nav } from "../state/fontStore";
 import { exportFontList } from "../lib/menus";
+import { folderLabel, inFolder } from "../lib/folders";
+import { revealItemInDir } from "@tauri-apps/plugin-opener";
+import { toast } from "../design/primitives/Toast";
 import { t as translate, useT } from "../lib/i18n";
 
 function navKey(n: Nav): string {
   if (n.kind === "tag") return `tag:${n.tag}`;
   if (n.kind === "collection") return `col:${n.name}`;
   if (n.kind === "favorites") return "favorites";
+  if (n.kind === "folder") return `dir:${n.path}`;
   return n.kind;
 }
 
@@ -20,6 +24,7 @@ function NavRow({
   label,
   count,
   index,
+  title,
   onContextMenu,
 }: {
   nav: Nav;
@@ -27,6 +32,7 @@ function NavRow({
   label: string;
   count?: number;
   index: number;
+  title?: string;
   onContextMenu?: (e: React.MouseEvent) => void;
 }) {
   const current = useFontStore((s) => s.nav);
@@ -37,6 +43,7 @@ function NavRow({
       className={`nav-row ${active ? "nav-active" : ""}`}
       onClick={() => setNav(nav)}
       onContextMenu={onContextMenu}
+      title={title}
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ ...springSoft, delay: staggerDelay(index) }}
@@ -138,6 +145,13 @@ export function Sidebar() {
   const renameCollection = useFontStore((s) => s.renameCollection);
   const setFamilyTags = useFontStore((s) => s.setFamilyTags);
   const pendingCollectionFor = useFontStore((s) => s.pendingCollectionFor);
+  const extraDirs = useFontStore((s) => s.settings.extraDirs);
+  const nav = useFontStore((s) => s.nav);
+  const setNav = useFontStore((s) => s.setNav);
+
+  useEffect(() => {
+    if (nav.kind === "folder" && !extraDirs.includes(nav.path)) setNav({ kind: "library" });
+  }, [nav, extraDirs, setNav]);
 
   const [creating, setCreating] = useState(false);
   const [renaming, setRenaming] = useState<string | null>(null);
@@ -155,11 +169,17 @@ export function Sidebar() {
   const sessionCount = allFamilies.filter((f) =>
     sessionActivated.includes(f.name),
   ).length;
-  const deactivatedCount = allFamilies.filter((f) => !f.active).length;
+  const deactivatedCount = allFamilies.filter((f) => !f.active && !f.webOnly).length;
   const systemCount = allFamilies.filter(
     (f) => f.faces.length > 0 && f.faces.every((face) => face.source === "system"),
   ).length;
   const tagCounts = allTags(tags);
+  const folderCounts = new Map(
+    extraDirs.map((dir) => [
+      dir,
+      allFamilies.filter((f) => f.faces.some((face) => inFolder(face.path, dir))).length,
+    ]),
+  );
   const collapsed = useFontStore((s) => s.collapsedSections);
   const toggleSection = useFontStore((s) => s.toggleSection);
   const collectionNames = Object.keys(collections).sort((a, b) => a.localeCompare(b));
@@ -362,6 +382,47 @@ export function Sidebar() {
                 }
               />
             ))}
+          </div>
+        )}
+
+        {extraDirs.length > 0 && (
+          <div className={`sidebar-section ${collapsed.includes("folders") ? "sidebar-collapsed" : ""}`}>
+            <div className="sidebar-heading sidebar-heading-row">
+              <button
+                className="sidebar-toggle"
+                onClick={() => toggleSection("folders")}
+                aria-expanded={!collapsed.includes("folders")}
+              >
+                <span className="sidebar-chevron">
+                  <ChevronDown size={12} strokeWidth={2} />
+                </span>
+                <span>{t("side.watchedFolders")}</span>
+              </button>
+            </div>
+            {!collapsed.includes("folders") &&
+              extraDirs.map((dir) => (
+                <NavRow
+                  key={dir}
+                  nav={{ kind: "folder", path: dir }}
+                  icon={<Folder size={15} strokeWidth={1.5} />}
+                  label={folderLabel(dir)}
+                  title={dir}
+                  count={folderCounts.get(dir) ?? 0}
+                  index={i++}
+                  onContextMenu={(e) =>
+                    openContextMenu(e, [
+                      {
+                        label: translate("menu.showInFileManager"),
+                        icon: <FolderOpen size={14} strokeWidth={1.5} />,
+                        action: () =>
+                          revealItemInDir(dir).catch((err) =>
+                            toast.error(translate("toast.couldntOpenFileManager"), String(err)),
+                          ),
+                      },
+                    ])
+                  }
+                />
+              ))}
           </div>
         )}
       </div>

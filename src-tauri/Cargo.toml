@@ -1,6 +1,6 @@
 [package]
 name = "zfontmanager"
-version = "0.9.0"
+version = "0.10.0"
 description = "Cross-platform font manager: preview, tag, activate/deactivate, and install fonts"
 authors = ["TheHolyOneZ"]
 license = "GPL-3.0-only"
@@ -31,6 +31,7 @@ zip = { version = "2", default-features = false, features = ["deflate"] }
 tar = { version = "0.4", default-features = false }
 xz2 = { version = "0.1", features = ["static"] }
 sha2 = "0.10"
+wuff = "0.2.9"
 thiserror = "2"
 notify = "7"
 rodio = { version = "0.19", default-features = false }

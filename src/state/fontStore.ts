@@ -19,7 +19,8 @@ import {
   type TrashEntry,
 } from "../lib/ipc";
 import { matchAffinityFonts, type AffinityEvent } from "../lib/affinity";
-import { familyActivation, pathsToToggle } from "../lib/familyState";
+import { familyActivation, isWebFormat, pathsToToggle, styleGroups } from "../lib/familyState";
+import { inFolder } from "../lib/folders";
 import { toast } from "../design/primitives/Toast";
 import { setSoundLevel, type SoundLevel } from "../lib/sound";
 import { applyTheme, type ThemePref } from "../lib/theme";
@@ -56,11 +57,14 @@ export type Nav =
   | { kind: "deactivated" }
   | { kind: "system" }
   | { kind: "lastImported" }
+  | { kind: "folder"; path: string }
   | { kind: "online" };
 
 export interface Family {
   name: string;
   faces: FontFace[];
+  styleCount: number;
+  webOnly: boolean;
   formats: string[];
   isVariable: boolean;
   active: boolean;
@@ -144,6 +148,7 @@ interface FontStore {
   sampleText: string;
   sizeIndex: number;
   viewMode: ViewMode;
+  expandStyles: boolean;
   sort: SortMode;
   search: string;
 
@@ -169,6 +174,7 @@ interface FontStore {
   init: () => Promise<void>;
   rescan: () => Promise<void>;
   setFamilyActive: (family: string, active: boolean) => Promise<void>;
+  setStyleActive: (family: string, key: string, active: boolean) => Promise<void>;
   activateFamilySession: (family: string) => Promise<void>;
   setFontFileActive: (path: string, active: boolean) => Promise<void>;
   uninstallFontFile: (path: string) => Promise<void>;
@@ -238,6 +244,7 @@ interface FontStore {
   setSampleText: (t: string) => void;
   setSizeIndex: (i: number) => void;
   setViewMode: (m: ViewMode) => void;
+  setExpandStyles: (on: boolean) => void;
   setSort: (s: SortMode) => void;
   setSearch: (s: string) => void;
   toggleClassFilter: (c: Classification) => void;
@@ -267,6 +274,7 @@ function persistPrefs(get: () => FontStore) {
       sampleText: s.sampleText,
       sizeIndex: s.sizeIndex,
       viewMode: s.viewMode,
+      expandStyles: s.expandStyles,
       sort: s.sort,
       panelWidth: s.panelWidth,
       motionPref: s.motionPref,
@@ -344,6 +352,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   sampleText: t("preview.defaultSample"),
   sizeIndex: 3,
   viewMode: "grid",
+  expandStyles: false,
   sort: "name",
   search: "",
   classFilter: [],
@@ -378,6 +387,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
         )
           ? (prefs.viewMode as ViewMode)
           : "grid",
+        expandStyles: prefs.expandStyles === true,
         sort: (["name", "styles", "size", "glyphs"] as const).includes(prefs.sort as SortMode)
           ? (prefs.sort as SortMode)
           : "name",
@@ -506,6 +516,23 @@ export const useFontStore = create<FontStore>((set, get) => ({
     } catch (e) {
       set({ phase: "error" });
       toast.error(t("toast.couldntScan"), String(e));
+    }
+  },
+
+  setStyleActive: async (family, key, active) => {
+    const fam = familiesFor(get().fonts, get().tags).get(family);
+    const group = fam && styleGroups(fam.faces).find((g) => g.key === key);
+    if (!group) return;
+    const paths = pathsToToggle(group.faces, active);
+    if (paths.length === 0) return;
+    const touched = new Set(paths);
+    const prev = get().fonts;
+    set({ fonts: prev.map((f) => (touched.has(f.path) ? { ...f, active } : f)) });
+    try {
+      await ipc.setFontsActive(paths, active);
+    } catch (e) {
+      toast.error(t(active ? "toast.couldntActivate" : "toast.couldntDeactivate"), String(e));
+      await get().rescan();
     }
   },
 
@@ -1283,6 +1310,11 @@ export const useFontStore = create<FontStore>((set, get) => ({
     set({ viewMode });
     persistPrefs(get);
   },
+
+  setExpandStyles: (expandStyles) => {
+    set({ expandStyles });
+    persistPrefs(get);
+  },
   setSort: (sort) => {
     set({ sort });
     persistPrefs(get);
@@ -1462,6 +1494,8 @@ export function computeFamilies(
       fam = {
         name: f.family,
         faces: [],
+        styleCount: 0,
+        webOnly: false,
         formats: [],
         isVariable: false,
         active: false,
@@ -1496,6 +1530,8 @@ export function computeFamilies(
   }
   for (const fam of map.values()) {
     fam.faces.sort((a, b) => styleOrder(a) - styleOrder(b));
+    fam.styleCount = styleGroups(fam.faces).length;
+    fam.webOnly = fam.faces.every((f) => f.installable === false);
     Object.assign(fam, familyActivation(fam.faces));
   }
   return map;
@@ -1574,7 +1610,11 @@ export function selectVisibleFamilies(s: {
     out = out.filter((f) => s.sessionActivated.includes(f.name));
   }
   if (s.nav.kind === "deactivated") {
-    out = out.filter((f) => !f.active);
+    out = out.filter((f) => !f.active && !f.webOnly);
+  }
+  if (s.nav.kind === "folder") {
+    const dir = s.nav.path;
+    out = out.filter((f) => f.faces.some((face) => inFolder(face.path, dir)));
   }
   if (s.nav.kind === "system") {
     out = out.filter((f) => f.faces.length > 0 && f.faces.every((face) => face.source === "system"));
@@ -1591,7 +1631,7 @@ export function selectVisibleFamilies(s: {
   }
   switch (s.sort) {
     case "styles":
-      out.sort((a, b) => b.faces.length - a.faces.length || a.name.localeCompare(b.name));
+      out.sort((a, b) => b.styleCount - a.styleCount || a.name.localeCompare(b.name));
       break;
     case "size":
       out.sort((a, b) => b.totalSize - a.totalSize || a.name.localeCompare(b.name));
@@ -1662,6 +1702,7 @@ export function conflictsFor(fonts: FontFace[]): Map<string, FontConflict[]> {
 export function computeConflicts(fonts: FontFace[]): Map<string, FontConflict[]> {
   const byKey = new Map<string, { paths: Set<string>; families: Set<string> }>();
   for (const f of fonts) {
+    if (isWebFormat(f.format)) continue;
     const key = f.postscriptName ?? `${f.family} ${f.style}`;
     let entry = byKey.get(key);
     if (!entry) {

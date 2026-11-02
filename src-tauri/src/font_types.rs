@@ -66,6 +66,7 @@ pub struct FontFace {
     pub glyph_count: u16,
     pub file_size: u64,
     pub source: FontSource,
+    pub installable: bool,
     pub deactivatable: bool,
     pub active: bool,
 }

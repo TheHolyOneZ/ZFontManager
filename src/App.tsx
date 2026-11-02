@@ -1,6 +1,6 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { MotionConfig, motion } from "motion/react";
-import { Clock, FolderOpen, History, Monitor, Power, PowerOff, SearchX, Star, Tag as TagIcon, Type } from "lucide-react";
+import { Clock, Folder, FolderOpen, History, Monitor, Power, PowerOff, SearchX, Star, Tag as TagIcon, Type } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { DetailPanel } from "./components/DetailPanel";
 import { ResizeGrips } from "./components/ResizeGrips";
@@ -83,6 +83,10 @@ function EmptyLibrary({ searching, nav }: { searching: boolean; nav: Nav }) {
     icon = <PowerOff size={26} strokeWidth={1.5} />;
     title = t("empty.deactivated.title");
     hint = t("empty.deactivated.body");
+  } else if (nav.kind === "folder") {
+    icon = <Folder size={26} strokeWidth={1.5} />;
+    title = t("empty.folder.title");
+    hint = t("empty.folder.body", { path: nav.path });
   } else if (nav.kind === "system") {
     icon = <Monitor size={26} strokeWidth={1.5} />;
     title = t("empty.system.title");

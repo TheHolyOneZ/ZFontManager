@@ -44,6 +44,7 @@ function family(name: string, psPrefix: string): FontFace[] {
       glyphCount: 0,
       fileSize: 0,
       source: "user",
+      installable: true,
       deactivatable: true,
       active: false,
     };

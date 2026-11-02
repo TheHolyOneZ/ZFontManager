@@ -86,7 +86,7 @@ export function FontList({ families }: { families: Family[] }) {
                   )}
                   {fam.name}
                 </span>
-                <span className="col-styles tabular">{fam.faces.length}</span>
+                <span className="col-styles tabular">{fam.styleCount}</span>
                 <span className="col-format">
                   <FormatBadge format={fam.formats[0]} isVariable={fam.isVariable} />
                 </span>

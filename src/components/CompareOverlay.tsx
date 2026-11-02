@@ -49,7 +49,7 @@ function CompareColumn({ family, onRemove }: { family: Family; onRemove: () => v
         </p>
       ))}
       <div className="compare-meta tabular">
-        {t("detail.stylesCount", { count: family.faces.length })} ·{" "}
+        {t("detail.stylesCount", { count: family.styleCount })} ·{" "}
         {family.formats.join(", ").toUpperCase()}
       </div>
     </div>

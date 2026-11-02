@@ -2,6 +2,8 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpDown,
   Check,
+  ChevronsDownUp,
+  ChevronsUpDown,
   Columns2,
   Filter,
   GalleryVerticalEnd,
@@ -339,6 +341,25 @@ function RescanButton() {
   );
 }
 
+function ExpandStylesButton() {
+  const t = useT();
+  const on = useFontStore((s) => s.expandStyles);
+  const setExpandStyles = useFontStore((s) => s.setExpandStyles);
+  const label = t(on ? "top.collapseStyles" : "top.expandStyles");
+  return (
+    <motion.button
+      className={`rescan-btn ${on ? "expand-on" : ""}`}
+      aria-label={label}
+      aria-pressed={on}
+      title={label}
+      onClick={() => setExpandStyles(!on)}
+      whileTap={{ scale: 0.94 }}
+    >
+      {on ? <ChevronsDownUp size={14} strokeWidth={1.5} /> : <ChevronsUpDown size={14} strokeWidth={1.5} />}
+    </motion.button>
+  );
+}
+
 function CompareButton() {
   const t = useT();
   const selection = useFontStore((s) => s.selection);
@@ -398,8 +419,8 @@ export function TopBar() {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const stacked = width < 880;
-  const compact = stacked ? width < 640 : width < 1000;
+  const stacked = width < 920;
+  const compact = stacked ? width < 680 : width < 980;
 
   return (
     <motion.header
@@ -463,6 +484,8 @@ export function TopBar() {
       <CompareButton />
 
       <RescanButton />
+
+      {viewMode === "grid" && <ExpandStylesButton />}
 
       <div className="view-toggle" role="tablist" aria-label={t("top.viewMode")}>
         {(["grid", "list", "cards"] as const).map((mode) => (

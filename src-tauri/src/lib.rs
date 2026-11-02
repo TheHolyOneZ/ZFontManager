@@ -60,6 +60,8 @@ async fn scan_fonts(app: tauri::AppHandle) -> Result<Vec<FontFace>, String> {
             f.id = format!("{}#{}", orig, f.face_index);
             f.path = orig.clone();
             f.preview_path = Some(parked.clone());
+            f.installable = true;
+            f.deactivatable = true;
             f.active = false;
             faces.push(f);
         }
@@ -521,7 +523,7 @@ fn sweep_charset(paths: &[String], ch: char) -> Vec<String> {
                 scope.spawn(move || {
                     let mut found = Vec::new();
                     for path in group {
-                        let Ok(data) = std::fs::read(path) else {
+                        let Ok(data) = parser::read_sfnt(std::path::Path::new(path)) else {
                             continue;
                         };
                         let count = ttf_parser::fonts_in_collection(&data).unwrap_or(1);
@@ -548,7 +550,7 @@ fn sweep_charset(paths: &[String], ch: char) -> Vec<String> {
 
 #[tauri::command]
 fn get_charset(path: String, face_index: u32) -> Result<Vec<u32>, String> {
-    let data = std::fs::read(&path).map_err(|e| e.to_string())?;
+    let data = parser::read_sfnt(std::path::Path::new(&path))?;
     let face = ttf_parser::Face::parse(&data, face_index).map_err(|e| e.to_string())?;
     let mut cps: Vec<u32> = Vec::new();
     if let Some(cmap) = face.tables().cmap {
@@ -638,7 +640,7 @@ fn write_binary_file(path: String, data: Vec<u8>) -> Result<(), String> {
 
 #[tauri::command]
 fn get_features(path: String, face_index: u32) -> Result<Vec<String>, String> {
-    let data = std::fs::read(&path).map_err(|e| e.to_string())?;
+    let data = parser::read_sfnt(std::path::Path::new(&path))?;
     let face = ttf_parser::Face::parse(&data, face_index).map_err(|e| e.to_string())?;
     let mut tags: Vec<String> = Vec::new();
     let mut collect = |table: Option<ttf_parser::opentype_layout::LayoutTable>| {

@@ -18,6 +18,11 @@ pub fn can_deactivate(source: FontSource) -> bool {
 }
 
 pub fn sync(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
+    if !active && !cfg!(target_os = "linux") && crate::parser::is_web_path(std::path::Path::new(path)) {
+        return Err(format!(
+            "web fonts (WOFF/WOFF2) aren't installed as desktop fonts on this system, so there's nothing to turn off: {path}"
+        ));
+    }
     let was_deactivated = state.deactivated.contains(path);
     if active {
         state.deactivated.remove(path);

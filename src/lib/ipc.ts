@@ -35,6 +35,7 @@ export interface FontFace {
   glyphCount: number;
   fileSize: number;
   source: FontSource;
+  installable: boolean;
   deactivatable: boolean;
   active: boolean;
 }

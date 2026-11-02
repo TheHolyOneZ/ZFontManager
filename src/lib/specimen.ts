@@ -100,7 +100,7 @@ export async function renderSpecimenPng(
     ctx.fillStyle = SUB;
     ctx.font = `13px ${UI}`;
     const meta = [
-      t("detail.stylesCount", { count: family.faces.length }),
+      t("detail.stylesCount", { count: family.styleCount }),
       family.formats.join(" · ").toUpperCase(),
       family.foundry ?? undefined,
       family.classification !== "unknown" ? t(`class.${family.classification}`) : undefined,

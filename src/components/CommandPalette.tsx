@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import {
   CheckCheck,
+  ChevronsUpDown,
   Columns2,
   Command,
   FolderOpen,
@@ -157,6 +158,15 @@ export function CommandPalette() {
         run: () => s.setViewMode("waterfall"),
       },
       {
+        id: "expand-styles",
+        label: t(s.expandStyles ? "top.collapseStyles" : "top.expandStyles"),
+        icon: <ChevronsUpDown size={14} strokeWidth={1.5} />,
+        run: () => {
+          if (s.viewMode !== "grid") s.setViewMode("grid");
+          s.setExpandStyles(!s.expandStyles);
+        },
+      },
+      {
         id: "view-cards",
         label: t("palette.viewCards"),
         icon: <GalleryVerticalEnd size={14} strokeWidth={1.5} />,
@@ -255,7 +265,7 @@ export function CommandPalette() {
             .map(({ f }) => ({
               id: `font-${f.name}`,
               label: f.name,
-              hint: t("detail.stylesCount", { count: f.faces.length }),
+              hint: t("detail.stylesCount", { count: f.styleCount }),
               icon: <Type size={14} strokeWidth={1.5} />,
               run: () => {
                 close();

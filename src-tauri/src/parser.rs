@@ -202,7 +202,8 @@ fn parse_face(
         glyph_count: face.number_of_glyphs(),
         file_size,
         source,
-        deactivatable: crate::activation::can_deactivate(source),
+        installable: installable(format),
+        deactivatable: crate::activation::can_deactivate(source) && installable(format),
         active: true,
     })
 }
@@ -213,14 +214,42 @@ fn fallback_family(path: &Path) -> String {
         .unwrap_or_else(|| "Unknown".to_string())
 }
 
+pub fn is_web_format(format: FontFormat) -> bool {
+    matches!(format, FontFormat::Woff | FontFormat::Woff2)
+}
+
+pub fn installable(format: FontFormat) -> bool {
+    !(is_web_format(format) && cfg!(any(target_os = "windows", target_os = "macos")))
+}
+
+pub fn is_web_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|e| e.eq_ignore_ascii_case("woff") || e.eq_ignore_ascii_case("woff2"))
+}
+
+pub fn to_sfnt(data: Vec<u8>) -> Option<Vec<u8>> {
+    match data.get(0..4) {
+        Some(b"wOFF") => wuff::decompress_woff1(&data).ok(),
+        Some(b"wOF2") => wuff::decompress_woff2(&data).ok(),
+        _ => Some(data),
+    }
+}
+
+pub fn read_sfnt(path: &Path) -> Result<Vec<u8>, String> {
+    let data = fs::read(path).map_err(|e| e.to_string())?;
+    to_sfnt(data).ok_or_else(|| format!("couldn't decode this web font: {}", path.display()))
+}
+
 pub fn parse_font_file(path: &Path, source: FontSource) -> Vec<FontFace> {
-    let Ok(data) = fs::read(path) else {
+    let Ok(raw) = fs::read(path) else {
         return Vec::new();
     };
-    let file_size = data.len() as u64;
-    let format = detect_format(&data, path);
+    let file_size = raw.len() as u64;
+    let format = detect_format(&raw, path);
+    let decoded = if is_web_format(format) { to_sfnt(raw) } else { Some(raw) };
 
-    if matches!(format, FontFormat::Woff | FontFormat::Woff2) {
+    let Some(data) = decoded else {
         let path_str = path.to_string_lossy().into_owned();
         return vec![FontFace {
             id: format!("{}#0", path_str),
@@ -245,10 +274,11 @@ pub fn parse_font_file(path: &Path, source: FontSource) -> Vec<FontFace> {
             glyph_count: 0,
             file_size,
             source,
-            deactivatable: crate::activation::can_deactivate(source),
+            installable: installable(format),
+            deactivatable: crate::activation::can_deactivate(source) && installable(format),
             active: true,
         }];
-    }
+    };
 
     let count = ttf_parser::fonts_in_collection(&data).unwrap_or(1);
     (0..count)
@@ -280,6 +310,88 @@ mod tests {
         let f = &faces[0];
         assert!(!f.family.is_empty());
         assert!(f.file_size > 0);
+    }
+
+    fn wrap_as_woff1(ttf: &[u8]) -> Vec<u8> {
+        let be16 = |o: usize| u16::from_be_bytes([ttf[o], ttf[o + 1]]);
+        let be32 = |o: usize| u32::from_be_bytes([ttf[o], ttf[o + 1], ttf[o + 2], ttf[o + 3]]);
+        let num = be16(4) as usize;
+        let tables: Vec<(u32, u32, usize, usize)> = (0..num)
+            .map(|i| {
+                let e = 12 + i * 16;
+                (be32(e), be32(e + 4), be32(e + 8) as usize, be32(e + 12) as usize)
+            })
+            .collect();
+        let pad = |n: usize| (n + 3) & !3;
+        let sfnt_size = 12 + 16 * num + tables.iter().map(|t| pad(t.3)).sum::<usize>();
+        let mut offset = 44 + 20 * num;
+        let mut dir = Vec::new();
+        let mut body = Vec::new();
+        for &(tag, sum, start, len) in &tables {
+            dir.extend_from_slice(&tag.to_be_bytes());
+            dir.extend_from_slice(&(offset as u32).to_be_bytes());
+            dir.extend_from_slice(&(len as u32).to_be_bytes());
+            dir.extend_from_slice(&(len as u32).to_be_bytes());
+            dir.extend_from_slice(&sum.to_be_bytes());
+            body.extend_from_slice(&ttf[start..start + len]);
+            body.resize(body.len() + pad(len) - len, 0);
+            offset += pad(len);
+        }
+        let mut out = Vec::new();
+        out.extend_from_slice(b"wOFF");
+        out.extend_from_slice(&be32(0).to_be_bytes());
+        out.extend_from_slice(&(offset as u32).to_be_bytes());
+        out.extend_from_slice(&(num as u16).to_be_bytes());
+        out.extend_from_slice(&0u16.to_be_bytes());
+        out.extend_from_slice(&(sfnt_size as u32).to_be_bytes());
+        out.extend_from_slice(&[0, 1, 0, 0]);
+        out.extend_from_slice(&[0u8; 20]);
+        out.extend_from_slice(&dir);
+        out.extend_from_slice(&body);
+        out
+    }
+
+    #[test]
+    fn web_fonts_report_their_real_names() {
+        let Some(path) = walkdir::WalkDir::new("/usr/share/fonts")
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .map(|e| e.into_path())
+            .find(|p| p.extension().is_some_and(|e| e.eq_ignore_ascii_case("ttf")))
+        else {
+            return;
+        };
+        let ttf = fs::read(&path).unwrap();
+        if ttf_parser::fonts_in_collection(&ttf).is_some() {
+            return;
+        }
+        let original = parse_font_file(&path, FontSource::User);
+        let tmp = std::env::temp_dir().join(format!("zfm-woff-{}.woff", std::process::id()));
+        fs::write(&tmp, wrap_as_woff1(&ttf)).unwrap();
+        let web = parse_font_file(&tmp, FontSource::User);
+        let _ = fs::remove_file(&tmp);
+
+        assert_eq!(web.len(), 1);
+        assert_eq!(web[0].format, FontFormat::Woff);
+        assert_eq!(web[0].family, original[0].family);
+        assert_eq!(web[0].style, original[0].style);
+        assert_eq!(web[0].postscript_name, original[0].postscript_name);
+        assert!(web[0].glyph_count > 0);
+        let desktop = cfg!(target_os = "linux");
+        assert_eq!(web[0].installable, desktop);
+        assert_eq!(web[0].deactivatable, desktop);
+        assert!(original[0].installable);
+    }
+
+    #[test]
+    fn undecodable_web_fonts_fall_back_to_the_file_name() {
+        let tmp = std::env::temp_dir().join(format!("zfm-broken-{}.woff2", std::process::id()));
+        fs::write(&tmp, b"wOF2 this is not really a font").unwrap();
+        let faces = parse_font_file(&tmp, FontSource::User);
+        let _ = fs::remove_file(&tmp);
+        assert_eq!(faces.len(), 1);
+        assert_eq!(faces[0].family, format!("zfm-broken-{}", std::process::id()));
+        assert_eq!(faces[0].format, FontFormat::Woff2);
     }
 
     #[test]

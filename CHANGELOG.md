@@ -4,6 +4,58 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.10.0] — 2026-11-02
+
+### Added
+
+- **Turn single styles on or off.** Every style in an expanded family card and
+  in the detail panel's style list now has its own switch, so a twelve-style
+  family can put just Regular and Bold into your design app's font menu. The
+  family switch still turns every style on or off at once, and "Partly active
+  · 2 of 12 styles" counts styles, not files.
+
+  Suggested by Jadooooooooo. (#29)
+
+- **Expand all styles.** A new button in the top bar (in the Grid view) and in
+  the command palette opens every family card at once, so the whole library
+  can be browsed and compared style by style. The choice is remembered between
+  sessions, and single cards can still be opened or closed on their own.
+
+  Suggested by sort0m and megavolkan. (#26, #27)
+
+- **Watched folders in the sidebar.** Each folder you watch in Settings now has
+  its own entry under *Watched folders*, with the number of families in it.
+  Clicking one shows only the fonts from that folder, together with search,
+  filters and sorting. Hovering shows the full path; right-click opens the
+  folder in your file manager.
+
+  Suggested by Jadooooooooo. (#25)
+
+### Fixed
+
+- **Different formats of one font showed up as separate styles, and the
+  switch failed with WOFF files.** Web fonts (WOFF and WOFF2) were never
+  actually read: they took their name from the file name and always counted as
+  "Regular". So `Lato.ttf`, `Lato.woff` and `Lato.woff2` looked like three
+  Regular styles, raised a name-conflict warning, and `Lato-Bold.woff2` ended
+  up as a family of its own. Web fonts are now decoded and read like any other
+  font, so each format joins the right family and style, and a style shows its
+  formats as small badges (TTF · WOFF2 · WOFF) instead of repeating itself.
+  Different formats of the same font no longer count as a name conflict.
+
+  On Windows and macOS, which can't install web fonts as desktop fonts, a
+  family that also had a WOFF in it looked "partly active" forever, and
+  clicking its switch tried to install the WOFF and failed. WOFF and WOFF2 files
+  are now listed with a *Web font* badge there, left out of the family's on/off
+  state and never sent to the system, so the switch works on the TTF and OTF
+  files. On Linux, where fontconfig loads web fonts, they keep a switch like any
+  other font.
+
+  Reported by Jadooooooooo. (#28)
+
+- **A long file path in the detail panel overlapped the rows above it.** The
+  Location row now wraps downward.
+
 ## [0.9.0] — 2026-10-28
 
 ### Added

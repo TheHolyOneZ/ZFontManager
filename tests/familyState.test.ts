@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { familyActivation, pathsToToggle } from "../src/lib/familyState.ts";
+import { familyActivation, pathsToToggle, styleGroups } from "../src/lib/familyState.ts";
+import type { FontFace } from "../src/lib/ipc.ts";
 import { TEXT, library, of } from "./fixtures.ts";
 
 test("a family is inactive, partly active or active", () => {
@@ -40,4 +41,49 @@ test("a collection file with several faces is sent once", () => {
 test("fonts the OS manages are never toggled", () => {
   const faces = of(library(), TEXT).map((f) => ({ ...f, deactivatable: false }));
   assert.deepEqual(pathsToToggle(faces, true), []);
+});
+
+const asFormat = (face: FontFace, format: FontFace["format"], installable = true): FontFace => ({
+  ...face,
+  id: face.id.replace(".otf", `.${format}`),
+  path: face.path.replace(".otf", `.${format}`),
+  format,
+  installable,
+  deactivatable: installable,
+});
+
+test("formats of the same style are one style, not several", () => {
+  const otf = of(library(), TEXT);
+  const regular = otf.find((f) => f.style === "Regular")!;
+  const faces = [...otf, asFormat(regular, "ttf"), asFormat(regular, "woff2"), asFormat(regular, "woff")];
+  const groups = styleGroups(faces);
+  assert.equal(groups.length, 12);
+  const reg = groups.find((g) => g.style === "Regular")!;
+  assert.deepEqual(reg.formats, ["otf", "ttf", "woff2", "woff"]);
+  assert.equal(reg.lead.format, "otf");
+  assert.equal(groups[0].weight, 200);
+});
+
+test("web fonts the system can't install don't make a family partly active", () => {
+  const otf = of(library(), TEXT).map((f) => ({ ...f, active: true }));
+  const webOnly = asFormat(otf[0], "woff2", false);
+  webOnly.active = false;
+  const state = familyActivation([...otf, webOnly]);
+  assert.deepEqual(state, { active: true, partial: false, activeCount: 12 });
+  assert.ok(!pathsToToggle([...otf, webOnly], true).includes(webOnly.path));
+});
+
+test("a style that only exists as a web font is marked web only", () => {
+  const face = asFormat(of(library(), TEXT)[0], "woff2", false);
+  const [group] = styleGroups([face]);
+  assert.ok(group.webOnly);
+  assert.ok(!group.deactivatable);
+  assert.equal(group.lead.format, "woff2");
+});
+
+test("an installable copy leads a style before an uninstallable one", () => {
+  const face = of(library(), TEXT)[0];
+  const [group] = styleGroups([asFormat(face, "woff2", false), asFormat(face, "ttf")]);
+  assert.equal(group.lead.format, "ttf");
+  assert.ok(!group.webOnly);
 });

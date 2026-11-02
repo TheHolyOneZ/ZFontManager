@@ -107,7 +107,7 @@ const CoverTile = memo(function CoverTile({ family, cover }: { family: Family; c
       <footer className="cover-foot">
         <div className="cover-titles">
           <span className="card-name">{family.name}</span>
-          <span className="cover-meta tabular">{t("card.stylesCount", { count: family.faces.length })}</span>
+          <span className="cover-meta tabular">{t("card.stylesCount", { count: family.styleCount })}</span>
         </div>
         <button
           className={`star-btn ${favorite ? "star-on" : ""}`}
@@ -128,6 +128,10 @@ const CoverTile = memo(function CoverTile({ family, cover }: { family: Family; c
             onChange={(on) => void setFamilyActive(family.name, on)}
             label={t(family.active ? "card.deactivate" : "card.activate", { name: family.name })}
           />
+        ) : family.webOnly ? (
+          <span className="face-web" title={t("style.webOnlyHint")}>
+            {t("style.webOnly")}
+          </span>
         ) : (
           <span className="card-os-lock" title={t("card.osManaged")} aria-label={t("card.osManaged")}>
             <Lock size={11} strokeWidth={1.75} />

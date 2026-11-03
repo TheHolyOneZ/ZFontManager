@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { spring, springSoft } from "../design/springs";
 import { useFontCss, formatBytes, pathBasename } from "../lib/fontLoader";
-import { familiesFor, conflictsFor, useFontStore } from "../state/fontStore";
+import { familiesFor, conflictsFor, useFontStore, GLYPH_SIZE_DEFAULT, GLYPH_SIZE_MAX, GLYPH_SIZE_MIN } from "../state/fontStore";
 import { ipc, type FontFace, type VariationAxis } from "../lib/ipc";
 import { styleGroups, type StyleGroup } from "../lib/familyState";
 import { toast } from "../design/primitives/Toast";
@@ -275,6 +275,8 @@ function GlyphMap({
   variation?: string;
 }) {
   const t = useT();
+  const glyphSize = useFontStore((s) => s.glyphSize);
+  const setGlyphSize = useFontStore((s) => s.setGlyphSize);
   const [cps, setCps] = useState<number[] | null>(charsetCache.get(face.id) ?? null);
   const [showAll, setShowAll] = useState(false);
 
@@ -306,9 +308,29 @@ function GlyphMap({
   }
 
   const visible = showAll ? cps : cps.slice(0, GLYPH_LIMIT);
+  const fill = ((glyphSize - GLYPH_SIZE_MIN) / (GLYPH_SIZE_MAX - GLYPH_SIZE_MIN)) * 100;
   return (
     <>
-      <div className="glyph-grid">
+      <div className="axis-row glyph-zoom" style={{ "--fill": `${fill}%` } as React.CSSProperties}>
+        <span className="glyph-zoom-a glyph-zoom-sm" aria-hidden="true">A</span>
+        <input
+          type="range"
+          min={GLYPH_SIZE_MIN}
+          max={GLYPH_SIZE_MAX}
+          step={4}
+          value={glyphSize}
+          onChange={(e) => setGlyphSize(Number(e.target.value))}
+          onDoubleClick={() => setGlyphSize(GLYPH_SIZE_DEFAULT)}
+          aria-label={t("glyph.sizeAria")}
+          title={t("glyph.sizeHint")}
+        />
+        <span className="glyph-zoom-a glyph-zoom-lg" aria-hidden="true">A</span>
+        <span className="axis-value tabular">{glyphSize}px</span>
+      </div>
+      <div
+        className="glyph-grid"
+        style={{ "--glyph-size": `${glyphSize}px` } as React.CSSProperties}
+      >
         {visible.map((cp) => {
           const ch = String.fromCodePoint(cp);
           const hex = cp.toString(16).toUpperCase().padStart(4, "0");

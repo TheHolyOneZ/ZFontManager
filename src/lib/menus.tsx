@@ -110,7 +110,7 @@ export async function exportFontList(families: Family[], title: string) {
   }
 }
 
-function buildBulkMenu(names: string[]): MenuItem[] {
+export function buildSelectionMenu(names: string[]): MenuItem[] {
   const s = useFontStore.getState();
   const familyMap = familiesFor(s.fonts, s.tags);
   const families = names
@@ -118,6 +118,7 @@ function buildBulkMenu(names: string[]): MenuItem[] {
     .filter((f): f is Family => Boolean(f));
   const collectionNames = Object.keys(s.collections).sort((a, b) => a.localeCompare(b));
   const n = names.length;
+  const allFavorite = names.every((f) => s.favorites.includes(f));
 
   return [
     { kind: "heading", label: t("menu.selectedCount", { count: n }) },
@@ -137,6 +138,11 @@ function buildBulkMenu(names: string[]): MenuItem[] {
       label: t("menu.deactivateCount", { count: n }),
       icon: <Power size={14} strokeWidth={1.5} />,
       action: () => void s.setFamiliesActiveBulk(names, false),
+    },
+    {
+      label: t(allFavorite ? "sel.unfavorite" : "sel.favorite"),
+      icon: <Star size={14} strokeWidth={1.5} />,
+      action: () => void s.setFavorites(names, !allFavorite),
     },
     { kind: "separator" },
     { kind: "heading", label: t("menu.addAllToCollection") },
@@ -178,9 +184,7 @@ function buildBulkMenu(names: string[]): MenuItem[] {
       label: t("menu.moveCountToTrash", { count: n }),
       icon: <Trash2 size={14} strokeWidth={1.5} />,
       danger: true,
-      action: () => {
-        for (const f of names) void s.uninstallFamily(f);
-      },
+      action: () => void s.uninstallFamilies(names),
     },
   ];
 }
@@ -188,7 +192,7 @@ function buildBulkMenu(names: string[]): MenuItem[] {
 export function buildFamilyMenu(family: Family): MenuItem[] {
   const s = useFontStore.getState();
   if (s.selection.length > 1 && s.selection.includes(family.name)) {
-    return buildBulkMenu(s.selection);
+    return buildSelectionMenu(s.selection);
   }
   const lead = family.faces[0];
   const collectionNames = Object.keys(s.collections).sort((a, b) =>

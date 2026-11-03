@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpDown,
   Check,
+  CheckCheck,
   ChevronsDownUp,
   ChevronsUpDown,
   Columns2,
@@ -360,6 +361,34 @@ function ExpandStylesButton() {
   );
 }
 
+function SelectAllButton() {
+  const t = useT();
+  const total = useFontStore((s) => s.visibleOrder.length);
+  const all = useFontStore((s) => {
+    if (s.visibleOrder.length === 0 || s.selection.length < s.visibleOrder.length) return false;
+    const chosen = new Set(s.selection);
+    return s.visibleOrder.every((f) => chosen.has(f));
+  });
+  const label = all ? t("sel.clear") : t("sel.selectAllCount", { count: total });
+  return (
+    <motion.button
+      className={`rescan-btn ${all ? "expand-on" : ""}`}
+      aria-label={label}
+      aria-pressed={all}
+      title={label}
+      disabled={total === 0}
+      onClick={() => {
+        const st = useFontStore.getState();
+        if (all) st.select(null);
+        else st.selectAll();
+      }}
+      whileTap={{ scale: 0.94 }}
+    >
+      <CheckCheck size={14} strokeWidth={1.5} />
+    </motion.button>
+  );
+}
+
 function CompareButton() {
   const t = useT();
   const selection = useFontStore((s) => s.selection);
@@ -406,6 +435,9 @@ export function TopBar() {
   const setViewMode = useFontStore((s) => s.setViewMode);
   const search = useFontStore((s) => s.search);
   const setSearch = useFontStore((s) => s.setSearch);
+  const listing = useFontStore(
+    (s) => !["trash", "about", "online"].includes(s.nav.kind) && s.viewMode !== "waterfall",
+  );
 
   const fill = (sizeIndex / (SIZES.length - 1)) * 100;
 
@@ -484,6 +516,8 @@ export function TopBar() {
       <CompareButton />
 
       <RescanButton />
+
+      {listing && <SelectAllButton />}
 
       {viewMode === "grid" && <ExpandStylesButton />}
 

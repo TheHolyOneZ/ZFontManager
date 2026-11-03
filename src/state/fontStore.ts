@@ -34,6 +34,9 @@ import {
 } from "../lib/i18n";
 
 export const SIZES = [8, 14, 18, 24, 32, 48, 64, 96] as const;
+export const GLYPH_SIZE_MIN = 16;
+export const GLYPH_SIZE_MAX = 96;
+export const GLYPH_SIZE_DEFAULT = 16;
 
 let initStarted = false;
 
@@ -149,6 +152,7 @@ interface FontStore {
   sizeIndex: number;
   viewMode: ViewMode;
   expandStyles: boolean;
+  glyphSize: number;
   sort: SortMode;
   search: string;
 
@@ -180,6 +184,7 @@ interface FontStore {
   uninstallFontFile: (path: string) => Promise<void>;
   installPaths: (paths: string[], mode: InstallMode) => Promise<void>;
   uninstallFamily: (family: string) => Promise<void>;
+  uninstallFamilies: (families: string[]) => Promise<void>;
   restoreTrash: (entryId: string) => Promise<void>;
   deleteTrashEntry: (entryId: string) => Promise<void>;
   emptyTrash: () => Promise<void>;
@@ -190,12 +195,15 @@ interface FontStore {
   toggleFamilyInCollection: (collection: string, family: string) => Promise<void>;
   toggleFamiliesInCollection: (collection: string, families: string[]) => Promise<void>;
   toggleFavorite: (family: string) => Promise<void>;
+  setFavorites: (families: string[], favorite: boolean) => Promise<void>;
   setFamilyNote: (family: string, note: string) => Promise<void>;
   setFamiliesActiveBulk: (families: string[], active: boolean) => Promise<void>;
+  setFontPathsActive: (paths: string[], active: boolean) => Promise<void>;
   applyFamilyInApp: (family: string, app: AdobeApp) => Promise<void>;
   setPanelWidth: (w: number) => void;
   selectWith: (family: string, mode: "single" | "toggle" | "range", order: string[]) => void;
   selectAll: () => void;
+  toggleSelected: (family: string, range?: boolean) => void;
   openCompare: (families: string[]) => void;
   closeCompare: () => void;
   setComparePicking: (on: boolean) => void;
@@ -245,6 +253,7 @@ interface FontStore {
   setSizeIndex: (i: number) => void;
   setViewMode: (m: ViewMode) => void;
   setExpandStyles: (on: boolean) => void;
+  setGlyphSize: (px: number) => void;
   setSort: (s: SortMode) => void;
   setSearch: (s: string) => void;
   toggleClassFilter: (c: Classification) => void;
@@ -265,6 +274,10 @@ function applyTransparencyPref(pref: TransparencyPref) {
   document.documentElement.dataset.transparency = pref;
 }
 
+export function clampGlyphSize(px: number): number {
+  return Math.round(Math.min(GLYPH_SIZE_MAX, Math.max(GLYPH_SIZE_MIN, px)));
+}
+
 let prefsTimer: ReturnType<typeof setTimeout> | undefined;
 function persistPrefs(get: () => FontStore) {
   clearTimeout(prefsTimer);
@@ -275,6 +288,7 @@ function persistPrefs(get: () => FontStore) {
       sizeIndex: s.sizeIndex,
       viewMode: s.viewMode,
       expandStyles: s.expandStyles,
+      glyphSize: s.glyphSize,
       sort: s.sort,
       panelWidth: s.panelWidth,
       motionPref: s.motionPref,
@@ -353,6 +367,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   sizeIndex: 3,
   viewMode: "grid",
   expandStyles: false,
+  glyphSize: GLYPH_SIZE_DEFAULT,
   sort: "name",
   search: "",
   classFilter: [],
@@ -388,6 +403,10 @@ export const useFontStore = create<FontStore>((set, get) => ({
           ? (prefs.viewMode as ViewMode)
           : "grid",
         expandStyles: prefs.expandStyles === true,
+        glyphSize:
+          typeof prefs.glyphSize === "number"
+            ? clampGlyphSize(prefs.glyphSize)
+            : GLYPH_SIZE_DEFAULT,
         sort: (["name", "styles", "size", "glyphs"] as const).includes(prefs.sort as SortMode)
           ? (prefs.sort as SortMode)
           : "name",
@@ -693,39 +712,82 @@ export const useFontStore = create<FontStore>((set, get) => ({
     }
   },
 
-  uninstallFamily: async (family) => {
-    const faces = get().fonts.filter(
-      (f) => f.family === family && f.source !== "system",
-    );
-    if (faces.length === 0) {
+  uninstallFamily: (family) => get().uninstallFamilies([family]),
+
+  uninstallFamilies: async (families) => {
+    const wanted = [...new Set(families)];
+    const targets = wanted
+      .map((family) => ({
+        family,
+        paths: [
+          ...new Set(
+            get()
+              .fonts.filter((f) => f.family === family && f.source !== "system")
+              .map((f) => f.path),
+          ),
+        ],
+      }))
+      .filter((x) => x.paths.length > 0);
+    if (targets.length === 0) {
       toast.error(t("toast.cantUninstallSystem"), t("toast.cantUninstallSystemSub"));
       return;
     }
-    const paths = [...new Set(faces.map((f) => f.path))];
-    try {
-      const entryIds: string[] = [];
+    const entryIds: string[] = [];
+    const gonePaths = new Set<string>();
+    let failure: string | null = null;
+    for (const { family, paths } of targets) {
       for (const path of paths) {
-        entryIds.push((await ipc.uninstallFont(path, family)).id);
-      }
-      set({
-        fonts: get().fonts.filter((f) => !paths.includes(f.path)),
-        trash: await ipc.listTrash(),
-        selectedFamily: get().selectedFamily === family ? null : get().selectedFamily,
-        selection: get().selection.filter((f) => f !== family),
-        lastImported: get().lastImported.filter((f) => f !== family),
-      });
-
-      const { tags, favorites, collections } = get();
-      if (tags[family]) void get().setFamilyTags(family, []);
-      if (favorites.includes(family)) void get().toggleFavorite(family);
-      for (const [name, members] of Object.entries(collections)) {
-        if (members.includes(family)) {
-          const next = members.filter((m) => m !== family);
-          set({ collections: { ...get().collections, [name]: next } });
-          void ipc.setCollection(name, next);
+        if (gonePaths.has(path)) continue;
+        try {
+          entryIds.push((await ipc.uninstallFont(path, family)).id);
+          gonePaths.add(path);
+        } catch (e) {
+          failure = String(e);
         }
       }
-      toast.success(t("toast.movedToTrash", { family }), t("toast.movedToTrashSub"), "trash", {
+    }
+    if (failure) toast.error(t("toast.couldntMoveToTrash"), failure);
+    if (gonePaths.size === 0) return;
+
+    const nextFonts = get().fonts.filter((f) => !gonePaths.has(f.path));
+    const alive = new Set(nextFonts.map((f) => f.family));
+    const gone = targets.map((x) => x.family).filter((f) => !alive.has(f));
+    const goneSet = new Set(gone);
+    let trash = get().trash;
+    try {
+      trash = await ipc.listTrash();
+    } catch {}
+    const selectedFamily = get().selectedFamily;
+    set({
+      fonts: nextFonts,
+      trash,
+      selectedFamily: selectedFamily && goneSet.has(selectedFamily) ? null : selectedFamily,
+      selection: get().selection.filter((f) => !goneSet.has(f)),
+      lastImported: get().lastImported.filter((f) => !goneSet.has(f)),
+    });
+
+    for (const family of gone) {
+      if (get().tags[family]) void get().setFamilyTags(family, []);
+    }
+    void get().setFavorites(gone, false);
+    for (const [name, members] of Object.entries(get().collections)) {
+      const next = members.filter((m) => !goneSet.has(m));
+      if (next.length !== members.length) {
+        set({ collections: { ...get().collections, [name]: next } });
+        void ipc.setCollection(name, next);
+      }
+    }
+
+    const moved = targets
+      .filter((x) => x.paths.some((p) => gonePaths.has(p)))
+      .map((x) => x.family);
+    const single = moved.length === 1 ? moved[0] : null;
+    const count = moved.length;
+    toast.success(
+      single ? t("toast.movedToTrash", { family: single }) : t("toast.movedCountToTrash", { count }),
+      t("toast.movedToTrashSub"),
+      "trash",
+      {
         label: t("toast.undo"),
         run: () => {
           void (async () => {
@@ -733,16 +795,20 @@ export const useFontStore = create<FontStore>((set, get) => ({
               for (const id of entryIds) await ipc.restoreFromTrash(id);
               set({ trash: await ipc.listTrash() });
               await get().rescan();
-              toast.success(t("toast.restoredFamily", { family }), undefined, "restore");
+              toast.success(
+                single
+                  ? t("toast.restoredFamily", { family: single })
+                  : t("toast.restoredCount", { count }),
+                undefined,
+                "restore",
+              );
             } catch (e) {
               toast.error(t("toast.couldntRestore"), String(e));
             }
           })();
         },
-      });
-    } catch (e) {
-      toast.error(t("toast.couldntMoveToTrash"), String(e));
-    }
+      },
+    );
   },
 
   restoreTrash: async (entryId) => {
@@ -938,6 +1004,22 @@ export const useFontStore = create<FontStore>((set, get) => ({
     }
   },
 
+  setFavorites: async (families, favorite) => {
+    const prev = get().favorites;
+    const changing = [...new Set(families)].filter((f) => prev.includes(f) !== favorite);
+    if (changing.length === 0) return;
+    const changingSet = new Set(changing);
+    set({
+      favorites: favorite ? [...prev, ...changing] : prev.filter((f) => !changingSet.has(f)),
+    });
+    try {
+      for (const family of changing) await ipc.setFavorite(family, favorite);
+    } catch (e) {
+      set({ favorites: prev });
+      toast.error(t("toast.couldntUpdateFavorites"), String(e));
+    }
+  },
+
   setFamilyNote: async (family, note) => {
     const prev = get().notes;
     const next = { ...prev };
@@ -953,31 +1035,44 @@ export const useFontStore = create<FontStore>((set, get) => ({
   },
 
   setFamiliesActiveBulk: async (families, active) => {
-    const paths = pathsToToggle(
-      get().fonts.filter((f) => families.includes(f.family)),
-      active,
-    );
+    const names = new Set(families);
+    const targets = get().fonts.filter((f) => names.has(f.family));
+    const paths = pathsToToggle(targets, active);
     if (paths.length === 0) return;
-    const prevFonts = get().fonts;
+    const touched = new Set(paths);
+    const affected = new Set(targets.filter((f) => touched.has(f.path)).map((f) => f.family));
     const prevSession = get().sessionActivated;
     set({
-      fonts: prevFonts.map((f) =>
-        families.includes(f.family) && f.deactivatable ? { ...f, active } : f,
-      ),
-      sessionActivated: prevSession.filter((n) => !families.includes(n)),
+      fonts: get().fonts.map((f) => (touched.has(f.path) ? { ...f, active } : f)),
+      sessionActivated: prevSession.filter((n) => !affected.has(n)),
     });
     try {
       await ipc.setFontsActive(paths, active);
       toast.success(
         t(active ? "toast.activatedCount" : "toast.deactivatedCount", {
-          count: families.length,
+          count: affected.size,
         }),
         undefined,
         undefined,
-        { label: t("toast.undo"), run: () => void get().setFamiliesActiveBulk(families, !active) },
+        { label: t("toast.undo"), run: () => void get().setFontPathsActive(paths, !active) },
       );
     } catch (e) {
       set({ sessionActivated: prevSession });
+      toast.error(t("toast.bulkUpdateFailed"), String(e));
+      await get().rescan();
+    }
+  },
+
+  setFontPathsActive: async (paths, active) => {
+    const touched = new Set(paths);
+    set({
+      fonts: get().fonts.map((f) =>
+        touched.has(f.path) && f.deactivatable ? { ...f, active } : f,
+      ),
+    });
+    try {
+      await ipc.setFontsActive(paths, active);
+    } catch (e) {
       toast.error(t("toast.bulkUpdateFailed"), String(e));
       await get().rescan();
     }
@@ -1059,7 +1154,34 @@ export const useFontStore = create<FontStore>((set, get) => ({
   selectAll: () => {
     const order = get().visibleOrder;
     if (order.length === 0) return;
-    set({ selection: [...order], selectedFamily: order[order.length - 1] });
+    const current = get().selectedFamily;
+    set({
+      selection: [...order],
+      selectedFamily: current && order.includes(current) ? current : null,
+    });
+  },
+
+  toggleSelected: (family, range = false) => {
+    const { selection, selectedFamily, visibleOrder } = get();
+    const anchor = selection[selection.length - 1];
+    if (range && anchor && anchor !== family) {
+      const a = visibleOrder.indexOf(anchor);
+      const b = visibleOrder.indexOf(family);
+      if (a !== -1 && b !== -1) {
+        const span = visibleOrder.slice(Math.min(a, b), Math.max(a, b) + 1);
+        const rest = span.filter((f) => !selection.includes(f) && f !== family);
+        set({ selection: [...selection, ...rest, family] });
+        return;
+      }
+    }
+    if (selection.includes(family)) {
+      set({
+        selection: selection.filter((f) => f !== family),
+        selectedFamily: selectedFamily === family ? null : selectedFamily,
+      });
+      return;
+    }
+    set({ selection: [...selection, family] });
   },
 
   openCompare: (families) => set({ compare: families.slice(0, 4), comparePicking: false }),
@@ -1313,6 +1435,10 @@ export const useFontStore = create<FontStore>((set, get) => ({
 
   setExpandStyles: (expandStyles) => {
     set({ expandStyles });
+    persistPrefs(get);
+  },
+  setGlyphSize: (px) => {
+    set({ glyphSize: clampGlyphSize(px) });
     persistPrefs(get);
   },
   setSort: (sort) => {

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { familyActivation, pathsToToggle, styleGroups } from "../src/lib/familyState.ts";
+import { bulkToggleTarget, familyActivation, pathsToToggle, styleGroups } from "../src/lib/familyState.ts";
 import type { FontFace } from "../src/lib/ipc.ts";
 import { TEXT, library, of } from "./fixtures.ts";
 
@@ -86,4 +86,21 @@ test("an installable copy leads a style before an uninstallable one", () => {
   const [group] = styleGroups([asFormat(face, "woff2", false), asFormat(face, "ttf")]);
   assert.equal(group.lead.format, "ttf");
   assert.ok(!group.webOnly);
+});
+
+const state = (active: boolean, partial = false, deactivatable = true) => ({ active, partial, deactivatable });
+
+test("space on a selection turns everything off when any of it is on", () => {
+  assert.equal(bulkToggleTarget([state(true), state(false), state(true)]), false);
+  assert.equal(bulkToggleTarget([state(false), state(false, true)]), false);
+});
+
+test("space on a selection turns everything on when all of it is off", () => {
+  assert.equal(bulkToggleTarget([state(false), state(false)]), true);
+});
+
+test("fonts the OS manages do not decide what space does", () => {
+  assert.equal(bulkToggleTarget([state(true, false, false), state(false)]), true);
+  assert.equal(bulkToggleTarget([state(true, false, false)]), null);
+  assert.equal(bulkToggleTarget([]), null);
 });

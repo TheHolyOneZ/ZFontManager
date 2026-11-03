@@ -31,6 +31,18 @@ export function familyActivation(faces: FontFace[]): FamilyActivation {
   return { active, partial: activeCount > 0 && !active, activeCount };
 }
 
+export interface ToggleState {
+  active: boolean;
+  partial: boolean;
+  deactivatable: boolean;
+}
+
+export function bulkToggleTarget(items: ToggleState[]): boolean | null {
+  const usable = items.filter((f) => f.deactivatable);
+  if (usable.length === 0) return null;
+  return !usable.some((f) => f.active || f.partial);
+}
+
 export function pathsToToggle(faces: FontFace[], active: boolean): string[] {
   const paths = faces
     .filter((f) => f.deactivatable && f.active !== active)

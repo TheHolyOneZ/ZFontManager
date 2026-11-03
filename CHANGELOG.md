@@ -4,6 +4,49 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.11.0] — 2026-11-03
+
+### Added
+
+- **Select fonts with checkboxes.** Every font now has a checkbox: in the
+  corner of a Grid card, as the first column of the List view, and on a Cards
+  tile when you hover it. Ticking boxes builds a selection without opening the
+  detail panel, and Shift-click selects a range. A new **Select all** button
+  in the top bar (and a header checkbox in the List view) selects every font
+  in the current view, whether that's the library, a collection, a tag, a
+  watched folder or a search result. Click it again to clear the selection.
+
+  Suggested by pablogila. (#31)
+
+- **Selection bar with bulk actions.** With two or more fonts selected, the
+  bar at the bottom now offers Activate, Deactivate, Favorite, Move to Trash
+  and Compare, plus a ⋯ menu for collections, tags and export. Moving many
+  fonts to the Trash now shows one notification with one Undo instead of one
+  per font, and undoing a bulk activation puts every font back exactly as it
+  was.
+
+  Suggested by pablogila. (#31)
+
+- **Glyph size slider.** The Glyphs section of the detail panel has its own
+  size slider, from 16 px up to 96 px, and the grid reflows to fit. Double-click
+  it to reset. The size is remembered between sessions.
+
+  Suggested by sort0m. (#30)
+
+### Fixed
+
+- **Space only toggled the last selected font.** After <kbd>Ctrl</kbd>
+  <kbd>A</kbd>, pressing Space activated or deactivated just one font. Space
+  now works on the whole selection: if any selected font is on, it turns them
+  all off; if all are off, it turns them all on. **F** now favorites the whole
+  selection as well.
+
+  Reported by pablogila. (#32)
+
+- **Shortcuts stopped working after using a slider.** Dragging the preview
+  size slider left it focused, and every shortcut (Escape, Space, Delete…)
+  was ignored until you clicked somewhere else.
+
 ## [0.10.0] — 2026-11-02
 
 ### Added

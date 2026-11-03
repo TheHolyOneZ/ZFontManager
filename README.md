@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.10.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.11.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +99,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.10.0** — see the
+> ZFontManager is currently at **version 0.11.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -160,7 +160,8 @@ uninstalling it*. The files stay exactly where they are; the font just goes
 to sleep. Flip the toggle again and it's back.
 
 - Toggle a single family with one click (or press <kbd>Space</kbd>)
-- Select many families and activate/deactivate them all at once
+- Tick the checkbox on any card, row or tile to select many families, then
+  activate or deactivate them all at once from the selection bar
 - Deactivated fonts stay in your library, gently dimmed, ready to wake up
 - Turn single styles on or off: every style row in an expanded card and in
   the detail panel has its own switch, so a twelve-style family can put just
@@ -295,11 +296,18 @@ drops, and anything already in your library is skipped rather than duplicated.
 
 ### Activate a whole library at once
 
-<kbd>Ctrl</kbd> <kbd>A</kbd> (<kbd>⌘</kbd> <kbd>A</kbd> on macOS) selects every
-font currently in view — the whole library, or just what your filters and
-search have narrowed it to. Right-click the selection and activate or
-deactivate the lot in one go, with a single undo if you change your mind.
-It's also in the command palette as *Select all*.
+Every font has a checkbox: in the corner of a Grid card, as the first column
+of the List view, and on a Cards tile when you hover it. Tick a few, or
+Shift-click one to take a whole range. The **Select all** button in the top
+bar (or <kbd>Ctrl</kbd> <kbd>A</kbd>, <kbd>⌘</kbd> <kbd>A</kbd> on macOS)
+selects every font currently in view — the whole library, a collection, a tag,
+a watched folder, or just what your filters and search have narrowed it to.
+
+As soon as two or more fonts are selected, a bar at the bottom offers
+**Activate**, **Deactivate**, **Favorite**, **Move to Trash** and **Compare**,
+with a **⋯** menu for collections, tags and export. <kbd>Space</kbd>,
+<kbd>F</kbd> and <kbd>Del</kbd> act on the whole selection too. Every bulk
+change comes with a single undo that puts each font back exactly as it was.
 
 ### When two fonts share a name
 
@@ -393,7 +401,8 @@ Click any family and the detail panel slides in:
   oldstyle numerals… toggle them and see exactly what they do before you
   enable them in your design app
 - **Character map** — every glyph the font actually contains; click a
-  character to copy it
+  character to copy it. A size slider above the grid takes the glyphs from
+  16 px up to 96 px to inspect the details of decorative faces
 - **The practical facts** — format, glyph count, file size, file path, license
   info when the font declares one, plus your tags and notes
 
@@ -501,10 +510,10 @@ same list in a pretty overlay.
 
 | Keys | Action |
 |---|---|
-| <kbd>Space</kbd> | Activate / deactivate |
+| <kbd>Space</kbd> | Activate / deactivate (a whole selection: all off if any is on, else all on) |
 | <kbd>C</kbd> | Compare the selected fonts (2–4) |
-| <kbd>F</kbd> | Favorite / unfavorite |
-| <kbd>Del</kbd> | Move to Trash (always restorable) |
+| <kbd>F</kbd> | Favorite / unfavorite the whole selection |
+| <kbd>Del</kbd> | Move the selection to Trash (always restorable) |
 | <kbd>Shift</kbd> <kbd>F10</kbd> or <kbd>≡ Menu</kbd> | Open the context menu — arrows browse it |
 | <kbd>?</kbd> | Show the shortcuts overlay |
 

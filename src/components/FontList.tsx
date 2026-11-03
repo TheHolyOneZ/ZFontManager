@@ -5,6 +5,7 @@ import { PillToggle } from "../design/primitives/PillToggle";
 import { formatBytes } from "../lib/fontLoader";
 import { useFontStore, type Family } from "../state/fontStore";
 import { FormatBadge } from "./FamilyCard";
+import { SelectAllBox, SelectBox } from "./SelectBox";
 import { buildFamilyMenu } from "../lib/menus";
 import { openContextMenu } from "../design/primitives/ContextMenu";
 import { useT } from "../lib/i18n";
@@ -35,6 +36,9 @@ export function FontList({ families }: { families: Family[] }) {
   return (
     <div className="list-wrap">
       <div className="list-header">
+        <span className="col-select">
+          <SelectAllBox names={families.map((f) => f.name)} />
+        </span>
         <span>{t("list.family")}</span>
         <span className="col-styles">{t("list.styles")}</span>
         <span className="col-format">{t("list.format")}</span>
@@ -73,6 +77,9 @@ export function FontList({ families }: { families: Family[] }) {
                 }}
                 onContextMenu={(e) => openContextMenu(e, buildFamilyMenu(fam))}
               >
+                <span className="col-select">
+                  <SelectBox family={fam.name} />
+                </span>
                 <span className="row-name">
                   {covers[fam.name] && (
                     <img

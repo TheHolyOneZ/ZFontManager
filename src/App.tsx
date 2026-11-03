@@ -27,7 +27,8 @@ import { ContextMenuHost, openContextMenuAt } from "./design/primitives/ContextM
 import { buildFamilyMenu } from "./lib/menus";
 import { Toaster } from "./design/primitives/Toast";
 import { spring } from "./design/springs";
-import { familiesFor, selectVisibleFamilies, useFontStore, type Nav } from "./state/fontStore";
+import { familiesFor, selectVisibleFamilies, useFontStore, type Family, type Nav } from "./state/fontStore";
+import { bulkToggleTarget } from "./lib/familyState";
 import { useT } from "./lib/i18n";
 
 function ScanSkeleton() {
@@ -173,6 +174,11 @@ function MainContent() {
   );
 }
 
+function targets(st: { selection: string[]; selectedFamily: string | null }): string[] {
+  if (st.selection.length > 0) return st.selection;
+  return st.selectedFamily ? [st.selectedFamily] : [];
+}
+
 export default function App() {
   const init = useFontStore((s) => s.init);
   const motionPref = useFontStore((s) => s.motionPref);
@@ -185,8 +191,11 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      const slider = e.target instanceof HTMLInputElement && e.target.type === "range";
       const inField =
-        e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+        (e.target instanceof HTMLInputElement && !slider) ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable);
       if (e.key === "Escape" && !inField) {
         const st = useFontStore.getState();
         st.setComparePicking(false);
@@ -216,7 +225,7 @@ export default function App() {
       }
 
       const arrows = ["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"];
-      if (arrows.includes(e.key) && !inField) {
+      if (arrows.includes(e.key) && !inField && !slider) {
         const st = useFontStore.getState();
         if (st.compare || st.settingsOpen || st.helpOpen) return;
         const order = st.visibleOrder;
@@ -233,9 +242,25 @@ export default function App() {
       }
       if (e.key === " " && !inField) {
         const st = useFontStore.getState();
-        if (st.compare || st.settingsOpen || st.helpOpen || !st.selectedFamily) return;
+        if (st.compare || st.settingsOpen || st.helpOpen) return;
+        const names = targets(st);
+        if (names.length === 0) return;
         e.preventDefault();
-        const fam = familiesFor(st.fonts, st.tags).get(st.selectedFamily);
+        const map = familiesFor(st.fonts, st.tags);
+        if (names.length > 1) {
+          const picked = names
+            .map((n) => map.get(n))
+            .filter((f): f is Family => Boolean(f));
+          const target = bulkToggleTarget(picked);
+          if (target !== null) {
+            void st.setFamiliesActiveBulk(
+              picked.filter((f) => f.deactivatable).map((f) => f.name),
+              target,
+            );
+          }
+          return;
+        }
+        const fam = map.get(names[0]);
         if (fam?.deactivatable) {
           void st.setFamilyActive(fam.name, !fam.active);
         }
@@ -250,26 +275,31 @@ export default function App() {
 
       if ((e.key === "f" || e.key === "F") && !inField && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const st = useFontStore.getState();
-        if (st.compare || st.settingsOpen || st.helpOpen || !st.selectedFamily) return;
+        if (st.compare || st.settingsOpen || st.helpOpen) return;
+        const names = targets(st);
+        if (names.length === 0) return;
         e.preventDefault();
-        void st.toggleFavorite(st.selectedFamily);
+        if (names.length > 1) {
+          void st.setFavorites(names, !names.every((f) => st.favorites.includes(f)));
+          return;
+        }
+        void st.toggleFavorite(names[0]);
       }
       if (e.key === "Delete" && !inField) {
         const st = useFontStore.getState();
         if (st.compare || st.settingsOpen || st.helpOpen) return;
-        const doomed = st.selection.length > 0
-          ? st.selection
-          : st.selectedFamily ? [st.selectedFamily] : [];
+        const doomed = targets(st);
         if (doomed.length === 0) return;
         e.preventDefault();
-        for (const name of doomed) void st.uninstallFamily(name);
+        void st.uninstallFamilies(doomed);
       }
 
       if (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) {
         const st = useFontStore.getState();
-        if (inField || st.compare || st.settingsOpen || st.helpOpen || !st.selectedFamily) return;
+        const focus = st.selectedFamily ?? st.selection[st.selection.length - 1];
+        if (inField || st.compare || st.settingsOpen || st.helpOpen || !focus) return;
         e.preventDefault();
-        const fam = familiesFor(st.fonts, st.tags).get(st.selectedFamily);
+        const fam = familiesFor(st.fonts, st.tags).get(focus);
         if (!fam) return;
         const card = document.querySelector(`[data-family="${CSS.escape(fam.name)}"]`);
         const r = card?.getBoundingClientRect();

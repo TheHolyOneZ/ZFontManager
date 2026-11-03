@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   CheckCheck,
   ChevronsUpDown,
+  Clock,
   Columns2,
   Command,
   FolderOpen,
@@ -17,7 +18,6 @@ import {
   PenTool,
   Power,
   PowerOff,
-  Clock,
   RefreshCw,
   Rows3,
   Search,
@@ -165,6 +165,12 @@ export function CommandPalette() {
           if (s.viewMode !== "grid") s.setViewMode("grid");
           s.setExpandStyles(!s.expandStyles);
         },
+      },
+      {
+        id: "select-all",
+        label: t("sel.selectAllCount", { count: s.visibleOrder.length }),
+        icon: <CheckCheck size={14} strokeWidth={1.5} />,
+        run: () => s.selectAll(),
       },
       {
         id: "view-cards",

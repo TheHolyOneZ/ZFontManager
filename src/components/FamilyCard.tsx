@@ -11,6 +11,7 @@ import { activeConflictsFor, conflictsFor, SIZES, useFontStore, type Family } fr
 import { playStar } from "../lib/sound";
 import { styleGroups, type StyleGroup } from "../lib/familyState";
 import { useT } from "../lib/i18n";
+import { SelectBox } from "./SelectBox";
 
 export function FormatBadge({ format, isVariable }: { format: string; isVariable: boolean }) {
   if (isVariable) return <span className="badge badge-variable">VAR</span>;
@@ -150,6 +151,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
       layout="position"
     >
       <header className="card-head">
+        <SelectBox family={family.name} />
         <FormatBadge format={family.formats[0]} isVariable={family.isVariable} />
         <span className="card-name">{family.name}</span>
         {family.faces.length > 1 && (

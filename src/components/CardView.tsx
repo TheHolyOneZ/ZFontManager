@@ -11,6 +11,7 @@ import { buildFamilyMenu } from "../lib/menus";
 import { playStar } from "../lib/sound";
 import { useT } from "../lib/i18n";
 import { SIZES, useFontStore, type Family } from "../state/fontStore";
+import { SelectBox } from "./SelectBox";
 
 const MIN_TILE = 220;
 const GAP = 14;
@@ -92,6 +93,7 @@ const CoverTile = memo(function CoverTile({ family, cover }: { family: Family; c
             {text}
           </span>
         )}
+        <SelectBox family={family.name} className="cover-select" />
         <button
           className="cover-pick"
           aria-label={t(cover ? "cover.change" : "cover.set")}

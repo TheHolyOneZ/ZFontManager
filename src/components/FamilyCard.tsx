@@ -118,6 +118,8 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
   const lead = family.faces.find((f) => f.style === "Regular") ?? family.faces[0];
   const { fontFamily, failed } = useFontCss(lead);
   const text = sampleText.trim() || family.name;
+  const canExpand = family.styleCount > 1;
+  const showStyles = expanded && canExpand;
 
   return (
     <motion.article
@@ -154,7 +156,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
         <SelectBox family={family.name} />
         <FormatBadge format={family.formats[0]} isVariable={family.isVariable} />
         <span className="card-name">{family.name}</span>
-        {family.faces.length > 1 && (
+        {canExpand && (
           <motion.button
             className="card-expand"
             aria-label={t(expanded ? "card.collapseStyles" : "card.expandStyles")}
@@ -230,51 +232,64 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
         )}
       </header>
 
-      <div className={`card-preview ${cover ? "card-preview-cover" : ""}`} style={{ minHeight: size * 1.35 }}>
-        {cover && (
-          <img
-            className="card-cover-thumb"
-            src={convertFileSrc(cover)}
-            alt=""
-            draggable={false}
-            loading="lazy"
-            style={{ height: Math.max(44, Math.min(size * 1.35, 88)) }}
-            onError={(e) => (e.currentTarget.style.display = "none")}
-          />
+      <AnimatePresence initial={false}>
+        {!showStyles && (
+          <motion.div
+            key="preview"
+            className="card-preview-wrap"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0, transition: { ...springSnappy } }}
+            transition={springSoft}
+          >
+            <div className={`card-preview ${cover ? "card-preview-cover" : ""}`} style={{ minHeight: size * 1.35 }}>
+              {cover && (
+                <img
+                  className="card-cover-thumb"
+                  src={convertFileSrc(cover)}
+                  alt=""
+                  draggable={false}
+                  loading="lazy"
+                  style={{ height: Math.max(44, Math.min(size * 1.35, 88)) }}
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                />
+              )}
+              <AnimatePresence mode="wait">
+                {fontFamily ? (
+                  <motion.p
+                    key="real"
+                    className="preview-text"
+                    style={{
+                      fontFamily,
+                      fontSize: size,
+                      fontStyle: lead.italic ? "italic" : "normal",
+                    }}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={spring}
+                  >
+                    {text}
+                  </motion.p>
+                ) : failed ? (
+                  <p key="failed" className="preview-text preview-failed">
+                    {t("card.noPreview")}
+                  </p>
+                ) : (
+                  <motion.span
+                    key="skeleton"
+                    className="skeleton preview-skeleton"
+                    style={{ height: size * 1.1 }}
+                    exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
         )}
-        <AnimatePresence mode="wait">
-          {fontFamily ? (
-            <motion.p
-              key="real"
-              className="preview-text"
-              style={{
-                fontFamily,
-                fontSize: size,
-                fontStyle: lead.italic ? "italic" : "normal",
-              }}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={spring}
-            >
-              {text}
-            </motion.p>
-          ) : failed ? (
-            <p key="failed" className="preview-text preview-failed">
-              {t("card.noPreview")}
-            </p>
-          ) : (
-            <motion.span
-              key="skeleton"
-              className="skeleton preview-skeleton"
-              style={{ height: size * 1.1 }}
-              exit={{ opacity: 0, transition: { duration: 0.1 } }}
-            />
-          )}
-        </AnimatePresence>
-      </div>
+      </AnimatePresence>
 
       <AnimatePresence initial={false}>
-        {expanded && (
+        {showStyles && (
           <motion.div
             className="card-styles"
             initial={{ height: 0, opacity: 0 }}

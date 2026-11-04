@@ -1032,6 +1032,9 @@
   min-height: 16px;
 }
 
+.card-preview-wrap {
+  overflow: hidden;
+}
 .card-styles {
   overflow: hidden;
   margin-top: 10px;

@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.11.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.11.1-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +99,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.11.0** — see the
+> ZFontManager is currently at **version 0.11.1** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -126,7 +126,9 @@ poster size.
 
 Fonts with many weights and italics are grouped into a single family card.
 Expand the card and every style — Light, Regular, Bold, Black, the italics —
-renders live underneath. The **Expand all styles** button in the top bar opens
+renders live in place of the family preview, so nothing shows twice; collapse
+it and the preview comes back. Families with a single style don't expand at
+all. The **Expand all styles** button in the top bar opens
 every card at once and is remembered between sessions, so the whole library
 can be browsed style by style. A style that exists in several formats — the
 same Regular as TTF, OTF and WOFF2, say — is still one style, with each format

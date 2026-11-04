@@ -4,6 +4,20 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.11.1] — 2026-11-04
+
+### Changed
+
+- **No more duplicate preview in expanded cards.** When a family's styles are
+  expanded, the family preview now folds away and the style rows take its
+  place, so Regular no longer shows twice and expanded cards are shorter. The
+  name, badges, star and switch stay visible, and collapsing the card brings
+  the preview back. This works for single cards and for *Expand all styles*.
+  Families with only one style no longer expand at all, so they never show the
+  same preview twice.
+
+  Suggested by sort0m. (#33)
+
 ## [0.11.0] — 2026-11-03
 
 ### Added

@@ -18,6 +18,12 @@ All notable changes to ZFontManager are documented here. The format follows
 
   Suggested by sort0m. (#33)
 
+### Platforms
+
+- **No macOS build for this release.** The macOS installers are not part of
+  0.11.1. On a Mac, 0.11.0 keeps working (the only change in 0.11.1 is how
+  expanded cards look), or build 0.11.1 from source with `pnpm tauri build`.
+
 ## [0.11.0] — 2026-11-03
 
 ### Added

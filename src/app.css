@@ -300,6 +300,27 @@
 .topbar-field input::placeholder {
   color: var(--text-tertiary);
 }
+.case-toggle {
+  flex-shrink: 0;
+  margin-right: -6px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: var(--fs-10);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  border: 1px solid transparent;
+  transition: color var(--t-quick) ease, background var(--t-quick) ease,
+    border-color var(--t-quick) ease;
+}
+.case-toggle:hover {
+  color: var(--text-primary);
+  background: var(--e2);
+}
+.case-toggle-on {
+  color: var(--accent-a);
+  border-color: color-mix(in srgb, var(--accent-a) 45%, transparent);
+}
 .field-icon {
   color: var(--text-tertiary);
   flex-shrink: 0;
@@ -976,6 +997,7 @@
   border-radius: 4px;
   flex-shrink: 0;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 .badge-otf {
   color: var(--badge-otf);
@@ -2448,6 +2470,7 @@ h2.detail-title.copy-name {
 .specimen-strip {
   display: block;
   font-size: var(--fs-13);
+  line-height: 1.3;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -3623,6 +3646,42 @@ h2.detail-title.copy-name {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+.bulktag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.bulktag-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: var(--fs-12);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--e1);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  transition: background var(--t-quick) ease, color var(--t-quick) ease,
+    border-color var(--t-quick) ease;
+}
+.bulktag-chip:hover {
+  background: var(--e2);
+  color: var(--text-primary);
+}
+.bulktag-chip-some {
+  color: var(--text-primary);
+  border-style: dashed;
+  border-color: var(--accent-a);
+}
+.bulktag-chip-on {
+  color: white;
+  background: var(--accent-gradient);
+  border-color: transparent;
+}
+.bulktag-chip-on:hover {
+  color: white;
+  background: var(--accent-gradient);
 }
 .bulktag-title {
   display: flex;

@@ -8,6 +8,7 @@ import { useT } from "../lib/i18n";
 import { usePathFontCss } from "../lib/fontLoader";
 import type { NerdFamily, NerdVariant } from "../lib/ipc";
 import { ago } from "../lib/ago";
+import { previewText } from "../lib/familyState";
 
 const REPO = "https://github.com/ryanoasis/nerd-fonts";
 const VARIANTS: NerdVariant[] = ["standard", "mono", "propo"];
@@ -32,6 +33,7 @@ export function NerdBrowser() {
   const downloading = useFontStore((s) => s.onlineDownloading);
   const progress = useFontStore((s) => s.onlineProgress);
   const sampleText = useFontStore((s) => s.sampleText);
+  const previewUppercase = useFontStore((s) => s.previewUppercase);
   const sizeIndex = useFontStore((s) => s.sizeIndex);
   const installed = useFontStore((s) => s.fonts);
   const load = useFontStore((s) => s.loadNerdCatalogue);
@@ -196,7 +198,7 @@ export function NerdBrowser() {
               <div className="online-preview" aria-live="polite">
                 {previewFamily ? (
                   <p className="online-preview-text" style={{ fontFamily: `"${previewFamily}"`, fontSize: SIZES[sizeIndex] }}>
-                    {sampleText.trim() || detail.original}
+                    {previewText(sampleText, detail.original, previewUppercase)}
                   </p>
                 ) : (
                   <p className="online-preview-text online-preview-pending">{t("online.previewLoading")}</p>

@@ -5,17 +5,37 @@ import { memo, useEffect, useState } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { spring, springSnappy, springSoft, staggerDelay } from "../design/springs";
 import { useFontCss } from "../lib/fontLoader";
+import { useInkPadding } from "../lib/inkFit";
 import { buildFamilyMenu } from "../lib/menus";
 import { openContextMenu } from "../design/primitives/ContextMenu";
 import { activeConflictsFor, conflictsFor, SIZES, useFontStore, type Family } from "../state/fontStore";
 import { playStar } from "../lib/sound";
-import { styleGroups, type StyleGroup } from "../lib/familyState";
+import { formatLabel, previewText, styleGroups, type StyleGroup } from "../lib/familyState";
 import { useT } from "../lib/i18n";
 import { SelectBox } from "./SelectBox";
 
-export function FormatBadge({ format, isVariable }: { format: string; isVariable: boolean }) {
-  if (isVariable) return <span className="badge badge-variable">VAR</span>;
-  return <span className={`badge badge-${format}`}>{format.toUpperCase()}</span>;
+export function FormatBadge({
+  formats,
+  isVariable,
+  max,
+}: {
+  formats: string[];
+  isVariable: boolean;
+  max?: number;
+}) {
+  const all = formatLabel(formats, formats.length);
+  if (isVariable) {
+    return (
+      <span className="badge badge-variable" title={all}>
+        VAR
+      </span>
+    );
+  }
+  return (
+    <span className={`badge badge-${formats[0]}`} title={all}>
+      {formatLabel(formats, max)}
+    </span>
+  );
 }
 
 function FacePreview({
@@ -37,6 +57,15 @@ function FacePreview({
   const face = group.lead;
   const { fontFamily, failed } = useFontCss(face);
   const setStyleActive = useFontStore((s) => s.setStyleActive);
+  const sampleSize = Math.min(size, 32);
+  const ink = useInkPadding(
+    fontFamily,
+    text,
+    sampleSize,
+    1.3,
+    face.italic,
+    synthesize ? face.weight : undefined,
+  );
   return (
     <motion.div
       className="face-row"
@@ -51,8 +80,9 @@ function FacePreview({
             key="real"
             className="face-sample"
             style={{
+              ...ink,
               fontFamily,
-              fontSize: Math.min(size, 32),
+              fontSize: sampleSize,
               fontStyle: face.italic ? "italic" : "normal",
 
               fontWeight: synthesize ? face.weight : undefined,
@@ -101,6 +131,7 @@ function FacePreview({
 export const FamilyCard = memo(function FamilyCard({ family }: { family: Family }) {
   const t = useT();
   const sampleText = useFontStore((s) => s.sampleText);
+  const previewUppercase = useFontStore((s) => s.previewUppercase);
   const sizeIndex = useFontStore((s) => s.sizeIndex);
   const setFamilyActive = useFontStore((s) => s.setFamilyActive);
   const selectWith = useFontStore((s) => s.selectWith);
@@ -117,7 +148,8 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
   const size = SIZES[sizeIndex];
   const lead = family.faces.find((f) => f.style === "Regular") ?? family.faces[0];
   const { fontFamily, failed } = useFontCss(lead);
-  const text = sampleText.trim() || family.name;
+  const text = previewText(sampleText, family.name, previewUppercase);
+  const ink = useInkPadding(fontFamily, text, size, 1.15, lead.italic);
   const canExpand = family.styleCount > 1;
   const showStyles = expanded && canExpand;
 
@@ -154,7 +186,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
     >
       <header className="card-head">
         <SelectBox family={family.name} />
-        <FormatBadge format={family.formats[0]} isVariable={family.isVariable} />
+        <FormatBadge formats={family.formats} isVariable={family.isVariable} />
         <span className="card-name">{family.name}</span>
         {canExpand && (
           <motion.button
@@ -260,6 +292,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
                     key="real"
                     className="preview-text"
                     style={{
+                      ...ink,
                       fontFamily,
                       fontSize: size,
                       fontStyle: lead.italic ? "italic" : "normal",

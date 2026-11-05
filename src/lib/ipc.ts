@@ -239,6 +239,8 @@ export const ipc = {
   affinityLink: () => invoke<AffinityConnection | null>("affinity_link"),
   setAutostart: (enabled: boolean) => invoke<void>("set_autostart", { enabled }),
   getAutostart: () => invoke<boolean>("get_autostart"),
+  getPreviewFont: (path: string, faceIndex: number) =>
+    invoke<ArrayBuffer>("get_preview_font", { path, faceIndex }),
   getPrefs: () => invoke<Record<string, unknown> | null>("get_prefs"),
   setPrefs: (prefs: Record<string, unknown>) => invoke<void>("set_prefs", { prefs }),
   fontsWithChar: (paths: string[], codepoint: number) =>

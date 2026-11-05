@@ -10,6 +10,7 @@ import { usePathFontCss } from "../lib/fontLoader";
 import type { OnlineFamily } from "../lib/ipc";
 import { NerdBrowser } from "./NerdBrowser";
 import { ago } from "../lib/ago";
+import { previewText } from "../lib/familyState";
 
 const CATEGORIES = ["sans-serif", "serif", "display", "handwriting", "monospace", "icons"] as const;
 const LICENSES = ["OFL-1.1", "Apache-2.0", "UFL-1.0"] as const;
@@ -82,6 +83,7 @@ function GoogleBrowser() {
   const progress = useFontStore((s) => s.onlineProgress);
   const previewPath = useFontStore((s) => s.onlinePreviewPath);
   const sampleText = useFontStore((s) => s.sampleText);
+  const previewUppercase = useFontStore((s) => s.previewUppercase);
   const sizeIndex = useFontStore((s) => s.sizeIndex);
   const previewFamily = usePathFontCss(detail ? detail.id : null, previewPath);
   const installedFamilies = useFontStore((s) => s.fonts);
@@ -272,7 +274,7 @@ function GoogleBrowser() {
                         className="online-preview-text"
                         style={{ fontFamily: `"${previewFamily}"`, fontSize: SIZES[sizeIndex] }}
                       >
-                        {sampleText.trim() || detail.family}
+                        {previewText(sampleText, detail.family, previewUppercase)}
                       </p>
                     ) : (
                       <p className="online-preview-text online-preview-pending">

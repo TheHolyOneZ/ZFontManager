@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import {
+  CaseUpper,
   CheckCheck,
   ChevronsUpDown,
   Clock,
@@ -165,6 +166,12 @@ export function CommandPalette() {
           if (s.viewMode !== "grid") s.setViewMode("grid");
           s.setExpandStyles(!s.expandStyles);
         },
+      },
+      {
+        id: "preview-uppercase",
+        label: t("top.uppercase"),
+        icon: <CaseUpper size={14} strokeWidth={1.5} />,
+        run: () => s.setPreviewUppercase(!s.previewUppercase),
       },
       {
         id: "select-all",

@@ -12,6 +12,7 @@ import { playStar } from "../lib/sound";
 import { useT } from "../lib/i18n";
 import { SIZES, useFontStore, type Family } from "../state/fontStore";
 import { SelectBox } from "./SelectBox";
+import { previewText } from "../lib/familyState";
 
 const MIN_TILE = 220;
 const GAP = 14;
@@ -27,6 +28,7 @@ function hue(name: string): number {
 const CoverTile = memo(function CoverTile({ family, cover }: { family: Family; cover: string | undefined }) {
   const t = useT();
   const sampleText = useFontStore((s) => s.sampleText);
+  const previewUppercase = useFontStore((s) => s.previewUppercase);
   const sizeIndex = useFontStore((s) => s.sizeIndex);
   const selected = useFontStore((s) => s.selection.includes(family.name));
   const favorite = useFontStore((s) => s.favorites.includes(family.name));
@@ -41,7 +43,7 @@ const CoverTile = memo(function CoverTile({ family, cover }: { family: Family; c
   const lead = family.faces.find((f) => f.style === "Regular") ?? family.faces[0];
   const showImage = Boolean(cover) && !broken;
   const { fontFamily } = useFontCss(showImage ? null : lead);
-  const text = sampleText.trim() || family.name;
+  const text = previewText(sampleText, family.name, previewUppercase);
 
   return (
     <article

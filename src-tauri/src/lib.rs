@@ -9,6 +9,7 @@ mod net;
 mod online;
 mod parser;
 mod registry;
+mod repair;
 mod scanner;
 mod sound;
 mod store;
@@ -80,15 +81,10 @@ fn set_font_active(store: State<Store>, path: String, active: bool) -> Result<()
 fn set_fonts_active(store: State<Store>, paths: Vec<String>, active: bool) -> Result<(), String> {
     let mut state = store.0.lock().map_err(|e| e.to_string())?;
 
-    let mut failed = Vec::new();
-    for path in &paths {
-        if let Err(e) = activation::sync(&mut state, path, active) {
-            failed.push(e);
-        }
-    }
+    let batch = activation::sync_many(&mut state, &paths, active);
     store::save(&state)?;
-    diag::batch(active, paths.len(), failed.len());
-    activation::batch_error(&failed, paths.len())
+    diag::batch(active, paths.len(), batch.failed.len());
+    activation::batch_error(&batch.failed, paths.len())
 }
 
 #[tauri::command]
@@ -549,6 +545,21 @@ fn sweep_charset(paths: &[String], ch: char) -> Vec<String> {
 }
 
 #[tauri::command]
+async fn get_preview_font(path: String, face_index: u32) -> Result<tauri::ipc::Response, String> {
+    let data = parser::read_sfnt(std::path::Path::new(&path))?;
+    match repair::rebuild(&data, face_index) {
+        Some(fixed) => {
+            diag::log(&format!("preview: webview refused {path}, rebuilt a clean copy"));
+            Ok(tauri::ipc::Response::new(fixed))
+        }
+        None => {
+            diag::log(&format!("preview: webview refused {path}, no clean copy possible"));
+            Err(format!("couldn't rebuild a preview for {path}"))
+        }
+    }
+}
+
+#[tauri::command]
 fn get_charset(path: String, face_index: u32) -> Result<Vec<u32>, String> {
     let data = parser::read_sfnt(std::path::Path::new(&path))?;
     let face = ttf_parser::Face::parse(&data, face_index).map_err(|e| e.to_string())?;
@@ -596,20 +607,13 @@ static SESSION_ACTIVATED: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(
 fn set_fonts_active_session(store: State<Store>, paths: Vec<String>) -> Result<(), String> {
     let mut state = store.0.lock().map_err(|e| e.to_string())?;
     let total = paths.len();
-    let mut failed = Vec::new();
-    let mut activated = Vec::with_capacity(total);
-    for path in paths {
-        match activation::sync(&mut state, &path, true) {
-            Ok(()) => activated.push(path),
-            Err(e) => failed.push(e),
-        }
-    }
+    let batch = activation::sync_many(&mut state, &paths, true);
     store::save(&state)?;
-    diag::batch(true, total, failed.len());
+    diag::batch(true, total, batch.failed.len());
     if let Ok(mut session) = SESSION_ACTIVATED.lock() {
-        session.extend(activated);
+        session.extend(batch.done);
     }
-    activation::batch_error(&failed, total)
+    activation::batch_error(&batch.failed, total)
 }
 
 fn revert_session_activations(app: &tauri::AppHandle) {
@@ -626,9 +630,7 @@ fn revert_session_activations(app: &tauri::AppHandle) {
         Ok(g) => g,
         Err(_) => return,
     };
-    for p in &paths {
-        let _ = activation::sync(&mut guard, p, false);
-    }
+    activation::sync_many(&mut guard, &paths, false);
     affinity::revert_session(&mut guard);
     let _ = store::save(&guard);
 }
@@ -1012,6 +1014,7 @@ pub fn run() {
             set_note,
             play_sound,
             get_charset,
+            get_preview_font,
             fonts_with_char,
             set_ui_scale,
             get_prefs,

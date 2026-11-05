@@ -7,6 +7,7 @@ import {
   Power,
   PowerOff,
   Star,
+  Tag,
   Trash2,
   X,
 } from "lucide-react";
@@ -131,6 +132,14 @@ export function SelectionBar() {
                 title={t(allFavorite ? "sel.unfavorite" : "sel.favorite")}
               >
                 <Star size={14} strokeWidth={1.5} />
+              </button>
+              <button
+                className="selection-action selection-icon"
+                onClick={act((names) => useFontStore.getState().setBulkTagFor(names))}
+                aria-label={t("sel.tag")}
+                title={t("sel.tag")}
+              >
+                <Tag size={14} strokeWidth={1.5} />
               </button>
               <button
                 className="selection-action selection-icon selection-danger"

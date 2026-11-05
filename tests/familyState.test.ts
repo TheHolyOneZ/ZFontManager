@@ -1,6 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { bulkToggleTarget, familyActivation, pathsToToggle, styleGroups } from "../src/lib/familyState.ts";
+import {
+  bulkToggleTarget,
+  familyActivation,
+  formatLabel,
+  pathsToToggle,
+  previewText,
+  sortFormats,
+  styleGroups,
+} from "../src/lib/familyState.ts";
 import type { FontFace } from "../src/lib/ipc.ts";
 import { TEXT, library, of } from "./fixtures.ts";
 
@@ -103,4 +111,26 @@ test("fonts the OS manages do not decide what space does", () => {
   assert.equal(bulkToggleTarget([state(true, false, false), state(false)]), true);
   assert.equal(bulkToggleTarget([state(true, false, false)]), null);
   assert.equal(bulkToggleTarget([]), null);
+});
+
+test("installable formats come before web formats", () => {
+  assert.deepEqual(sortFormats(["woff", "ttf"]), ["ttf", "woff"]);
+  assert.deepEqual(sortFormats(["woff", "woff2", "ttf", "otf"]), ["otf", "ttf", "woff2", "woff"]);
+});
+
+test("a family label names every format, up to the limit", () => {
+  assert.equal(formatLabel(["ttf"]), "TTF");
+  assert.equal(formatLabel(["ttf", "woff"]), "TTF · WOFF");
+  assert.equal(formatLabel(["otf", "ttf", "woff2", "woff"]), "OTF · TTF · WOFF2 +1");
+  assert.equal(formatLabel(["otf", "ttf", "woff2"], 2), "OTF · TTF +1");
+});
+
+test("previews use the sample text, or the name when it is empty", () => {
+  assert.equal(previewText("  Hamburg ", "Lato", false), "Hamburg");
+  assert.equal(previewText("   ", "Lato", false), "Lato");
+});
+
+test("uppercase previews change the text, not the sample", () => {
+  assert.equal(previewText("Hamburg", "Lato", true), "HAMBURG");
+  assert.equal(previewText("", "Lato", true), "LATO");
 });

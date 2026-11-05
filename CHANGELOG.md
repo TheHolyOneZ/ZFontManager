@@ -4,6 +4,95 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.12.0] — 2026-11-05
+
+### Added
+
+- **Uppercase previews.** A new **AA** button in the preview text field, also
+  in the command palette, switches every preview to capitals, which makes
+  display and headline typefaces easier to compare. The text you typed stays
+  as it is, and the choice is remembered between sessions.
+
+  Suggested by sort0m. (#37)
+
+- **Tag a whole selection from the selection bar.** Tagging many fonts used to
+  be tucked away in a menu. The selection bar now has its own **Add tags**
+  button, and the dialog shows your existing tags as chips that tell you
+  whether all, some or none of the selected fonts have them. Click a chip to
+  apply or remove it, or type a new tag and keep going without reopening the
+  dialog. Tagging a big selection now happens in one step instead of font by
+  font.
+
+  Suggested by pablogila. (#38)
+
+### Changed
+
+- **The format label names every format.** The label next to a family's name
+  showed only one format, picked by whichever file was read first, so a family
+  with both `.ttf` and `.woff` could be labelled just `WOFF`. It now lists them
+  all (`TTF · WOFF`), with installable formats first, in the cards, the list,
+  the detail panel and Compare. The format list in the detail panel uses the
+  same order.
+
+  Suggested by Jadooooooooo. (#36)
+
+- **The details panel closes faster.** Closing it took about half a second
+  because it used the same soft spring as opening. It now slides out in under
+  0.2 s, so the font list gets its space back right away. Opening stays smooth.
+
+  Suggested by sort0m. (#34)
+
+### Fixed
+
+- **Deactivated fonts stayed visible in Flatpak apps.** Flatpak apps see your
+  fonts under different paths, and many can't read your personal font settings
+  at all, so nothing ZFontManager deactivated ever reached them. Deactivating
+  now covers them too: each Flatpak app gets the same list, written with the
+  paths it actually sees, and apps you install later are picked up the next
+  time ZFontManager starts. LibreOffice was hit twice, because the Flatpak and
+  libreoffice.org builds also carry their own private copies of fonts like
+  Noto. Those copies are now switched off along with yours. Checked against
+  the real Flatpak LibreOffice: after deactivating Noto, its font list went
+  from every Noto family to none, apart from the emoji font in the Flatpak
+  runtime. Apps read the font list when they start, so one that's already open
+  still needs a restart, and the notification now says so.
+
+  Reported by pablogila. (#39)
+
+- **Deactivating many fonts at once on Linux was slow.** Every single file
+  rewrote the whole font list and started its own `fc-cache`, so a big family
+  could freeze the app for a while. A selection of any size is now one write
+  and one `fc-cache`: 636 files took 15 ms in testing.
+
+- **"This format can't be previewed yet" on perfectly good fonts.** On Windows
+  the preview engine is much stricter than Windows itself, and refuses many
+  older fonts over details like a short `OS/2` table or an old `post` format.
+  When a preview is refused, ZFontManager now rebuilds a clean copy of the font
+  in memory just for the preview, without touching the file. If that isn't
+  possible and the font is active, it asks the system for the font instead.
+  The message for the rare font that still can't be shown no longer blames the
+  format.
+
+  Reported by Jadooooooooo. (#35)
+
+- **Tall and decorative fonts were cut off in the preview.** Scripts and other
+  fonts whose glyphs reach past their official line height lost their tops,
+  bottoms and swashes. Previews now measure the real shape of the text and make
+  room for it, in the cards, the style rows, the detail panel, the Waterfall
+  view and Compare.
+
+  Reported by Jadooooooooo. (#35)
+
+- **Reduce Motion didn't make anything quicker.** The setting promised quick
+  fades, but it only removed the sliding and kept every fade at full spring
+  length, so closing the details panel still took almost half a second. With
+  Reduce Motion on (or the system's reduced-motion setting), every spring
+  animation in the app is now a 0.1 s fade: the details panel, Settings, the
+  command palette, dialogs and toasts open and close almost instantly, and
+  lists no longer cascade in one card at a time.
+
+  Reported by sort0m. (#34)
+
 ## [0.11.1] — 2026-11-04
 
 ### Changed

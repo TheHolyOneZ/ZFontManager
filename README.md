@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.11.1-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.12.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +99,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.11.1** — see the
+> ZFontManager is currently at **version 0.12.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -121,10 +121,15 @@ and still search, filter and sort inside it.
 Every font family is shown **in its own typeface**, not as a generic name in
 a list. Type any sentence into the preview box at the top — your brand name,
 a headline you're working on — and the *entire library* re-renders in it
-instantly. A size slider takes the preview anywhere from small print to
-poster size.
+instantly. The **AA** button next to it switches every preview to uppercase,
+which is handy for comparing display and headline faces. A size slider takes
+the preview anywhere from small print to poster size. Tall scripts and swashes
+get the room they need, so their glyphs aren't cut off, and fonts that are too
+old or too strict for the preview engine are repaired on the fly for the
+preview only — the font file itself is never touched.
 
-Fonts with many weights and italics are grouped into a single family card.
+Fonts with many weights and italics are grouped into a single family card,
+and its label names every format the family comes in, like `TTF · WOFF`.
 Expand the card and every style — Light, Regular, Bold, Black, the italics —
 renders live in place of the family preview, so nothing shows twice; collapse
 it and the preview comes back. Families with a single style don't expand at
@@ -306,8 +311,10 @@ selects every font currently in view — the whole library, a collection, a tag,
 a watched folder, or just what your filters and search have narrowed it to.
 
 As soon as two or more fonts are selected, a bar at the bottom offers
-**Activate**, **Deactivate**, **Favorite**, **Move to Trash** and **Compare**,
-with a **⋯** menu for collections, tags and export. <kbd>Space</kbd>,
+**Activate**, **Deactivate**, **Favorite**, **Add tags**, **Move to Trash** and
+**Compare**, with a **⋯** menu for collections and export. **Add tags** shows
+your existing tags as chips that tell you whether all, some or none of the
+selection has them, so you can tag hundreds of fonts in a couple of clicks. <kbd>Space</kbd>,
 <kbd>F</kbd> and <kbd>Del</kbd> act on the whole selection too. Every bulk
 change comes with a single undo that puts each font back exactly as it was.
 
@@ -431,8 +438,9 @@ browser, it works exactly the way you expect.
   Same glass aesthetic, different light.
 - **Interface sounds** — soft, synthesized feedback for toggles and events.
   Three levels: on, subtle, or off.
-- **Reduced motion** — replaces the springy animations with quick fades,
-  independently of (or together with) your system-wide preference.
+- **Reduced motion** — replaces every springy animation with a quick 0.1 s
+  fade, so panels and dialogs open and close almost instantly. It follows your
+  system-wide preference too, or can be switched on just for ZFontManager.
 - **Reduced transparency** — swaps the frosted glass for solid panels. Easier
   to read, and it removes the most expensive thing the app draws, which is
   worth a lot on older integrated graphics.
@@ -573,7 +581,10 @@ no "portable font folder" tricks.
 <td><b>🐧 Linux</b></td>
 <td>Uses <i>fontconfig</i>, the same system every Linux app reads fonts
 through. Deactivating tells fontconfig to skip the font — apps simply stop
-offering it. Nothing is moved or deleted.</td>
+offering it. Nothing is moved or deleted. Flatpak apps are covered too, even
+though they see your fonts under different paths, and so are the copies
+LibreOffice bundles for itself. Apps read the font list when they start, so
+one that's already open needs a restart.</td>
 </tr>
 <tr>
 <td><b>🪟 Windows</b></td>

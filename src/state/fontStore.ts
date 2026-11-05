@@ -19,9 +19,10 @@ import {
   type TrashEntry,
 } from "../lib/ipc";
 import { matchAffinityFonts, type AffinityEvent } from "../lib/affinity";
-import { familyActivation, isWebFormat, pathsToToggle, styleGroups } from "../lib/familyState";
+import { familyActivation, isWebFormat, pathsToToggle, sortFormats, styleGroups } from "../lib/familyState";
 import { inFolder } from "../lib/folders";
 import { toast } from "../design/primitives/Toast";
+import { setQuickMotion } from "../design/springs";
 import { setSoundLevel, type SoundLevel } from "../lib/sound";
 import { applyTheme, type ThemePref } from "../lib/theme";
 import {
@@ -153,6 +154,7 @@ interface FontStore {
   viewMode: ViewMode;
   expandStyles: boolean;
   glyphSize: number;
+  previewUppercase: boolean;
   sort: SortMode;
   search: string;
 
@@ -254,6 +256,7 @@ interface FontStore {
   setViewMode: (m: ViewMode) => void;
   setExpandStyles: (on: boolean) => void;
   setGlyphSize: (px: number) => void;
+  setPreviewUppercase: (on: boolean) => void;
   setSort: (s: SortMode) => void;
   setSearch: (s: string) => void;
   toggleClassFilter: (c: Classification) => void;
@@ -266,9 +269,20 @@ interface FontStore {
   select: (family: string | null) => void;
 }
 
+const systemReducedMotion =
+  typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia("(prefers-reduced-motion: reduce)")
+    : null;
+let currentMotionPref: MotionPref = "system";
+
 function applyMotionPref(pref: MotionPref) {
-  document.documentElement.dataset.motion = pref;
+  currentMotionPref = pref;
+  const reduced = pref === "reduced" || Boolean(systemReducedMotion?.matches);
+  document.documentElement.dataset.motion = reduced ? "reduced" : pref;
+  setQuickMotion(reduced);
 }
+
+systemReducedMotion?.addEventListener("change", () => applyMotionPref(currentMotionPref));
 
 function applyTransparencyPref(pref: TransparencyPref) {
   document.documentElement.dataset.transparency = pref;
@@ -289,6 +303,7 @@ function persistPrefs(get: () => FontStore) {
       viewMode: s.viewMode,
       expandStyles: s.expandStyles,
       glyphSize: s.glyphSize,
+      previewUppercase: s.previewUppercase,
       sort: s.sort,
       panelWidth: s.panelWidth,
       motionPref: s.motionPref,
@@ -368,6 +383,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   viewMode: "grid",
   expandStyles: false,
   glyphSize: GLYPH_SIZE_DEFAULT,
+  previewUppercase: false,
   sort: "name",
   search: "",
   classFilter: [],
@@ -407,6 +423,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
           typeof prefs.glyphSize === "number"
             ? clampGlyphSize(prefs.glyphSize)
             : GLYPH_SIZE_DEFAULT,
+        previewUppercase: prefs.previewUppercase === true,
         sort: (["name", "styles", "size", "glyphs"] as const).includes(prefs.sort as SortMode)
           ? (prefs.sort as SortMode)
           : "name",
@@ -1052,7 +1069,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
         t(active ? "toast.activatedCount" : "toast.deactivatedCount", {
           count: affected.size,
         }),
-        undefined,
+        t("toast.restartAppsSub"),
         undefined,
         { label: t("toast.undo"), run: () => void get().setFontPathsActive(paths, !active) },
       );
@@ -1400,16 +1417,30 @@ export const useFontStore = create<FontStore>((set, get) => ({
 
   applyTagToFamilies: async (tag, families) => {
     const clean = tag.trim().toLowerCase();
-    if (!clean) return;
-    const all = families.every((f) => (get().tags[f] ?? []).includes(clean));
+    if (!clean || families.length === 0) return;
+    const prev = get().tags;
+    const removing = families.every((f) => (prev[f] ?? []).includes(clean));
+    const next = { ...prev };
+    const changed: string[] = [];
     for (const family of families) {
-      const current = get().tags[family] ?? [];
-      const next = all
-        ? current.filter((t) => t !== clean)
-        : current.includes(clean)
-          ? current
-          : [...current, clean];
-      if (next !== current) await get().setFamilyTags(family, next);
+      const current = prev[family] ?? [];
+      if (removing) {
+        const kept = current.filter((x) => x !== clean);
+        if (kept.length > 0) next[family] = kept;
+        else delete next[family];
+        changed.push(family);
+      } else if (!current.includes(clean)) {
+        next[family] = [...current, clean];
+        changed.push(family);
+      }
+    }
+    if (changed.length === 0) return;
+    set({ tags: next });
+    try {
+      for (const family of changed) await ipc.setTags(family, next[family] ?? []);
+    } catch (e) {
+      set({ tags: prev });
+      toast.error(t("toast.couldntSaveTags"), String(e));
     }
   },
 
@@ -1439,6 +1470,10 @@ export const useFontStore = create<FontStore>((set, get) => ({
   },
   setGlyphSize: (px) => {
     set({ glyphSize: clampGlyphSize(px) });
+    persistPrefs(get);
+  },
+  setPreviewUppercase: (previewUppercase) => {
+    set({ previewUppercase });
     persistPrefs(get);
   },
   setSort: (sort) => {
@@ -1656,6 +1691,7 @@ export function computeFamilies(
   }
   for (const fam of map.values()) {
     fam.faces.sort((a, b) => styleOrder(a) - styleOrder(b));
+    fam.formats = sortFormats(fam.formats);
     fam.styleCount = styleGroups(fam.faces).length;
     fam.webOnly = fam.faces.every((f) => f.installable === false);
     Object.assign(fam, familyActivation(fam.faces));

@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Tag, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { springSoft } from "../design/springs";
-import { useFontStore } from "../state/fontStore";
+import { allTags, useFontStore } from "../state/fontStore";
 import { useFocusTrap } from "../lib/useFocusTrap";
 import { playTag } from "../lib/sound";
 import { useT } from "../lib/i18n";
@@ -12,6 +12,7 @@ export function BulkTagPrompt() {
   const bulkTagFor = useFontStore((s) => s.bulkTagFor);
   const setBulkTagFor = useFontStore((s) => s.setBulkTagFor);
   const applyTagToFamilies = useFontStore((s) => s.applyTagToFamilies);
+  const tags = useFontStore((s) => s.tags);
   const trapRef = useFocusTrap<HTMLDivElement>(Boolean(bulkTagFor));
   const [tag, setTag] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -24,13 +25,25 @@ export function BulkTagPrompt() {
     }
   }, [bulkTagFor]);
 
-  const apply = () => {
-    if (bulkTagFor && tag.trim()) {
+  const add = () => {
+    const clean = tag.trim().toLowerCase();
+    if (!bulkTagFor || !clean) return;
+    const everyone = bulkTagFor.every((f) => (tags[f] ?? []).includes(clean));
+    if (!everyone) {
       playTag(true);
-      void applyTagToFamilies(tag, bulkTagFor);
+      void applyTagToFamilies(clean, bulkTagFor);
     }
-    setBulkTagFor(null);
+    setTag("");
+    inputRef.current?.focus();
   };
+
+  const toggle = (name: string, on: boolean) => {
+    if (!bulkTagFor) return;
+    playTag(!on);
+    void applyTagToFamilies(name, bulkTagFor);
+  };
+
+  const known = [...allTags(tags).keys()];
 
   return (
     <AnimatePresence>
@@ -67,13 +80,32 @@ export function BulkTagPrompt() {
                 <X size={15} strokeWidth={1.5} />
               </button>
             </header>
+            {known.length > 0 && (
+              <div className="bulktag-chips">
+                {known.map((name) => {
+                  const count = bulkTagFor.filter((f) => (tags[f] ?? []).includes(name)).length;
+                  const on = count === bulkTagFor.length;
+                  return (
+                    <button
+                      key={name}
+                      className={`bulktag-chip ${on ? "bulktag-chip-on" : count > 0 ? "bulktag-chip-some" : ""}`}
+                      aria-pressed={on ? true : count > 0 ? "mixed" : false}
+                      title={t("bulk.chipCount", { count, total: bulkTagFor.length })}
+                      onClick={() => toggle(name, on)}
+                    >
+                      {name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <div className="topbar-field">
               <input
                 ref={inputRef}
                 value={tag}
                 onChange={(e) => setTag(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") apply();
+                  if (e.key === "Enter") add();
                   if (e.key === "Escape") setBulkTagFor(null);
                 }}
                 placeholder={t("bulk.placeholder")}
@@ -84,7 +116,7 @@ export function BulkTagPrompt() {
             <motion.button
               className="bulktag-apply"
               disabled={!tag.trim()}
-              onClick={apply}
+              onClick={add}
               whileHover={{ y: -1 }}
               whileTap={{ scale: 0.97 }}
             >

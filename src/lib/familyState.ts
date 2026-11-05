@@ -24,6 +24,21 @@ const FORMAT_RANK: Record<string, number> = { otf: 0, ttf: 1, woff2: 2, woff: 3 
 
 export const isWebFormat = (format: string) => format === "woff" || format === "woff2";
 
+export function previewText(sample: string, fallback: string, uppercase: boolean): string {
+  const text = sample.trim() || fallback;
+  return uppercase ? text.toLocaleUpperCase() : text;
+}
+
+export function sortFormats(formats: string[]): string[] {
+  return [...formats].sort((a, b) => (FORMAT_RANK[a] ?? 9) - (FORMAT_RANK[b] ?? 9));
+}
+
+export function formatLabel(formats: string[], max = 3): string {
+  const shown = formats.slice(0, max).map((f) => f.toUpperCase()).join(" · ");
+  const hidden = formats.length - max;
+  return hidden > 0 ? `${shown} +${hidden}` : shown;
+}
+
 export function familyActivation(faces: FontFace[]): FamilyActivation {
   const counted = faces.filter((f) => f.installable !== false);
   const activeCount = counted.filter((f) => f.active).length;

@@ -1,6 +1,6 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
-import type { FontFace as ZFontFace } from "./ipc";
+import { ipc, type FontFace as ZFontFace } from "./ipc";
 
 type LoadState = "loading" | "loaded" | "failed";
 const cache = new Map<string, LoadState>();
@@ -17,18 +17,38 @@ function hash(s: string): string {
 }
 
 function ensureLoaded(face: ZFontFace): void {
-  ensurePathLoaded(cssName(face), face.previewPath ?? face.path);
+  ensurePathLoaded(cssName(face), face.previewPath ?? face.path, face);
 }
 
-function ensurePathLoaded(name: string, path: string): void {
+function loadSource(name: string, source: string | ArrayBuffer): Promise<void> {
+  const ff = new FontFace(name, source);
+  return ff.load().then(() => {
+    document.fonts.add(ff);
+  });
+}
+
+function systemSources(face: ZFontFace): string {
+  const names = [face.postscriptName, `${face.family} ${face.style}`];
+  if (/^(regular|normal|book|roman)$/i.test(face.style)) names.push(face.family);
+  return names
+    .filter((n): n is string => Boolean(n))
+    .map((n) => `local("${n.replace(/["\\]/g, "\\$&")}")`)
+    .join(", ");
+}
+
+function ensurePathLoaded(name: string, path: string, face?: ZFontFace): void {
   if (cache.has(name)) return;
   cache.set(name, "loading");
 
-  const url = convertFileSrc(path);
-  const ff = new FontFace(name, `url("${url}")`);
-  ff.load()
+  loadSource(name, `url("${convertFileSrc(path)}")`)
+    .catch(() =>
+      ipc.getPreviewFont(path, face?.faceIndex ?? 0).then((bytes) => loadSource(name, bytes)),
+    )
+    .catch((e) => {
+      if (!face?.active) throw e;
+      return loadSource(name, systemSources(face));
+    })
     .then(() => {
-      document.fonts.add(ff);
       cache.set(name, "loaded");
     })
     .catch(() => {

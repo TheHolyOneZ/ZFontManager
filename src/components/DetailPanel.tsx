@@ -3,13 +3,15 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { AlertTriangle, Copy, Download, ExternalLink, FolderOpen, GripVertical, ImageOff, ImagePlus, Plus, RotateCcw, Scale, Star, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
-import { spring, springSoft } from "../design/springs";
+import { panelExit, spring, springSoft } from "../design/springs";
 import { useFontCss, formatBytes, pathBasename } from "../lib/fontLoader";
 import { familiesFor, conflictsFor, useFontStore, GLYPH_SIZE_DEFAULT, GLYPH_SIZE_MAX, GLYPH_SIZE_MIN } from "../state/fontStore";
 import { ipc, type FontFace, type VariationAxis } from "../lib/ipc";
-import { styleGroups, type StyleGroup } from "../lib/familyState";
+import { previewText, styleGroups, type StyleGroup } from "../lib/familyState";
 import { toast } from "../design/primitives/Toast";
 import { FormatBadge } from "./FamilyCard";
+import { InkLine } from "./InkLine";
+import { useInkPadding } from "../lib/inkFit";
 import { exportFace, exportFamily } from "../lib/menus";
 import { openUrl, revealItemInDir } from "@tauri-apps/plugin-opener";
 import { classifyLicense } from "../lib/license";
@@ -262,6 +264,7 @@ function AxisSliders({
   );
 }
 
+const SPECIMEN_STRIP = "ABCDEFGHIJKLM abcdefghijklm 0123456789 ?!&";
 const charsetCache = new Map<string, number[]>();
 const GLYPH_LIMIT = 512;
 
@@ -626,6 +629,7 @@ export function DetailPanel() {
   const setFamilyActive = useFontStore((s) => s.setFamilyActive);
   const uninstallFamily = useFontStore((s) => s.uninstallFamily);
   const sampleText = useFontStore((s) => s.sampleText);
+  const previewUppercase = useFontStore((s) => s.previewUppercase);
 
   const panelWidth = useFontStore((s) => s.panelWidth);
   const setPanelWidth = useFontStore((s) => s.setPanelWidth);
@@ -673,7 +677,9 @@ export function DetailPanel() {
     family?.faces[0] ??
     null;
   const { fontFamily } = useFontCss(lead);
-  const text = sampleText.trim() || family?.name || "";
+  const text = previewText(sampleText, family?.name ?? "", previewUppercase);
+  const heroInk = useInkPadding(fontFamily, "Aa", 56, 1, lead?.italic);
+  const stripInk = useInkPadding(fontFamily, SPECIMEN_STRIP, 13, 1.3, lead?.italic);
 
   useEffect(() => {
     setFeatures([]);
@@ -716,7 +722,7 @@ export function DetailPanel() {
           style={{ width: panelWidth }}
           initial={{ x: panelWidth, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: panelWidth, opacity: 0 }}
+          exit={{ x: panelWidth, opacity: 0, transition: panelExit }}
           transition={springSoft}
         >
           <div
@@ -741,7 +747,7 @@ export function DetailPanel() {
               className="detail-head"
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
             >
-              <FormatBadge format={family.formats[0]} isVariable={family.isVariable} />
+              <FormatBadge formats={family.formats} isVariable={family.isVariable} />
               <button
                 className="detail-title copy-name"
                 onClick={() => copyName(family.name, t("copy.familyName"))}
@@ -775,6 +781,7 @@ export function DetailPanel() {
               <span
                 className="specimen-glyphs"
                 style={{
+                  ...heroInk,
                   fontFamily: fontFamily ?? undefined,
                   fontStyle: lead.italic ? "italic" : "normal",
                   fontVariationSettings: variation,
@@ -793,13 +800,15 @@ export function DetailPanel() {
                 className="specimen-strip"
                 aria-hidden="true"
                 style={{
+                  ...stripInk,
+                  paddingTop: 10 + Number(stripInk?.paddingTop ?? 0),
                   fontFamily: fontFamily ?? undefined,
                   fontStyle: lead.italic ? "italic" : "normal",
                   fontVariationSettings: variation,
                   fontFeatureSettings: featureSettings,
                 }}
               >
-                ABCDEFGHIJKLM abcdefghijklm 0123456789 ?!&
+                {SPECIMEN_STRIP}
               </span>
             </motion.section>
 
@@ -832,9 +841,14 @@ export function DetailPanel() {
               variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
             >
               {WATERFALL.map((px) => (
-                <p
+                <InkLine
                   key={px}
                   className="waterfall-line"
+                  fontFamily={fontFamily}
+                  text={text}
+                  size={px}
+                  lineHeight={1.15}
+                  italic={lead.italic}
                   style={{
                     fontFamily: fontFamily ?? undefined,
                     fontSize: px,
@@ -845,7 +859,7 @@ export function DetailPanel() {
                 >
                   <span className="waterfall-px tabular">{px}</span>
                   {text}
-                </p>
+                </InkLine>
               ))}
             </motion.section>
 

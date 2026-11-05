@@ -6,6 +6,9 @@ import { useFontCss } from "../lib/fontLoader";
 import { familiesFor, useFontStore, type Family } from "../state/fontStore";
 import { useFocusTrap } from "../lib/useFocusTrap";
 import { FormatBadge } from "./FamilyCard";
+import { InkLine } from "./InkLine";
+import { useInkPadding } from "../lib/inkFit";
+import { previewText } from "../lib/familyState";
 import { useT } from "../lib/i18n";
 
 const COMPARE_SIZES = [14, 24, 40];
@@ -13,14 +16,16 @@ const COMPARE_SIZES = [14, 24, 40];
 function CompareColumn({ family, onRemove }: { family: Family; onRemove: () => void }) {
   const t = useT();
   const sampleText = useFontStore((s) => s.sampleText);
+  const previewUppercase = useFontStore((s) => s.previewUppercase);
   const lead = family.faces.find((f) => f.style === "Regular") ?? family.faces[0];
   const { fontFamily } = useFontCss(lead);
-  const text = sampleText.trim() || family.name;
+  const text = previewText(sampleText, family.name, previewUppercase);
+  const heroInk = useInkPadding(fontFamily, "Aa", 56, 1, lead.italic);
 
   return (
     <div className="compare-col">
       <header className="compare-col-head">
-        <FormatBadge format={family.formats[0]} isVariable={family.isVariable} />
+        <FormatBadge formats={family.formats} isVariable={family.isVariable} />
         <span className="compare-col-name">{family.name}</span>
         <button className="detail-close" aria-label={t("compare.remove", { name: family.name })} onClick={onRemove}>
           <X size={13} strokeWidth={1.5} />
@@ -29,6 +34,7 @@ function CompareColumn({ family, onRemove }: { family: Family; onRemove: () => v
       <div
         className="compare-hero"
         style={{
+          ...heroInk,
           fontFamily: fontFamily ?? undefined,
           fontStyle: lead.italic ? "italic" : "normal",
         }}
@@ -36,9 +42,14 @@ function CompareColumn({ family, onRemove }: { family: Family; onRemove: () => v
         Aa
       </div>
       {COMPARE_SIZES.map((px) => (
-        <p
+        <InkLine
           key={px}
           className="compare-line"
+          fontFamily={fontFamily}
+          text={text}
+          size={px}
+          lineHeight={1.3}
+          italic={lead.italic}
           style={{
             fontFamily: fontFamily ?? undefined,
             fontSize: px,
@@ -46,7 +57,7 @@ function CompareColumn({ family, onRemove }: { family: Family; onRemove: () => v
           }}
         >
           {text}
-        </p>
+        </InkLine>
       ))}
       <div className="compare-meta tabular">
         {t("detail.stylesCount", { count: family.styleCount })} ·{" "}

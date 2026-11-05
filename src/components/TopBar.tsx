@@ -429,6 +429,8 @@ export function TopBar() {
   const t = useT();
   const sampleText = useFontStore((s) => s.sampleText);
   const setSampleText = useFontStore((s) => s.setSampleText);
+  const previewUppercase = useFontStore((s) => s.previewUppercase);
+  const setPreviewUppercase = useFontStore((s) => s.setPreviewUppercase);
   const sizeIndex = useFontStore((s) => s.sizeIndex);
   const setSizeIndex = useFontStore((s) => s.setSizeIndex);
   const viewMode = useFontStore((s) => s.viewMode);
@@ -492,6 +494,15 @@ export function TopBar() {
           aria-label={t("top.sampleAria")}
           spellCheck={false}
         />
+        <button
+          className={`case-toggle ${previewUppercase ? "case-toggle-on" : ""}`}
+          aria-label={t("top.uppercase")}
+          aria-pressed={previewUppercase}
+          title={t("top.uppercase")}
+          onClick={() => setPreviewUppercase(!previewUppercase)}
+        >
+          AA
+        </button>
       </div>
 
       {stacked && <span className="topbar-break" aria-hidden="true" />}

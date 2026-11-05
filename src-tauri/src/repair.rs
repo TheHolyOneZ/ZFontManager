@@ -359,6 +359,13 @@ pub fn rebuild(data: &[u8], index: u32) -> Option<Vec<u8>> {
             out.insert(*tag, table.to_vec());
         }
     }
+    if raw.contains_key(b"CFF2") {
+        for tag in [b"avar", b"fvar"] {
+            if let Some(table) = raw.get(tag) {
+                out.insert(*tag, table.to_vec());
+            }
+        }
+    }
     if let Some(glyf) = glyf {
         out.insert(*b"loca", fix_loca(loca_raw, long_loca, count, glyf.len()));
     }
@@ -380,12 +387,21 @@ pub fn rebuild(data: &[u8], index: u32) -> Option<Vec<u8>> {
 mod tests {
     use super::*;
 
+    fn has_outlines_and_text(data: &[u8]) -> bool {
+        let Some(tables) = read_tables(data, 0) else {
+            return false;
+        };
+        [b"glyf", b"OS/2", b"post"].iter().all(|tag| tables.contains_key(*tag))
+            && ttf_parser::Face::parse(data, 0).is_ok_and(|face| face.glyph_index('A').is_some())
+    }
+
     fn system_ttf() -> Option<Vec<u8>> {
         walkdir::WalkDir::new("/usr/share/fonts")
             .into_iter()
             .filter_map(Result::ok)
-            .find(|e| e.path().extension().is_some_and(|x| x.eq_ignore_ascii_case("ttf")))
-            .and_then(|e| std::fs::read(e.path()).ok())
+            .filter(|e| e.path().extension().is_some_and(|x| x.eq_ignore_ascii_case("ttf")))
+            .filter_map(|e| std::fs::read(e.path()).ok())
+            .find(|data| has_outlines_and_text(data))
     }
 
     fn pack(tables: BTreeMap<Tag, Vec<u8>>) -> Vec<u8> {
@@ -427,6 +443,38 @@ mod tests {
         assert_eq!(u32_at(rebuilt[b"post"], 0), Some(0x0003_0000));
         assert_eq!(u32_at(rebuilt[b"head"], 12), Some(0x5F0F_3CF5));
         assert!(ttf_parser::Face::parse(&fixed, 0).is_ok());
+    }
+
+    #[test]
+    fn bitmap_only_fonts_have_nothing_to_rebuild() {
+        let Some(data) = system_ttf() else { return };
+        let mut tables = owned(&data);
+        tables.remove(b"glyf");
+        tables.remove(b"loca");
+        assert!(rebuild(&pack(tables), 0).is_none());
+    }
+
+    #[test]
+    fn cff2_fonts_keep_the_tables_they_depend_on() {
+        let Some(data) = system_ttf() else { return };
+        let mut tables = owned(&data);
+        tables.remove(b"glyf");
+        tables.remove(b"loca");
+        tables.insert(*b"CFF2", vec![2, 0, 5, 0, 0]);
+        tables.insert(*b"fvar", vec![0, 1, 0, 0]);
+        let fixed = rebuild(&pack(tables), 0).unwrap();
+        let rebuilt = read_tables(&fixed, 0).unwrap();
+        assert!(rebuilt.contains_key(b"fvar"));
+        assert!(rebuilt.contains_key(b"CFF2"));
+    }
+
+    #[test]
+    fn variable_truetype_fonts_fall_back_to_their_default_outlines() {
+        let Some(data) = system_ttf() else { return };
+        let mut tables = owned(&data);
+        tables.insert(*b"fvar", vec![0, 1, 0, 0]);
+        let fixed = rebuild(&pack(tables), 0).unwrap();
+        assert!(!read_tables(&fixed, 0).unwrap().contains_key(b"fvar"));
     }
 
     #[test]

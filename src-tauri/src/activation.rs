@@ -26,6 +26,12 @@ fn mark(state: &mut AppState, path: &str, deactivated: bool) {
 }
 
 pub fn sync(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
+    let result = sync_one(state, path, active);
+    refresh_other_apps(state);
+    result
+}
+
+fn sync_one(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
     if !active && !cfg!(target_os = "linux") && crate::parser::is_web_path(std::path::Path::new(path)) {
         return Err(format!(
             "web fonts (WOFF/WOFF2) aren't installed as desktop fonts on this system, so there's nothing to turn off: {path}"
@@ -51,12 +57,81 @@ pub struct Batch {
 pub fn sync_many(state: &mut AppState, paths: &[String], active: bool) -> Batch {
     let mut batch = Batch::default();
     for path in paths {
-        match sync(state, path, active) {
+        match sync_one(state, path, active) {
             Ok(()) => batch.done.push(path.clone()),
             Err(e) => batch.failed.push(e),
         }
     }
+    refresh_other_apps(state);
     batch
+}
+
+#[cfg(not(target_os = "windows"))]
+fn refresh_other_apps(_state: &AppState) {}
+
+#[cfg(target_os = "windows")]
+fn refresh_other_apps(state: &AppState) {
+    use crate::registry;
+    use std::path::Path;
+
+    let var = |key: &str| std::env::var(key).ok();
+    let Some(config) = crate::fontconf::windows::config_home(var) else {
+        return;
+    };
+    let user_dir = crate::scanner::managed_font_dir();
+    let mut known = vec![registry::normalize(&user_dir.to_string_lossy())];
+    known.push(registry::normalize(&format!(
+        "{}\\Fonts",
+        std::env::var("WINDIR").unwrap_or_else(|_| "C:\\Windows".to_string())
+    )));
+    if let Some(data) = crate::fontconf::windows::data_home(var) {
+        known.push(registry::normalize(&data.join("fonts").to_string_lossy()));
+    }
+    if let Some(home) = var("HOME").filter(|h| !h.is_empty()).or_else(|| var("USERPROFILE")) {
+        known.push(registry::normalize(&Path::new(&home).join(".fonts").to_string_lossy()));
+    }
+    let already_seen = |path: &str| {
+        let path = registry::normalize(path);
+        known.iter().any(|dir| path.starts_with(&format!("{}\\", dir.trim_end_matches('\\'))))
+    };
+
+    let visible: Vec<String> = registry::user_entries()
+        .into_iter()
+        .map(|(_, path)| path)
+        .filter(|path| !already_seen(path.as_str()) && Path::new(path.as_str()).is_file())
+        .collect();
+
+    let registered = registry::registered_paths();
+    let mut hidden: Vec<String> = state
+        .registry_backup
+        .values()
+        .filter(|path| Path::new(path.as_str()).is_file())
+        .cloned()
+        .collect();
+    if let Ok(entries) = std::fs::read_dir(&user_dir) {
+        for entry in entries.filter_map(Result::ok) {
+            let path = entry.path();
+            let text = path.to_string_lossy().into_owned();
+            if crate::parser::is_font_file(&path) && !registered.contains(&registry::normalize(&text)) {
+                hidden.push(text);
+            }
+        }
+    }
+
+    let xml = crate::fontconf::windows::windows_fragment(&visible, &hidden);
+    let dir = config.join("fontconfig").join("conf.d");
+    match crate::fontconf::write_fragment(&dir, xml.as_deref()) {
+        Ok(()) if xml.is_none() => {
+            let _ = std::fs::remove_dir(&dir);
+            let _ = std::fs::remove_dir(config.join("fontconfig"));
+        }
+        Ok(()) => crate::diag::log(&format!(
+            "fontconfig: {} active font(s) outside the font folders shown, {} hidden",
+            visible.len(),
+            hidden.len()
+        )),
+        Err(e) => crate::diag::log(&format!("fontconfig: couldn't update {}: {e}", dir.display())),
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -141,9 +216,6 @@ fn sync_linked_alias(state: &AppState, path: &str, active: bool) -> Result<(), S
 }
 
 #[cfg(target_os = "linux")]
-const FRAGMENT: &str = "99-zfontmanager.conf";
-
-#[cfg(target_os = "linux")]
 fn sandbox_path(path: &str, home: &std::path::Path) -> Option<String> {
     use std::path::{Path, PathBuf};
 
@@ -181,11 +253,7 @@ fn reject_fragment(state: &AppState, home: &std::path::Path) -> String {
     let mut globs = String::new();
     for path in paths {
         for glob in reject_globs(path, home) {
-            let escaped = glob
-                .replace('&', "&amp;")
-                .replace('<', "&lt;")
-                .replace('>', "&gt;");
-            let _ = writeln!(globs, "      <glob>{escaped}</glob>");
+            let _ = writeln!(globs, "      <glob>{}</glob>", crate::fontconf::escape(&glob));
         }
     }
     format!(
@@ -193,23 +261,6 @@ fn reject_fragment(state: &AppState, home: &std::path::Path) -> String {
          <!-- Managed by ZFontManager - do not edit; toggling fonts rewrites this file -->\n\
          <fontconfig>\n  <selectfont>\n    <rejectfont>\n{globs}    </rejectfont>\n  </selectfont>\n</fontconfig>\n"
     )
-}
-
-#[cfg(target_os = "linux")]
-fn write_fragment(dir: &std::path::Path, xml: Option<&str>) -> Result<(), String> {
-    use std::fs;
-
-    let file = dir.join(FRAGMENT);
-    let Some(xml) = xml else {
-        if file.exists() {
-            fs::remove_file(&file).map_err(|e| e.to_string())?;
-        }
-        return Ok(());
-    };
-    fs::create_dir_all(dir).map_err(|e| e.to_string())?;
-    let tmp = file.with_extension("conf.tmp");
-    fs::write(&tmp, xml).map_err(|e| e.to_string())?;
-    fs::rename(&tmp, &file).map_err(|e| e.to_string())
 }
 
 #[cfg(target_os = "linux")]
@@ -230,9 +281,9 @@ fn write_all_fragments(
     config: &std::path::Path,
 ) -> Result<(), String> {
     let xml = (!state.deactivated.is_empty()).then(|| reject_fragment(state, home));
-    write_fragment(&config.join("fontconfig").join("conf.d"), xml.as_deref())?;
+    crate::fontconf::write_fragment(&config.join("fontconfig").join("conf.d"), xml.as_deref())?;
     for dir in flatpak_conf_dirs(home) {
-        if let Err(e) = write_fragment(&dir, xml.as_deref()) {
+        if let Err(e) = crate::fontconf::write_fragment(&dir, xml.as_deref()) {
             crate::diag::log(&format!("flatpak: couldn't update {}: {e}", dir.display()));
         }
         if xml.is_none() {
@@ -376,6 +427,7 @@ pub fn reconcile(state: &mut AppState) {
 
 #[cfg(target_os = "windows")]
 pub fn reconcile(state: &mut AppState) {
+    refresh_other_apps(state);
     let managed = crate::scanner::effective_managed_dir(state.active_library_dir());
     std::thread::spawn(move || {
         crate::registry::load_registered_outside(&managed);
@@ -502,8 +554,8 @@ mod tests {
         state.deactivated.insert("/usr/share/fonts/a.ttf".to_string());
 
         write_all_fragments(&state, &home, &config).unwrap();
-        let host = config.join("fontconfig/conf.d").join(FRAGMENT);
-        let sandboxed = app.join("config/fontconfig/conf.d").join(FRAGMENT);
+        let host = config.join("fontconfig/conf.d").join(crate::fontconf::FRAGMENT);
+        let sandboxed = app.join("config/fontconfig/conf.d").join(crate::fontconf::FRAGMENT);
         let xml = std::fs::read_to_string(&sandboxed).unwrap();
         assert!(xml.contains("/run/host/fonts/a.ttf"));
         assert_eq!(std::fs::read_to_string(&host).unwrap(), xml);

@@ -81,6 +81,23 @@ jobs:
           Write-Host "=== Bundle directory tree ==="
           Get-ChildItem -Recurse src-tauri/target -Directory -Filter bundle -ErrorAction SilentlyContinue | Select-Object FullName
 
+      - name: Package portable zip
+        shell: pwsh
+        run: |
+          $version = node -p "require('./src-tauri/tauri.conf.json').version"
+          $exe = "src-tauri/target/x86_64-pc-windows-msvc/release/zfontmanager.exe"
+          if (-not (Test-Path $exe)) { throw "Built exe not found at $exe" }
+          $root = "portable/ZFontManager"
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          Copy-Item $exe "$root/ZFontManager.exe"
+          Set-Content -Path "$root/portable.txt" -Encoding utf8 -Value @(
+            "ZFontManager runs in portable mode while this file is next to ZFontManager.exe.",
+            "Settings, tags, collections, covers and the trash are kept in the data folder here.",
+            "Delete this file to use the normal per-user settings folder instead."
+          )
+          Compress-Archive -Path $root -DestinationPath "portable/ZFontManager_${version}_x64-portable.zip" -Force
+          Get-ChildItem portable -Filter *.zip | Select-Object Name, Length
+
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -88,6 +105,7 @@ jobs:
           path: |
             src-tauri/target/**/release/bundle/**/*.exe
             src-tauri/target/**/release/bundle/**/*.msi
+            portable/*.zip
           if-no-files-found: error
           retention-days: 30
 
@@ -338,7 +356,8 @@ jobs:
             -name '*.dmg' -o \
             -name '*.AppImage' -o \
             -name '*.deb' -o \
-            -name '*.rpm' \
+            -name '*.rpm' -o \
+            -name '*-portable.zip' \
           \) -exec cp {} release/ \;
           echo "=== release/ ==="
           ls -lah release/

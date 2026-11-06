@@ -158,6 +158,7 @@
   "trash.delete": "删除",
   "trash.deletePermanently": "永久删除",
   "about.version": "版本 {version} · {license}",
+  "about.portable": "便携模式 · 设置保存在应用旁边",
   "about.desc": "Linux 一直缺席、Windows 与 macOS 却要付费的字体管理器。在一个干净的原生应用里预览、加标签、启用与停用、安装字体，三大系统通用——你的字体永远不会离开这台机器。",
   "about.stackAria": "技术栈",
   "about.githubUser": "TheHolyOneZ 的 GitHub",

@@ -176,6 +176,7 @@ export const ipc = {
   getSettings: () => invoke<AppSettings>("get_settings"),
   setSettings: (settings: AppSettings) => invoke<void>("set_settings", { settings }),
   defaultLibraryDir: () => invoke<string>("default_library_dir"),
+  portableDir: () => invoke<string | null>("portable_dir"),
   affinityConnection: () => invoke<AffinityConnection>("affinity_connection"),
   affinitySessionActivate: (paths: string[]) =>
     invoke<string[]>("affinity_session_activate", { paths }),

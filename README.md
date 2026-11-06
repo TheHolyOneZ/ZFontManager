@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.12.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.13.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +99,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.12.0** — see the
+> ZFontManager is currently at **version 0.13.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -565,6 +565,15 @@ build for your platform:
 
 </div>
 
+**On Windows without installing:** download the `…_x64-portable.zip`, unzip it
+anywhere (a USB drive works too) and start `ZFontManager.exe`. Settings, tags,
+collections, covers and the trash stay in a `data` folder next to it, and the
+About page tells you when portable mode is on. The `portable.txt` file switches
+it on; delete it to use the normal settings folder. Which fonts are active is
+still stored by Windows itself, because that's how Windows activates fonts. It
+needs the Microsoft Edge WebView2 Runtime, which comes with Windows 11 and
+current Windows 10.
+
 Prefer to build it yourself? See
 [Building from source](#-building-from-source) below — it's three commands.
 
@@ -595,7 +604,11 @@ account right where they are — an external drive is fine. A font is only
 registered once Windows has actually loaded it, so a file Windows rejects
 shows an error instead of a switch that says active. Deactivating
 unregisters the font; the file stays put. No admin rights needed for your own
-fonts.</td>
+fonts. Apps that look for fonts the way Linux apps do, like Krita, don't read
+that registration, so ZFontManager also keeps a small fontconfig file in
+<code>%USERPROFILE%\.config\fontconfig\conf.d</code> up to date for them: they
+see exactly the fonts that are active, including ones in your watched folders,
+and not the ones you've switched off. Restart such an app after a change.</td>
 </tr>
 <tr>
 <td><b>🍎 macOS</b></td>

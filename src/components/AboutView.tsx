@@ -1,10 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 import { motion } from "motion/react";
-import { ArrowUpRight, Download, Globe } from "lucide-react";
+import { revealItemInDir } from "@tauri-apps/plugin-opener";
+import { ArrowUpRight, Download, Globe, HardDrive } from "lucide-react";
+import { useEffect, useState } from "react";
 import { spring, springSoft, staggerDelay } from "../design/springs";
 import { toast } from "../design/primitives/Toast";
 import { t as translate, useT, type TKey } from "../lib/i18n";
 import { APP_LICENSE, APP_VERSION } from "../lib/version";
+import { ipc } from "../lib/ipc";
 
 function GithubGlyph({ size = 16 }: { size?: number }) {
   return (
@@ -49,6 +52,13 @@ const STACK = ["Tauri v2", "Rust", "React 19", "TypeScript", "Vite", "pnpm"];
 
 export function AboutView() {
   const t = useT();
+  const [portable, setPortable] = useState<string | null>(null);
+  useEffect(() => {
+    ipc
+      .portableDir()
+      .then(setPortable)
+      .catch(() => setPortable(null));
+  }, []);
   return (
     <motion.div
       className="about-view"
@@ -61,6 +71,16 @@ export function AboutView() {
       <div className="about-version tabular">
         {t("about.version", { version: APP_VERSION, license: APP_LICENSE })}
       </div>
+      {portable && (
+        <button
+          className="about-portable"
+          title={portable}
+          onClick={() => void revealItemInDir(portable)}
+        >
+          <HardDrive size={12} strokeWidth={1.75} />
+          {t("about.portable")}
+        </button>
+      )}
       <p className="about-desc">{t("about.desc")}</p>
 
       <div className="about-stack" aria-label={t("about.stackAria")}>

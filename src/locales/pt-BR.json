@@ -160,6 +160,7 @@
   "trash.delete": "Excluir",
   "trash.deletePermanently": "Excluir permanentemente",
   "about.version": "Versão {version} · {license}",
+  "about.portable": "Modo portátil · as configurações ficam ao lado do app",
   "about.desc": "O gerenciador de fontes que o Linux nunca teve e pelo qual se paga no Windows e no macOS. Visualize, etiquete, ative e desative, instale fontes nos três sistemas a partir de um único aplicativo nativo e limpo — suas fontes nunca saem da sua máquina.",
   "about.stackAria": "Tecnologias",
   "about.githubUser": "TheHolyOneZ no GitHub",

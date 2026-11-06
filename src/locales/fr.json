@@ -160,6 +160,7 @@
   "trash.delete": "Supprimer",
   "trash.deletePermanently": "Supprimer définitivement",
   "about.version": "Version {version} · {license}",
+  "about.portable": "Mode portable · les réglages sont rangés à côté de l’app",
   "about.desc": "Le gestionnaire de polices que Linux n’a jamais eu et qu’il faut payer sous Windows et macOS. Prévisualisez, étiquetez, activez et désactivez, installez vos polices sur les trois systèmes depuis une seule application native et sobre — vos polices ne quittent jamais votre machine.",
   "about.stackAria": "Technologies",
   "about.githubUser": "TheHolyOneZ sur GitHub",

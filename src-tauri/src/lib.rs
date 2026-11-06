@@ -4,6 +4,8 @@ mod affinity;
 mod covers;
 mod diag;
 mod font_types;
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+mod fontconf;
 mod installer;
 mod net;
 mod online;
@@ -735,6 +737,11 @@ fn set_settings(
 }
 
 #[tauri::command]
+fn portable_dir() -> Option<String> {
+    store::portable_dir().map(|dir| dir.to_string_lossy().into_owned())
+}
+
+#[tauri::command]
 fn default_library_dir() -> String {
     scanner::managed_font_dir().to_string_lossy().into_owned()
 }
@@ -902,6 +909,10 @@ async fn apply_font_in_app(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(target_os = "windows")]
+    if let Some(dir) = store::portable_dir() {
+        unsafe { std::env::set_var("WEBVIEW2_USER_DATA_FOLDER", dir.join("WebView2")) };
+    }
     let mut state = store::load();
     diag::session_start();
     activation::reconcile(&mut state);
@@ -1015,6 +1026,7 @@ pub fn run() {
             play_sound,
             get_charset,
             get_preview_font,
+            portable_dir,
             fonts_with_char,
             set_ui_scale,
             get_prefs,

@@ -1754,6 +1754,23 @@ h2.detail-title.copy-name {
   color: var(--text-tertiary);
   letter-spacing: 0.04em;
 }
+.about-portable {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: var(--fs-11);
+  color: var(--text-secondary);
+  background: var(--e1);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  transition: background var(--t-quick) ease, color var(--t-quick) ease;
+}
+.about-portable:hover {
+  background: var(--e2);
+  color: var(--text-primary);
+}
 .about-desc {
   margin-top: 14px;
   font-size: var(--fs-13);

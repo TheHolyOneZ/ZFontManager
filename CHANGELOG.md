@@ -4,6 +4,39 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.13.0] — 2026-11-06
+
+### Added
+
+- **Portable version for Windows.** A new `ZFontManager_<version>_x64-portable.zip`
+  runs without installing: unzip it anywhere, a USB drive included, and start
+  `ZFontManager.exe`. Settings, tags, collections, covers, the trash and the
+  app's own browser data are kept in a `data` folder next to it. The
+  `portable.txt` file switches this on, and deleting it brings back the normal
+  settings folder. The About page shows when portable mode is on, and clicking
+  it opens the folder. Which fonts are active is still stored by Windows itself,
+  because that's how Windows activates fonts. The portable version needs the
+  Microsoft Edge WebView2 Runtime, which comes with Windows 11 and current
+  Windows 10.
+
+  Suggested by nv-lautaro. (#40)
+
+### Fixed
+
+- **Fonts activated in ZFontManager were missing in Krita on Windows.** Krita
+  finds fonts through fontconfig, which doesn't read the Windows font registry
+  and only looks in the Windows font folders. Fonts in a watched folder are
+  activated right where they are, so Krita never saw them, and fonts
+  deactivated in your library still showed up in it. ZFontManager now keeps a
+  small fontconfig file in `%USERPROFILE%\.config\fontconfig\conf.d` up to date,
+  so apps that find fonts this way see exactly the fonts that are active, and
+  not the ones you've switched off. Checked against the font settings that
+  Krita 6.0.4.1 ships with, and the rules themselves were tested with
+  fontconfig: active fonts in watched folders and their subfolders show up,
+  inactive ones next to them don't. Restart Krita after activating fonts.
+
+  Reported by StudioXV. (#41)
+
 ## [0.12.0] — 2026-11-05
 
 ### Added

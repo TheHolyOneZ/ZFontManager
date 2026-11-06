@@ -158,6 +158,7 @@
   "trash.delete": "Löschen",
   "trash.deletePermanently": "Endgültig löschen",
   "about.version": "Version {version} · {license}",
+  "about.portable": "Portabler Modus · Einstellungen liegen neben der App",
   "about.desc": "Der Schriftmanager, den Linux nie bekommen hat und für den man unter Windows/macOS bezahlt. Vorschau, Tags, Aktivieren und Deaktivieren, Installieren — auf allen drei Systemen, in einer schlanken nativen App. Deine Schriften verlassen deinen Rechner nie.",
   "about.stackAria": "Technik",
   "about.githubUser": "TheHolyOneZ auf GitHub",

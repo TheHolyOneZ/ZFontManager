@@ -158,6 +158,7 @@
   "trash.delete": "Delete",
   "trash.deletePermanently": "Delete permanently",
   "about.version": "Version {version} · {license}",
+  "about.portable": "Portable mode · settings are kept next to the app",
   "about.desc": "The font manager Linux never got and Windows/macOS have to pay for. Preview, tag, activate and deactivate, and install fonts across all three OSes from one clean native app — your fonts never leave your machine.",
   "about.stackAria": "Tech stack",
   "about.githubUser": "TheHolyOneZ on GitHub",

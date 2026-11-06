@@ -156,6 +156,7 @@
   "trash.delete": "刪除",
   "trash.deletePermanently": "永久刪除",
   "about.version": "版本 {version} · {license}",
+  "about.portable": "可攜模式 · 設定儲存在應用程式旁邊",
   "about.desc": "Linux 一直缺席、Windows 與 macOS 卻要付費的字型管理器。在一個乾淨的原生應用程式裡預覽、加標籤、啟用與停用、安裝字型，三大系統通用——你的字型永遠不會離開這台電腦。",
   "about.stackAria": "技術堆疊",
   "about.githubUser": "TheHolyOneZ 的 GitHub",

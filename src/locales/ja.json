@@ -156,6 +156,7 @@
   "trash.delete": "削除",
   "trash.deletePermanently": "完全に削除",
   "about.version": "バージョン {version} · {license}",
+  "about.portable": "ポータブルモード · 設定はアプリと同じ場所に保存されます",
   "about.desc": "Linux にはずっとなく、Windows や macOS では有料だったフォントマネージャー。プレビュー、タグ付け、有効化と無効化、インストールを、3 つの OS すべてで 1 つの軽快なネイティブアプリから。フォントがこのマシンから出ることはありません。",
   "about.stackAria": "使用技術",
   "about.githubUser": "GitHub の TheHolyOneZ",

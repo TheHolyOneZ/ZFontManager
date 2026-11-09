@@ -71,6 +71,11 @@ fn font_dirs() -> Vec<(PathBuf, FontSource)> {
     dirs_list
 }
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub fn seen_by_system(path: &Path) -> bool {
+    font_dirs().iter().any(|(dir, _)| path.starts_with(dir))
+}
+
 fn classify(path: &std::path::Path, base_source: FontSource, managed: &Path) -> FontSource {
     if base_source == FontSource::User && path.starts_with(managed) {
         FontSource::Managed
@@ -88,14 +93,19 @@ pub fn all_dirs(extra: &[String]) -> Vec<(PathBuf, FontSource)> {
 }
 
 pub fn scan_all(app: &tauri::AppHandle, extra: &[String], managed: &Path) -> Vec<FontFace> {
+    let alias_dir = managed_font_dir();
+    let watched: Vec<PathBuf> = extra.iter().filter_map(|d| std::fs::canonicalize(d).ok()).collect();
     let files: Vec<(PathBuf, FontSource)> = all_dirs(extra)
         .into_iter()
         .flat_map(|(dir, source)| {
+            let alias_dir = &alias_dir;
+            let watched = &watched;
             WalkDir::new(dir)
                 .follow_links(true)
                 .into_iter()
                 .filter_map(|e| e.ok())
                 .filter(|e| e.file_type().is_file())
+                .filter(move |e| !(e.path_is_symlink() && is_watched_alias(e.path(), alias_dir, watched)))
                 .map(move |e| (e.into_path(), source))
                 .filter(|(p, _)| parser::is_font_file(p))
                 .collect::<Vec<_>>()
@@ -139,6 +149,12 @@ pub fn merge_linked(mut faces: Vec<FontFace>, linked: &HashSet<String>) -> Vec<F
     faces
 }
 
+fn is_watched_alias(path: &Path, alias_dir: &Path, watched: &[PathBuf]) -> bool {
+    cfg!(unix)
+        && path.parent() == Some(alias_dir)
+        && std::fs::canonicalize(path).is_ok_and(|real| watched.iter().any(|w| real.starts_with(w)))
+}
+
 fn is_alias_of(path: &Path, targets: &HashSet<PathBuf>) -> bool {
     std::fs::symlink_metadata(path).is_ok_and(|m| m.file_type().is_symlink())
         && std::fs::canonicalize(path).is_ok_and(|real| targets.contains(&real))
@@ -169,6 +185,31 @@ mod tests {
         assert!(!is_alias_of(&original, &targets));
         assert!(!is_alias_of(&copy, &targets));
         assert!(!is_alias_of(&unrelated, &targets));
+
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn links_to_watched_fonts_are_not_listed_twice() {
+        let tmp = std::env::temp_dir().join(format!("zfm-watched-alias-{}", std::process::id()));
+        let fonts = tmp.join("fonts");
+        let watched = tmp.join("watched");
+        std::fs::create_dir_all(&fonts).unwrap();
+        std::fs::create_dir_all(&watched).unwrap();
+        let font = watched.join("A.ttf");
+        let other = tmp.join("B.ttf");
+        std::fs::write(&font, b"font").unwrap();
+        std::fs::write(&other, b"font").unwrap();
+        std::os::unix::fs::symlink(&font, fonts.join("A.ttf")).unwrap();
+        std::os::unix::fs::symlink(&other, fonts.join("B.ttf")).unwrap();
+        std::fs::create_dir_all(fonts.join("sub")).unwrap();
+        std::os::unix::fs::symlink(&font, fonts.join("sub/A.ttf")).unwrap();
+        let roots = [std::fs::canonicalize(&watched).unwrap()];
+
+        assert!(is_watched_alias(&fonts.join("A.ttf"), &fonts, &roots));
+        assert!(!is_watched_alias(&fonts.join("B.ttf"), &fonts, &roots));
+        assert!(!is_watched_alias(&fonts.join("sub/A.ttf"), &fonts, &roots));
+        assert!(!is_watched_alias(&font, &fonts, &roots));
 
         let _ = std::fs::remove_dir_all(&tmp);
     }

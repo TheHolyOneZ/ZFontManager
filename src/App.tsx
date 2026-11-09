@@ -27,7 +27,8 @@ import { ContextMenuHost, openContextMenuAt } from "./design/primitives/ContextM
 import { buildFamilyMenu } from "./lib/menus";
 import { Toaster } from "./design/primitives/Toast";
 import { spring } from "./design/springs";
-import { familiesFor, selectVisibleFamilies, useFontStore, type Family, type Nav } from "./state/fontStore";
+import { DEFAULT_SIZE_INDEX, familiesFor, selectVisibleFamilies, SIZES, useFontStore, type Family, type Nav } from "./state/fontStore";
+import { stepIndex, wheelPixels, wheelStep } from "./lib/wheelZoom";
 import { bulkToggleTarget } from "./lib/familyState";
 import { useT } from "./lib/i18n";
 
@@ -190,6 +191,27 @@ export default function App() {
   }, [init]);
 
   useEffect(() => {
+    const wheel = { acc: 0, at: 0 };
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      const st = useFontStore.getState();
+      if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
+      const step = wheelStep(wheel, wheelPixels(e.deltaY, e.deltaMode), e.timeStamp);
+      if (step === 0) return;
+      const over = e.target instanceof Element ? e.target : null;
+      if (over?.closest(".glyph-grid, .glyph-zoom")) {
+        st.setGlyphSize(st.glyphSize + step * 4);
+        return;
+      }
+      const next = stepIndex(st.sizeIndex, step, SIZES.length);
+      if (next !== st.sizeIndex) st.setSizeIndex(next);
+    };
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => window.removeEventListener("wheel", onWheel);
+  }, []);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const slider = e.target instanceof HTMLInputElement && e.target.type === "range";
       const inField =
@@ -215,6 +237,16 @@ export default function App() {
         e.preventDefault();
         const st = useFontStore.getState();
         st.setPaletteOpen(!st.paletteOpen);
+      }
+
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && ["=", "+", "-", "_", "0"].includes(e.key)) {
+        const st = useFontStore.getState();
+        if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
+        e.preventDefault();
+        const next =
+          e.key === "0" ? DEFAULT_SIZE_INDEX
+          : stepIndex(st.sizeIndex, e.key === "-" || e.key === "_" ? -1 : 1, SIZES.length);
+        if (next !== st.sizeIndex) st.setSizeIndex(next);
       }
 
       if ((e.key === "a" || e.key === "A") && (e.metaKey || e.ctrlKey) && !inField) {

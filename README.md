@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.13.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.14.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +99,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.13.0** — see the
+> ZFontManager is currently at **version 0.14.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -116,14 +116,19 @@ your library automatically. You can add extra folders to watch in Settings,
 and the app notices when new fonts appear in them. Each watched folder also
 gets its own entry in the sidebar, with a count, so you can open just the
 fonts from that folder — a folder per client, per language or per project —
-and still search, filter and sort inside it.
+and still search, filter and sort inside it. Fonts in a watched folder start
+switched off, so a folder of thousands doesn't flood every font menu: switch
+on the ones you need. Right-click a watched folder to turn it into a
+collection, or into one collection per subfolder.
 
 Every font family is shown **in its own typeface**, not as a generic name in
 a list. Type any sentence into the preview box at the top — your brand name,
 a headline you're working on — and the *entire library* re-renders in it
 instantly. The **AA** button next to it switches every preview to uppercase,
 which is handy for comparing display and headline faces. A size slider takes
-the preview anywhere from small print to poster size. Tall scripts and swashes
+the preview anywhere from small print to poster size, and holding
+<kbd>Ctrl</kbd> (<kbd>⌘</kbd> on macOS) while you scroll does the same
+without reaching for it. Tall scripts and swashes
 get the room they need, so their glyphs aren't cut off, and fonts that are too
 old or too strict for the preview engine are repaired on the fly for the
 preview only — the font file itself is never touched.
@@ -343,7 +348,10 @@ Four complementary ways to impose order on font chaos:
   once via multi-select.
 - **Collections** — folders you curate by hand, per project or per client.
   Right-click any font → Collections → add it. A font can live in as many
-  collections as you like.
+  collections as you like. Right-click a watched folder to turn it, or each of
+  its subfolders, into a collection, and right-click a collection →
+  **Export collection to folders…** to copy it into a real folder with one
+  subfolder per family — the tidy font folder you always meant to have.
 - **Favorites** — one star for your go-to typefaces, with its own sidebar view.
   Press <kbd>F</kbd> on any selected font.
 - **Notes** — a small text field per family for things you'd otherwise
@@ -501,6 +509,20 @@ same list in a pretty overlay.
 </details>
 
 <details open>
+<summary><b>View</b></summary>
+<br>
+
+| Keys | Action |
+|---|---|
+| <kbd>Ctrl</kbd> + mouse wheel | Bigger or smaller previews (over the glyph grid: bigger or smaller glyphs) |
+| <kbd>Ctrl</kbd> <kbd>+</kbd> / <kbd>Ctrl</kbd> <kbd>−</kbd> | Bigger / smaller previews |
+| <kbd>Ctrl</kbd> <kbd>0</kbd> | Default preview size |
+
+On macOS, <kbd>⌘</kbd> works in place of <kbd>Ctrl</kbd> for all three.
+
+</details>
+
+<details open>
 <summary><b>Select</b></summary>
 <br>
 
@@ -592,7 +614,10 @@ no "portable font folder" tricks.
 through. Deactivating tells fontconfig to skip the font — apps simply stop
 offering it. Nothing is moved or deleted. Flatpak apps are covered too, even
 though they see your fonts under different paths, and so are the copies
-LibreOffice bundles for itself. Apps read the font list when they start, so
+LibreOffice bundles for itself. Fonts in a folder you added start
+<i>inactive</i>; switching one on links it into
+<code>~/.local/share/fonts/ZFontManager</code> so fontconfig finds it, and
+switching it off removes the link. Apps read the font list when they start, so
 one that's already open needs a restart.</td>
 </tr>
 <tr>
@@ -614,7 +639,9 @@ and not the ones you've switched off. Restart such an app after a change.</td>
 <td><b>🍎 macOS</b></td>
 <td>Uses a managed move-aside: deactivated fonts are parked in a dedicated
 folder the app controls, and restored to the exact original location on
-reactivation.</td>
+reactivation. Fonts in a folder you added are never moved: they start
+<i>inactive</i>, switching one on links it into <code>~/Library/Fonts</code>
+where every app finds it, and switching it off removes the link.</td>
 </tr>
 </table>
 

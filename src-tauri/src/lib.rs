@@ -1,8 +1,11 @@
 mod activation;
 mod adobe;
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+mod aliases;
 mod affinity;
 mod covers;
 mod diag;
+mod export;
 mod font_types;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 mod fontconf;
@@ -149,6 +152,7 @@ fn uninstall_font(store: State<Store>, path: String, family: String) -> Result<T
             store::save(&state)?;
             return Ok(entry);
         }
+        activation::release(&state, &path);
     }
     installer::uninstall(&path, &family)
 }
@@ -677,6 +681,19 @@ fn export_fonts(paths: Vec<String>, dest_dir: String) -> Result<u32, String> {
     Ok(n)
 }
 
+#[tauri::command]
+async fn export_collection(
+    dest_dir: String,
+    name: String,
+    families: Vec<export::Group>,
+) -> Result<export::Report, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        export::export(std::path::Path::new(&dest_dir), &name, &families)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Settings {
@@ -1012,6 +1029,7 @@ pub fn run() {
             rename_collection,
             export_font,
             export_fonts,
+            export_collection,
             write_text_file,
             read_text_file,
             write_binary_file,

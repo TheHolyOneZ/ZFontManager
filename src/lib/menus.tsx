@@ -81,6 +81,50 @@ async function exportFamilies(families: Family[]) {
   }
 }
 
+export async function exportCollection(name: string) {
+  const s = useFontStore.getState();
+  const map = familiesFor(s.fonts, s.tags);
+  const families = (s.collections[name] ?? [])
+    .map((n) => map.get(n))
+    .filter((f): f is Family => Boolean(f));
+  if (families.length === 0) {
+    toast.error(t("toast.collectionEmpty", { name }));
+    return;
+  }
+  const dir = await open({
+    directory: true,
+    title: t("menu.exportCollectionTitle", { name }),
+  });
+  if (!dir) return;
+  const groups = families.map((f) => ({
+    name: f.name,
+    files: [...new Map(f.faces.map((x) => [x.path, x.previewPath])).entries()].map(
+      ([path, readFrom]) => ({ path, readFrom }),
+    ),
+  }));
+  try {
+    const report = await ipc.exportCollection(dir, name, groups);
+    if (report.failed.length > 0) {
+      toast.error(t("toast.someFilesFailed", { count: report.failed.length }), report.failed[0]);
+    }
+    if (report.files === 0) return;
+    toast.success(
+      t("toast.collectionExported", { name }),
+      t("toast.collectionExportedSub", { count: report.families, dir: report.folder }),
+      undefined,
+      {
+        label: t("toast.showFolder"),
+        run: () =>
+          void revealItemInDir(report.folder).catch((e) =>
+            toast.error(t("toast.couldntOpenFileManager"), String(e)),
+          ),
+      },
+    );
+  } catch (e) {
+    toast.error(t("toast.exportFailed"), String(e));
+  }
+}
+
 export async function exportFontList(families: Family[], title: string) {
   const dest = await save({
     defaultPath: `${title.replace(/[^\w-]+/g, "-").toLowerCase()}-fonts.md`,

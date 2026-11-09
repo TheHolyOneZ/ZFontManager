@@ -19,6 +19,14 @@ const SECTIONS: [TKey, [string[], TKey][]][] = [
     ],
   ],
   [
+    "sc.view",
+    [
+      [["Ctrl", "Wheel"], "sc.zoomWheel"],
+      [["Ctrl", "+", "−"], "sc.zoomKeys"],
+      [["Ctrl", "0"], "sc.zoomReset"],
+    ],
+  ],
+  [
     "sc.select",
     [
       [["Enter"], "sc.selectFocused"],

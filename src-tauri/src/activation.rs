@@ -26,9 +26,53 @@ fn mark(state: &mut AppState, path: &str, deactivated: bool) {
 }
 
 pub fn sync(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    if crate::aliases::applies(state, path) {
+        let mut aliases = crate::aliases::Aliases::read(&crate::aliases::dir());
+        let result = sync_watched(state, &mut aliases, path, active);
+        refresh_watched(state);
+        return result;
+    }
     let result = sync_one(state, path, active);
     refresh_other_apps(state);
     result
+}
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+fn sync_watched(
+    state: &mut AppState,
+    aliases: &mut crate::aliases::Aliases,
+    path: &str,
+    active: bool,
+) -> Result<(), String> {
+    let result = aliases.set(std::path::Path::new(path), active);
+    if result.is_ok() {
+        state.deactivated.remove(path);
+    }
+    crate::diag::activation(path, active, &result);
+    result
+}
+
+#[cfg(target_os = "linux")]
+fn refresh_watched(state: &AppState) {
+    let _ = write_rejects(state);
+}
+
+#[cfg(target_os = "macos")]
+fn refresh_watched(_state: &AppState) {}
+
+pub fn release(state: &AppState, path: &str) {
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    if crate::aliases::applies(state, path) {
+        let mut aliases = crate::aliases::Aliases::read(&crate::aliases::dir());
+        if aliases.set(std::path::Path::new(path), false).is_ok() {
+            refresh_watched(state);
+        }
+    }
+    #[cfg(target_os = "windows")]
+    {
+        let _ = (state, path);
+    }
 }
 
 fn sync_one(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
@@ -56,7 +100,18 @@ pub struct Batch {
 #[cfg(not(target_os = "linux"))]
 pub fn sync_many(state: &mut AppState, paths: &[String], active: bool) -> Batch {
     let mut batch = Batch::default();
+    #[cfg(target_os = "macos")]
+    let mut aliases: Option<crate::aliases::Aliases> = None;
     for path in paths {
+        #[cfg(target_os = "macos")]
+        if crate::aliases::applies(state, path) {
+            let aliases = aliases.get_or_insert_with(|| crate::aliases::Aliases::read(&crate::aliases::dir()));
+            match sync_watched(state, aliases, path, active) {
+                Ok(()) => batch.done.push(path.clone()),
+                Err(e) => batch.failed.push(e),
+            }
+            continue;
+        }
         match sync_one(state, path, active) {
             Ok(()) => batch.done.push(path.clone()),
             Err(e) => batch.failed.push(e),
@@ -138,7 +193,16 @@ fn refresh_other_apps(state: &AppState) {
 pub fn sync_many(state: &mut AppState, paths: &[String], active: bool) -> Batch {
     let mut batch = Batch::default();
     let mut changed: Vec<(&String, bool)> = Vec::with_capacity(paths.len());
+    let mut aliases: Option<crate::aliases::Aliases> = None;
     for path in paths {
+        if crate::aliases::applies(state, path) {
+            let aliases = aliases.get_or_insert_with(|| crate::aliases::Aliases::read(&crate::aliases::dir()));
+            match sync_watched(state, aliases, path, active) {
+                Ok(()) => batch.done.push(path.clone()),
+                Err(e) => batch.failed.push(e),
+            }
+            continue;
+        }
         let was_deactivated = state.deactivated.contains(path);
         mark(state, path, !active);
         match sync_linked_alias(state, path, active) {
@@ -321,6 +385,17 @@ fn apply(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
 }
 
 #[cfg(target_os = "macos")]
+fn move_file(from: &std::path::Path, to: &std::path::Path) -> Result<(), String> {
+    use std::fs;
+
+    if fs::rename(from, to).is_ok() {
+        return Ok(());
+    }
+    fs::copy(from, to).map_err(|e| e.to_string())?;
+    fs::remove_file(from).map_err(|e| e.to_string())
+}
+
+#[cfg(target_os = "macos")]
 fn apply(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
     use std::fs;
     use std::path::{Path, PathBuf};
@@ -331,15 +406,6 @@ fn apply(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
 
     let parked_dir = crate::store::app_data_dir().join("Deactivated");
     fs::create_dir_all(&parked_dir).map_err(|e| e.to_string())?;
-
-    fn move_file(from: &Path, to: &Path) -> Result<(), String> {
-        if fs::rename(from, to).is_ok() {
-            return Ok(());
-        }
-
-        fs::copy(from, to).map_err(|e| e.to_string())?;
-        fs::remove_file(from).map_err(|e| e.to_string())
-    }
 
     if active {
         let Some(parked) = state.parked.get(path).cloned() else {
@@ -420,8 +486,60 @@ fn apply(state: &mut AppState, path: &str, active: bool) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+fn settle_watched(state: &mut AppState) {
+    let mut changed = false;
+    #[cfg(target_os = "macos")]
+    {
+        let parked: Vec<(String, String)> = state
+            .parked
+            .iter()
+            .filter(|(orig, _)| crate::aliases::applies(state, orig))
+            .map(|(orig, parked)| (orig.clone(), parked.clone()))
+            .collect();
+        for (orig, parked) in parked {
+            let back = std::path::Path::new(&orig);
+            if back.exists() {
+                continue;
+            }
+            match move_file(std::path::Path::new(&parked), back) {
+                Ok(()) => {
+                    state.parked.remove(&orig);
+                    changed = true;
+                    crate::diag::log(&format!("watched: moved {orig} back from Deactivated"));
+                }
+                Err(e) => crate::diag::log(&format!("watched: couldn't move {orig} back: {e}")),
+            }
+        }
+    }
+    let before = state.deactivated.len();
+    let watched: Vec<String> = state
+        .deactivated
+        .iter()
+        .filter(|p| crate::aliases::applies(state, p) && !state.parked.contains_key(*p))
+        .cloned()
+        .collect();
+    for path in &watched {
+        state.deactivated.remove(path);
+    }
+    changed |= state.deactivated.len() != before;
+
+    let roots: Vec<std::path::PathBuf> = state.extra_dirs.iter().map(std::path::PathBuf::from).collect();
+    let mut aliases = crate::aliases::Aliases::read(&crate::aliases::dir());
+    let pruned = aliases.prune(|target| {
+        roots.iter().any(|r| target.starts_with(r)) && !crate::scanner::seen_by_system(target)
+    });
+    if pruned > 0 {
+        crate::diag::log(&format!("watched: removed {pruned} link(s) to fonts that are gone"));
+    }
+    if changed {
+        let _ = crate::store::save(state);
+    }
+}
+
 #[cfg(target_os = "linux")]
 pub fn reconcile(state: &mut AppState) {
+    settle_watched(state);
     let _ = write_rejects(state);
 }
 
@@ -435,17 +553,23 @@ pub fn reconcile(state: &mut AppState) {
 }
 
 #[cfg(target_os = "macos")]
-pub fn reconcile(_state: &mut AppState) {}
+pub fn reconcile(state: &mut AppState) {
+    settle_watched(state);
+}
 
 pub struct Probe {
     #[cfg(target_os = "windows")]
     registered: std::collections::HashSet<String>,
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    aliases: crate::aliases::Aliases,
 }
 
 pub fn probe() -> Probe {
     Probe {
         #[cfg(target_os = "windows")]
         registered: crate::registry::registered_paths(),
+        #[cfg(any(target_os = "linux", target_os = "macos"))]
+        aliases: crate::aliases::Aliases::read(&crate::aliases::dir()),
     }
 }
 
@@ -461,7 +585,9 @@ pub fn is_active(probe: &Probe, state: &AppState, face: &crate::font_types::Font
     }
     #[cfg(not(target_os = "windows"))]
     {
-        let _ = probe;
+        if crate::aliases::applies(state, &face.path) {
+            return probe.aliases.contains(std::path::Path::new(&face.path));
+        }
         is_active_path(state, &face.path)
     }
 }

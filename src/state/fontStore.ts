@@ -20,7 +20,7 @@ import {
 } from "../lib/ipc";
 import { matchAffinityFonts, type AffinityEvent } from "../lib/affinity";
 import { familyActivation, isWebFormat, pathsToToggle, sortFormats, styleGroups } from "../lib/familyState";
-import { inFolder } from "../lib/folders";
+import { folderGroups, inFolder } from "../lib/folders";
 import { toast } from "../design/primitives/Toast";
 import { setQuickMotion } from "../design/springs";
 import { setSoundLevel, type SoundLevel } from "../lib/sound";
@@ -35,6 +35,7 @@ import {
 } from "../lib/i18n";
 
 export const SIZES = [8, 14, 18, 24, 32, 48, 64, 96] as const;
+export const DEFAULT_SIZE_INDEX = 3;
 export const GLYPH_SIZE_MIN = 16;
 export const GLYPH_SIZE_MAX = 96;
 export const GLYPH_SIZE_DEFAULT = 16;
@@ -196,6 +197,7 @@ interface FontStore {
   renameCollection: (from: string, to: string) => Promise<void>;
   toggleFamilyInCollection: (collection: string, family: string) => Promise<void>;
   toggleFamiliesInCollection: (collection: string, families: string[]) => Promise<void>;
+  collectFolder: (dir: string, perSubfolder: boolean) => Promise<void>;
   toggleFavorite: (family: string) => Promise<void>;
   setFavorites: (families: string[], favorite: boolean) => Promise<void>;
   setFamilyNote: (family: string, note: string) => Promise<void>;
@@ -379,7 +381,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
   tourStep: null,
 
   sampleText: t("preview.defaultSample"),
-  sizeIndex: 3,
+  sizeIndex: DEFAULT_SIZE_INDEX,
   viewMode: "grid",
   expandStyles: false,
   glyphSize: GLYPH_SIZE_DEFAULT,
@@ -967,6 +969,36 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.setCollection(collection, families);
     } catch (e) {
       set({ collections: { ...get().collections, [collection]: current } });
+      toast.error(t("toast.couldntUpdateCollection"), String(e));
+    }
+  },
+
+  collectFolder: async (dir, perSubfolder) => {
+    const s = get();
+    const groups = folderGroups([...familiesFor(s.fonts, s.tags).values()], dir, perSubfolder);
+    if (groups.size === 0) {
+      toast.error(t(perSubfolder ? "toast.noSubfolderFonts" : "toast.noFontsInFolder"));
+      return;
+    }
+    const prev = s.collections;
+    const next = { ...prev };
+    for (const [name, families] of groups) {
+      next[name] = [...new Set([...(prev[name] ?? []), ...families])];
+    }
+    set({ collections: next });
+    try {
+      for (const name of groups.keys()) await ipc.setCollection(name, next[name]);
+      if (perSubfolder) {
+        toast.success(
+          t("toast.subfoldersCollected", { count: groups.size }),
+          [...groups.keys()].join(", "),
+        );
+      } else {
+        const [[name, families]] = [...groups.entries()];
+        toast.success(t("toast.folderCollected", { count: families.length, name }));
+      }
+    } catch (e) {
+      set({ collections: prev });
       toast.error(t("toast.couldntUpdateCollection"), String(e));
     }
   },

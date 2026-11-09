@@ -48,6 +48,18 @@ export interface TrashEntry {
   trashedAt: number;
 }
 
+export interface ExportGroup {
+  name: string;
+  files: { path: string; readFrom: string | null }[];
+}
+
+export interface ExportReport {
+  folder: string;
+  families: number;
+  files: number;
+  failed: string[];
+}
+
 export interface InstallResult {
   installed: FontFace[];
   errors: string[];
@@ -232,6 +244,8 @@ export const ipc = {
   exportFont: (src: string, dest: string) => invoke<void>("export_font", { src, dest }),
   writeTextFile: (path: string, content: string) =>
     invoke<void>("write_text_file", { path, content }),
+  exportCollection: (destDir: string, name: string, families: ExportGroup[]) =>
+    invoke<ExportReport>("export_collection", { destDir, name, families }),
   exportFonts: (paths: string[], destDir: string) =>
     invoke<number>("export_fonts", { paths, destDir }),
   adobeAvailable: () => invoke<boolean>("adobe_available"),

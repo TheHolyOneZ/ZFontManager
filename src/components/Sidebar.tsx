@@ -1,11 +1,11 @@
 import { motion } from "motion/react";
-import { ChevronDown, Clock, Folder, FolderOpen, Globe, History, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
+import { ChevronDown, Clock, Download, FileText, Folder, FolderOpen, FolderPlus, FolderTree, Globe, Pencil, History, Info, Keyboard, Library, Monitor, Plus, Power, PowerOff, Star, Tag, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { openContextMenu } from "../design/primitives/ContextMenu";
 import { spring, springSoft, staggerDelay } from "../design/springs";
 import { allTags, familiesFor, useFontStore, type Family, type Nav } from "../state/fontStore";
-import { exportFontList } from "../lib/menus";
-import { folderLabel, inFolder } from "../lib/folders";
+import { exportCollection, exportFontList } from "../lib/menus";
+import { folderGroups, folderLabel, inFolder } from "../lib/folders";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { toast } from "../design/primitives/Toast";
 import { t as translate, useT } from "../lib/i18n";
@@ -319,9 +319,20 @@ export function Sidebar() {
                 index={i++}
                 onContextMenu={(e) =>
                   openContextMenu(e, [
-                    { label: translate("menu.rename"), action: () => setRenaming(name) },
+                    {
+                      label: translate("menu.rename"),
+                      icon: <Pencil size={14} strokeWidth={1.5} />,
+                      action: () => setRenaming(name),
+                    },
+                    {
+                      label: translate("menu.exportCollection"),
+                      icon: <Download size={14} strokeWidth={1.5} />,
+                      disabled: (collections[name] ?? []).length === 0,
+                      action: () => void exportCollection(name),
+                    },
                     {
                       label: translate("menu.exportFontList"),
+                      icon: <FileText size={14} strokeWidth={1.5} />,
                       action: () => {
                         const map = familiesFor(fonts, tags);
                         const fams = (collections[name] ?? [])
@@ -333,6 +344,7 @@ export function Sidebar() {
                     { kind: "separator" },
                     {
                       label: translate("menu.deleteCollection"),
+                      icon: <Trash2 size={14} strokeWidth={1.5} />,
                       danger: true,
                       action: () => void deleteCollection(name),
                     },
@@ -409,7 +421,12 @@ export function Sidebar() {
                   title={dir}
                   count={folderCounts.get(dir) ?? 0}
                   index={i++}
-                  onContextMenu={(e) =>
+                  onContextMenu={(e) => {
+                    const inside = allFamilies.filter((f) =>
+                      f.faces.some((face) => inFolder(face.path, dir)),
+                    );
+                    const names = inside.map((f) => f.name);
+                    const subfolders = folderGroups(inside, dir, true).size;
                     openContextMenu(e, [
                       {
                         label: translate("menu.showInFileManager"),
@@ -419,8 +436,33 @@ export function Sidebar() {
                             toast.error(translate("toast.couldntOpenFileManager"), String(err)),
                           ),
                       },
-                    ])
-                  }
+                      { kind: "separator" },
+                      {
+                        label: translate("menu.collectFolder", { name: folderLabel(dir) }),
+                        icon: <FolderPlus size={14} strokeWidth={1.5} />,
+                        disabled: names.length === 0,
+                        action: () => void useFontStore.getState().collectFolder(dir, false),
+                      },
+                      {
+                        label: translate("menu.collectSubfolders", { count: subfolders }),
+                        icon: <FolderTree size={14} strokeWidth={1.5} />,
+                        disabled: subfolders === 0,
+                        action: () => void useFontStore.getState().collectFolder(dir, true),
+                      },
+                      ...(collectionNames.length > 0 && names.length > 0
+                        ? [
+                            { kind: "heading", label: translate("menu.addAllToCollection") } as const,
+                            ...collectionNames.map((name) => ({
+                              kind: "check" as const,
+                              label: name,
+                              checked: names.every((f) => (collections[name] ?? []).includes(f)),
+                              action: () =>
+                                void useFontStore.getState().toggleFamiliesInCollection(name, names),
+                            })),
+                          ]
+                        : []),
+                    ]);
+                  }}
                 />
               ))}
           </div>

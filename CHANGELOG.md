@@ -4,6 +4,56 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.14.0] — 2026-11-09
+
+### Added
+
+- **Ctrl + mouse wheel changes the preview size.** Hold Ctrl (or ⌘ on macOS)
+  and scroll anywhere in the library to make the previews bigger or smaller,
+  in the same steps as the size slider. Over the glyph grid in the detail panel
+  it changes the glyph size instead. <kbd>Ctrl</kbd> <kbd>+</kbd> and
+  <kbd>Ctrl</kbd> <kbd>−</kbd> do the same from the keyboard, and
+  <kbd>Ctrl</kbd> <kbd>0</kbd> goes back to the default size.
+
+  Suggested by sort0m. (#42)
+
+- **Export a collection to folders.** Right-click a collection and choose
+  **Export collection to folders…**. ZFontManager creates a folder named after
+  the collection, with one subfolder per family, and copies the font files into
+  it. Sort a messy font folder in the app first, export it, and you have a tidy
+  one. The original files aren't touched. Exporting again into the same place
+  skips files that are already there and never overwrites a different file
+  with the same name.
+
+  Suggested by ahcene-bouazza. (#45)
+
+- **Turn watched folders into collections.** Right-click a watched folder in
+  the sidebar to make a collection from it, to make one collection per
+  subfolder (a folder per client becomes a collection per client), or to add
+  all its fonts to a collection you already have. Doing it again later adds the
+  fonts that have arrived since.
+
+  Suggested by macos15. (#43)
+
+### Fixed
+
+- **Fonts in watched folders weren't really active on macOS and Linux.** The
+  switch showed them as active, but the system was never told about them, so
+  other apps, like ArtCraft's VectorCraft and DesignCraft, couldn't see them.
+  On macOS, switching one off even moved the file out of your folder. Fonts in
+  watched folders now work the way they already did on Windows: they start
+  switched off, and switching one on puts a link to it in your personal font
+  folder (`~/Library/Fonts` on macOS, `~/.local/share/fonts/ZFontManager` on
+  Linux), where every app looks. Switching it off removes the link again. The
+  font files themselves are never moved, renamed or copied, and two files with
+  the same name in different folders get a link each. Fonts the old version had
+  moved aside on macOS are put back into their folder on first start. Because
+  they were never really active, all fonts in watched folders show as off after
+  the update, so switch on the ones you need. Tested on Linux with fontconfig;
+  macOS uses the same kind of link that **Add to library** already relies on.
+
+  Reported by macos15. (#43)
+
 ## [0.13.0] — 2026-11-06
 
 ### Added

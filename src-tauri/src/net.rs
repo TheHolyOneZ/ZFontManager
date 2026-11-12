@@ -7,8 +7,9 @@ pub const USER_AGENT: &str = concat!(
     " (+https://zsync.eu/zfontmanager/)"
 );
 
-pub const ALLOWED_HOSTS: [&str; 5] = [
+pub const ALLOWED_HOSTS: [&str; 6] = [
     "api.fontsource.org",
+    "cdn.jsdelivr.net",
     "raw.githubusercontent.com",
     "github.com",
     "release-assets.githubusercontent.com",
@@ -129,6 +130,8 @@ mod tests {
         assert!(check_host("https://fonts.googleapis.com/css2?family=Lora").is_err());
         assert!(check_host("http://api.fontsource.org/v1/fonts").is_err());
         assert!(check_host("https://evil.example/").is_err());
+        assert!(check_host("https://cdn.jsdelivr.net/fontsource/fonts/lora@latest/latin-400-normal.woff2").is_ok());
+        assert!(check_host("http://cdn.jsdelivr.net/fontsource/fonts/lora@latest/latin-400-normal.woff2").is_err());
         assert!(check_host("https://github.com/ryanoasis/nerd-fonts/releases/latest").is_ok());
         assert!(check_host("https://release-assets.githubusercontent.com/x").is_ok());
         assert!(check_host("https://gist.github.com/").is_err());

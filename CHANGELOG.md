@@ -4,6 +4,25 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.15.0] — 2026-11-12
+
+### Added
+
+- **Previews in the Google Fonts list.** The cards in **Online → Google Fonts**
+  used to show only a name, so you had to open a family to see what it looks
+  like. Every card now shows your preview text in its own typeface, at the size
+  you've set (up to a limit, so the cards stay readable). Only the cards you
+  can see load a preview, a few at a time, and each one is a small Latin-only
+  file of about 20 KB from Fontsource's CDN (`cdn.jsdelivr.net`), kept on your
+  computer so it isn't downloaded twice. Families without Latin letters say
+  "Open it for a preview" instead of showing your text in a fallback font. The
+  full font is still only downloaded when you open or add a family. Nerd Fonts
+  keep their preview on click, because they don't come in small preview files.
+  `cdn.jsdelivr.net` is the one new address the online browser contacts, and
+  it's listed under the setting along with the others.
+
+  Suggested by zinzip. (#48)
+
 ## [0.14.0] — 2026-11-09
 
 ### Added

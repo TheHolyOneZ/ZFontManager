@@ -196,6 +196,7 @@ export const ipc = {
   onlineFamily: (id: string) => invoke<OnlineFamilyDetail>("online_family", { id }),
   onlineDownload: (id: string) => invoke<OnlineDownloadResult>("online_download", { id }),
   onlinePreview: (id: string) => invoke<string>("online_preview", { id }),
+  onlineCardPreview: (id: string) => invoke<ArrayBuffer>("online_card_preview", { id }),
   onlineClearStaging: (id: string) => invoke<void>("online_clear_staging", { id }),
   onlineHosts: () => invoke<string[]>("online_hosts"),
   nerdCatalogue: (force: boolean) => invoke<NerdCatalogue>("nerd_catalogue", { force }),

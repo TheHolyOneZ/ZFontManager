@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.14.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.15.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +99,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.14.0** — see the
+> ZFontManager is currently at **version 0.15.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -248,7 +248,9 @@ Nearly two thousand open-licence families — everything on Google Fonts — fro
 inside the app. Switch it on under **Settings → Online font browser**, and an
 **Online** section appears in the sidebar. Search by name, filter by category or
 licence, show variable fonts only, and add a family to your library with one
-click. Downloaded families are tagged *Online* so they're easy to find.
+click. Every card in the list shows your preview text in its own typeface, so
+you can browse by looks, not just by name. Downloaded families are tagged
+*Online* so they're easy to find.
 
 Open a family and you see your sample text rendered live in it, alongside the
 licence — its name, a link to the full text, and the Reserved Font Name where
@@ -269,12 +271,15 @@ This is the first feature that talks to the internet, so it's built carefully:
 
 - **Off by default.** A fresh install never contacts a font provider.
 - **Switching it on sends nothing.** A request goes out only when you open the
-  Online section and search or download — never in the background.
+  Online section and browse, search or download — never in the background.
+  The list previews are small Latin-only files, fetched only for the cards on
+  screen and kept on your machine.
 - **Search is local.** The catalogue is fetched once and cached for seven days;
   typing filters it on your machine. The provider sees one request per week,
   not one per keystroke.
 - **Named hosts, all listed under the toggle:** `api.fontsource.org` for the
-  Google Fonts catalogue, `raw.githubusercontent.com` for files and previews,
+  Google Fonts catalogue, `cdn.jsdelivr.net` for the small list previews,
+  `raw.githubusercontent.com` for files and full previews,
   and `github.com` with `release-assets.githubusercontent.com` for the Nerd
   Fonts releases.
 - **Nothing about your library leaves the machine.** The "in library" badge is
@@ -711,7 +716,7 @@ an adjective. Here is the complete list:
 | Feature | Default | What it contacts | Leaves your machine? |
 |---|---|---|---|
 | Affinity auto-activation | **Off** | `localhost:6767` — Affinity's own server, on your computer | **No.** Loopback only |
-| Online font browser | **Off** | `api.fontsource.org` for the Google Fonts catalogue; `raw.githubusercontent.com` for font files and licences; `github.com` and `release-assets.githubusercontent.com` for Nerd Fonts releases | **Yes** — your IP and the fonts you download, to those hosts only. Nothing about your existing library. |
+| Online font browser | **Off** | `api.fontsource.org` for the Google Fonts catalogue; `cdn.jsdelivr.net` for the small previews in the list; `raw.githubusercontent.com` for font files and licences; `github.com` and `release-assets.githubusercontent.com` for Nerd Fonts releases | **Yes** — your IP and the fonts you download, to those hosts only. Nothing about your existing library. |
 
 When either feature is off, the app makes no connection attempt at all: no
 watcher runs, no probe fires, no catalogue is fetched. The Affinity conversation

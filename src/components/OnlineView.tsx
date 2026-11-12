@@ -7,6 +7,7 @@ import { PillToggle } from "../design/primitives/PillToggle";
 import { SIZES, useFontStore } from "../state/fontStore";
 import { useT, type TKey } from "../lib/i18n";
 import { usePathFontCss } from "../lib/fontLoader";
+import { cardFontName, useCardPreview } from "../lib/cardPreview";
 import type { OnlineFamily } from "../lib/ipc";
 import { NerdBrowser } from "./NerdBrowser";
 import { ago } from "../lib/ago";
@@ -221,6 +222,8 @@ function GoogleBrowser() {
               f={f}
               index={i}
               installed={installedNames.has(f.family.toLowerCase())}
+              text={previewText(sampleText, f.family, previewUppercase)}
+              size={Math.min(SIZES[sizeIndex], 32)}
               onOpen={() => void openFamily(f.id)}
             />
           ))}
@@ -344,16 +347,23 @@ function OnlineCard({
   f,
   index,
   installed,
+  text,
+  size,
   onOpen,
 }: {
   f: OnlineFamily;
   index: number;
   installed: boolean;
+  text: string;
+  size: number;
   onOpen: () => void;
 }) {
   const t = useT();
+  const ref = useRef<HTMLElement>(null);
+  const preview = useCardPreview(f.id, ref, f.subsets.includes("latin"));
   return (
     <motion.article
+      ref={ref}
       className="family-card online-card"
       tabIndex={0}
       role="button"
@@ -374,6 +384,17 @@ function OnlineCard({
         <span className="card-spacer" />
         {f.variable && <span className="badge badge-variable">VAR</span>}
         {installed && <span className="badge online-badge-have">{t("online.inLibrary")}</span>}
+      </div>
+      <div className="online-card-preview" style={{ fontSize: size, height: Math.round(size * 1.35) }} aria-hidden="true">
+        {preview === "loaded" ? (
+          <span className="online-card-text" style={{ fontFamily: `"${cardFontName(f.id)}"` }}>
+            {text}
+          </span>
+        ) : preview === "pending" ? (
+          <span className="skeleton preview-skeleton" />
+        ) : (
+          <span className="online-card-none">{t("online.openForPreview")}</span>
+        )}
       </div>
       <div className="online-card-meta">
         <span>{t(catKey(f.category))}</span>

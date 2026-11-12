@@ -238,6 +238,15 @@ async fn online_preview(app: tauri::AppHandle, store: State<'_, Store>, id: Stri
 }
 
 #[tauri::command]
+async fn online_card_preview(store: State<'_, Store>, id: String) -> Result<tauri::ipc::Response, String> {
+    let client = {
+        let state = store.0.lock().map_err(|e| e.to_string())?;
+        net::client(&state)?
+    };
+    online::fontsource::card_preview(&client, &id).await.map(tauri::ipc::Response::new)
+}
+
+#[tauri::command]
 fn online_clear_staging(id: String) {
     online::github::clear_staging(&id);
 }
@@ -1012,6 +1021,7 @@ pub fn run() {
             online_family,
             online_download,
             online_preview,
+            online_card_preview,
             online_clear_staging,
             online_hosts,
             nerd_catalogue,

@@ -4347,6 +4347,23 @@ h2.detail-title.copy-name {
   outline: 2px solid color-mix(in srgb, var(--accent-a) 70%, transparent);
   outline-offset: 2px;
 }
+.online-card-preview {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  overflow: hidden;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.online-card-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.online-card-none {
+  font-size: var(--fs-11);
+  color: var(--text-tertiary);
+}
 .online-card-meta {
   display: flex;
   gap: 4px;

@@ -11,6 +11,9 @@ pub fn write_fragment(dir: &Path, xml: Option<&str>) -> Result<(), String> {
         }
         return Ok(());
     };
+    if fs::read_to_string(&file).is_ok_and(|current| current == xml) {
+        return Ok(());
+    }
     fs::create_dir_all(dir).map_err(|e| e.to_string())?;
     let tmp = file.with_extension("conf.tmp");
     fs::write(&tmp, xml).map_err(|e| e.to_string())?;

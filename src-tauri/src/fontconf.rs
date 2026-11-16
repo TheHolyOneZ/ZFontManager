@@ -71,6 +71,17 @@ pub mod windows {
         out
     }
 
+    pub fn any_separator(path: &str) -> String {
+        let (lead, rest) = match path.strip_prefix("//") {
+            Some(rest) => ("//", rest),
+            None => match path.find('/') {
+                Some(at) => path.split_at(at + 1),
+                None => return path.to_string(),
+            },
+        };
+        format!("{lead}{}", rest.replace('/', "?"))
+    }
+
     fn parent(path: &str) -> Option<&str> {
         let dir = &path[..path.rfind('/')?];
         let (rest, needed) = match dir.strip_prefix("//") {
@@ -126,16 +137,16 @@ pub mod windows {
         }
         xml.push_str("  <selectfont>\n    <rejectfont>\n");
         for root in &roots {
-            xml.push_str(&format!("      <glob>{}/*</glob>\n", escape(root)));
+            xml.push_str(&format!("      <glob>{}?*</glob>\n", escape(&any_separator(root))));
         }
         for path in &hidden {
-            xml.push_str(&format!("      <glob>{}</glob>\n", escape(path)));
+            xml.push_str(&format!("      <glob>{}</glob>\n", escape(&any_separator(path))));
         }
         xml.push_str("    </rejectfont>\n");
         if !accepted.is_empty() {
             xml.push_str("    <acceptfont>\n");
             for path in &accepted {
-                xml.push_str(&format!("      <glob>{}</glob>\n", escape(path)));
+                xml.push_str(&format!("      <glob>{}</glob>\n", escape(&any_separator(path))));
             }
             xml.push_str("    </acceptfont>\n");
         }
@@ -187,12 +198,12 @@ mod tests {
         let xml = windows_fragment(&visible, &[]).unwrap();
         assert_eq!(xml.matches("<dir>").count(), 1);
         assert!(xml.contains("<dir>D:/Fonts/Watched</dir>"));
-        assert!(xml.contains("<glob>D:/Fonts/Watched/*</glob>"));
+        assert!(xml.contains("<glob>D:/Fonts?Watched?*</glob>"));
         assert!(xml.contains("<acceptfont>"));
-        assert!(xml.contains("<glob>D:/Fonts/Watched/Poppins-Regular.ttf</glob>"));
-        assert!(xml.contains("<glob>D:/Fonts/Watched/sub/Poppins-Bold.ttf</glob>"));
-        assert!(xml.contains("<glob>D:/Fonts/Watched/sub</glob>"));
-        assert!(!xml.contains("<glob>D:/Fonts/Watched</glob>"));
+        assert!(xml.contains("<glob>D:/Fonts?Watched?Poppins-Regular.ttf</glob>"));
+        assert!(xml.contains("<glob>D:/Fonts?Watched?sub?Poppins-Bold.ttf</glob>"));
+        assert!(xml.contains("<glob>D:/Fonts?Watched?sub</glob>"));
+        assert!(!xml.contains("<glob>D:/Fonts?Watched</glob>"));
     }
 
     #[test]
@@ -201,7 +212,7 @@ mod tests {
         let xml = windows_fragment(&[], &hidden).unwrap();
         assert!(!xml.contains("<dir>"));
         assert!(!xml.contains("<acceptfont>"));
-        assert!(xml.contains("<glob>C:/Users/Ana/AppData/Local/Microsoft/Windows/Fonts/Lato-Black.ttf</glob>"));
+        assert!(xml.contains("<glob>C:/Users?Ana?AppData?Local?Microsoft?Windows?Fonts?Lato-Black.ttf</glob>"));
     }
 
     #[test]
@@ -210,6 +221,62 @@ mod tests {
         assert!(windows_fragment(&[r"\\server\share\Font.ttf".to_string()], &[]).is_none());
         let xml = windows_fragment(&[r"\\server\share\Fonts\a.ttf".to_string()], &[]).unwrap();
         assert!(xml.contains("<dir>//server/share/Fonts</dir>"));
+    }
+
+    fn fc_glob_match(glob: &[u8], s: &[u8]) -> bool {
+        match glob.split_first() {
+            None => s.is_empty(),
+            Some((b'*', rest)) => (0..=s.len()).any(|i| fc_glob_match(rest, &s[i..])),
+            Some((b'?', rest)) => !s.is_empty() && fc_glob_match(rest, &s[1..]),
+            Some((c, rest)) => s.first() == Some(c) && fc_glob_match(rest, &s[1..]),
+        }
+    }
+
+    fn globs(xml: &str, section: &str) -> Vec<String> {
+        let Some(start) = xml.find(&format!("<{section}>")) else {
+            return Vec::new();
+        };
+        let end = xml[start..].find(&format!("</{section}>")).unwrap() + start;
+        xml[start..end]
+            .split("<glob>")
+            .skip(1)
+            .map(|g| g.split("</glob>").next().unwrap().to_string())
+            .collect()
+    }
+
+    fn visible(xml: &str, file: &str) -> bool {
+        let hit = |section: &str| globs(xml, section).iter().any(|g| fc_glob_match(g.as_bytes(), file.as_bytes()));
+        hit("acceptfont") || !hit("rejectfont")
+    }
+
+    #[test]
+    fn rules_match_the_mixed_slashes_fontconfig_uses_on_windows() {
+        let hidden = [r"C:\Users\tommi\AppData\Local\Microsoft\Windows\Fonts\ALGER.TTF".to_string()];
+        let xml = windows_fragment(&[], &hidden).unwrap();
+        assert!(!visible(&xml, r"C:/Users/tommi/AppData/Local/Microsoft/Windows/Fonts\ALGER.TTF"));
+        assert!(!visible(&xml, "C:/Users/tommi/AppData/Local/Microsoft/Windows/Fonts/ALGER.TTF"));
+        assert!(visible(&xml, r"C:/Users/tommi/AppData/Local/Microsoft/Windows/Fonts\ALGER2.TTF"));
+        assert!(visible(&xml, r"C:/Users/tommi/AppData/Local/Microsoft/Windows/Fonts\Arial.ttf"));
+
+        let shown = [
+            r"D:\Fonts\Watched\Poppins-Regular.ttf".to_string(),
+            r"D:\Fonts\Watched\sub\Poppins-Bold.ttf".to_string(),
+        ];
+        let off = [r"D:\Fonts\Watched\Lato.ttf".to_string()];
+        let xml = windows_fragment(&shown, &off).unwrap();
+        assert!(visible(&xml, r"D:/Fonts/Watched\Poppins-Regular.ttf"));
+        assert!(visible(&xml, r"D:/Fonts/Watched\sub"));
+        assert!(visible(&xml, r"D:/Fonts/Watched\sub\Poppins-Bold.ttf"));
+        assert!(!visible(&xml, r"D:/Fonts/Watched\Lato.ttf"));
+        assert!(!visible(&xml, r"D:/Fonts/Watched\Other.ttf"));
+        assert!(!visible(&xml, r"D:/Fonts/Watched\other\Deep.ttf"));
+    }
+
+    #[test]
+    fn only_separators_after_the_drive_become_wildcards() {
+        assert_eq!(any_separator("C:/Users/Ana/a.ttf"), "C:/Users?Ana?a.ttf");
+        assert_eq!(any_separator("//server/share/Fonts/a.ttf"), "//server?share?Fonts?a.ttf");
+        assert_eq!(any_separator("D:/Fonts"), "D:/Fonts");
     }
 
     #[test]

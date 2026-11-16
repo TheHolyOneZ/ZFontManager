@@ -17,6 +17,20 @@ All notable changes to ZFontManager are documented here. The format follows
 
 ### Fixed
 
+- **Fonts switched off on Windows still showed up in Inkscape and Krita.**
+  These apps find fonts through fontconfig, and since 0.13.0 ZFontManager keeps
+  a rules file for them that hides the fonts you've switched off. On Windows,
+  though, fontconfig writes a font's path with a forward slash for the folder
+  and a backslash before the file name, so it never matched the rules, and the
+  fonts stayed visible. Fonts from a watched folder were affected the same way:
+  the ones you had switched on showed up, but so did the ones you hadn't. The
+  rules now match a path whichever slash it uses. Checked against fontconfig's
+  own matching code with the exact rules file sort0m sent: the switched-off
+  font is hidden, and the fonts around it aren't. Restart Inkscape or Krita
+  once after updating.
+
+  Reported by sort0m. (#46)
+
 - **Longer languages no longer cut off the top bar.** The buttons in the top
   bar switched to their compact, icon-only form at a fixed window width that
   was tuned for English. In languages with longer words, like Hungarian or

@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.15.1-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.16.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -92,14 +92,14 @@ ZFontManager is the answer to both:
 - **One app, three platforms.** The same clean interface on Linux, Windows and macOS.
 - **Native and fast.** Not a website in a box — it starts quickly, scrolls
   smoothly through hundreds of families, and feels at home on your desktop.
-- **Speaks your language.** Nine languages, picked up from your system
-  automatically — English, Deutsch, Español, Français, Português (Brasil),
-  Русский, 日本語, 简体中文 and 繁體中文.
+- **Speaks your language.** Ten languages, picked up from your system
+  automatically — English, Deutsch, Español, Français, Magyar, Português
+  (Brasil), Русский, 日本語, 简体中文 and 繁體中文.
 - **Yours.** Free, open source (GPL-3.0), no account, no cloud, no telemetry.
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.15.1** — see the
+> ZFontManager is currently at **version 0.16.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -479,7 +479,8 @@ ZFontManager follows your desktop language on first launch, and you can
 override it any time in **Settings → Language** (or from the command palette).
 
 Available now: **English**, **Deutsch**, **Español**, **Français**,
-**Português (Brasil)**, **Русский**, **日本語**, **简体中文**, **繁體中文**.
+**Magyar**, **Português (Brasil)**, **Русский**, **日本語**, **简体中文**,
+**繁體中文**.
 
 More are welcome — see [Translations](#-translations).
 
@@ -900,7 +901,7 @@ Found it useful? A ⭐ on the repository genuinely helps others discover it.
 
 Pull requests are welcome. Two things are worth knowing before you start:
 everything has to work on **Linux, Windows and macOS**, and any interface text
-you touch has to be translated into **all nine languages**.
+you touch has to be translated into **all ten languages**.
 
 Both are explained, with the reasoning, in
 **[CONTRIBUTING.md](CONTRIBUTING.md)**. Translations have their own shorter

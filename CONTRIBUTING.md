@@ -77,7 +77,7 @@ The obvious platform bugs get caught. These are the ones that slip through:
 
 ## Interface text must be translated
 
-ZFontManager ships in nine languages. Every one of them is complete, and it
+ZFontManager ships in ten languages. Every one of them is complete, and it
 stays that way.
 
 If your change adds, removes or rewords **any** user-visible string:

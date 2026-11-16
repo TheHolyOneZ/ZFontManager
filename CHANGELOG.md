@@ -4,6 +4,31 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.16.0] — 2026-11-16
+
+### Added
+
+- **Hungarian.** ZFontManager now speaks Magyar, complete with every text in
+  the app. It's picked automatically when your system is set to Hungarian, and
+  you can choose it any time under **Settings → Language** or from the command
+  palette.
+
+  Translated by teherauto. (#50)
+
+### Fixed
+
+- **Longer languages no longer cut off the top bar.** The buttons in the top
+  bar switched to their compact, icon-only form at a fixed window width that
+  was tuned for English. In languages with longer words, like Hungarian or
+  German, the labels could push the last buttons out of view first. The bar
+  now checks whether everything actually fits and switches to the compact form
+  as soon as it doesn't.
+- **Long labels in the detail panel overlapped their values.** Labels such as
+  "Írásrendszerek" (Scripts) were wider than their fixed column and ran into
+  the text next to them. The label column now grows to fit the longest label.
+- **Shortened sidebar entries show their full name.** Hovering over an entry
+  in the sidebar that is cut off with "…" now shows the whole text.
+
 ## [0.15.1] — 2026-11-13
 
 ### Fixed

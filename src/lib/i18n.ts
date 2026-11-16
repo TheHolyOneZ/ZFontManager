@@ -3,6 +3,7 @@ import de from "../locales/de.json";
 import en from "../locales/en.json";
 import es from "../locales/es.json";
 import fr from "../locales/fr.json";
+import hu from "../locales/hu.json";
 import ja from "../locales/ja.json";
 import ptBR from "../locales/pt-BR.json";
 import ru from "../locales/ru.json";
@@ -25,6 +26,7 @@ export type LocaleCode =
   | "de"
   | "es"
   | "fr"
+  | "hu"
   | "pt-BR"
   | "ru"
   | "ja"
@@ -45,6 +47,7 @@ export const LOCALES: readonly LocaleInfo[] = [
   { code: "de", name: "Deutsch", english: "German" },
   { code: "es", name: "Español", english: "Spanish" },
   { code: "fr", name: "Français", english: "French" },
+  { code: "hu", name: "Magyar", english: "Hungarian" },
   { code: "pt-BR", name: "Português (Brasil)", english: "Portuguese (Brazil)" },
   { code: "ru", name: "Русский", english: "Russian" },
   { code: "ja", name: "日本語", english: "Japanese" },
@@ -57,6 +60,7 @@ const DICTS: Record<LocaleCode, Partial<Dict>> = {
   de,
   es,
   fr,
+  hu,
   "pt-BR": ptBR,
   ru,
   ja,

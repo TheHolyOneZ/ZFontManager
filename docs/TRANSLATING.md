@@ -14,8 +14,8 @@ one that is merely correct.
    If you would rather check a draft than write one, say so — a native speaker
    reviewing the result is genuinely valuable, and often the part that is missing.
 
-Currently shipping: English, Deutsch, Español, Français, Português (Brasil),
-Русский, 日本語, 简体中文, 繁體中文.
+Currently shipping: English, Deutsch, Español, Français, Magyar,
+Português (Brasil), Русский, 日本語, 简体中文, 繁體中文.
 
 ---
 

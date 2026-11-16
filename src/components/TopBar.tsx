@@ -15,11 +15,11 @@ import {
   Type,
   X,
 } from "lucide-react";
-import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { springSnappy, springSoft } from "../design/springs";
 import { SIZES, useFontStore, type SortMode } from "../state/fontStore";
 import type { Classification, FontFormat } from "../lib/ipc";
-import { useT, type TKey } from "../lib/i18n";
+import { useLocalePref, useT, type TKey } from "../lib/i18n";
 
 const SORT_MODES = ["name", "styles", "size", "glyphs"] as const satisfies readonly SortMode[];
 
@@ -453,8 +453,19 @@ export function TopBar() {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  const localePref = useLocalePref();
+  const [fit, setFit] = useState({ wide: 980, stacked: 680 });
+  useEffect(() => setFit({ wide: 980, stacked: 680 }), [localePref]);
   const stacked = width < 920;
-  const compact = stacked ? width < 680 : width < 980;
+  const compact = stacked ? width < fit.stacked : width < fit.wide;
+  useLayoutEffect(() => {
+    const el = barRef.current;
+    if (!el || compact || !Number.isFinite(width)) return;
+    if (el.scrollWidth <= el.clientWidth + 1) return;
+    setFit((f) =>
+      stacked ? { ...f, stacked: Math.max(f.stacked, width + 1) } : { ...f, wide: Math.max(f.wide, width + 1) },
+    );
+  });
 
   return (
     <motion.header

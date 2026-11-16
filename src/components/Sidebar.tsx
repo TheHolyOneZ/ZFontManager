@@ -43,7 +43,7 @@ function NavRow({
       className={`nav-row ${active ? "nav-active" : ""}`}
       onClick={() => setNav(nav)}
       onContextMenu={onContextMenu}
-      title={title}
+      title={title ?? label}
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ ...springSoft, delay: staggerDelay(index) }}

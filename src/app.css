@@ -2505,7 +2505,7 @@ h2.detail-title.copy-name {
 }
 
 .detail-meta dl {
-  grid-template-columns: 92px 1fr;
+  grid-template-columns: minmax(92px, max-content) minmax(0, 1fr);
   row-gap: 9px;
   align-items: baseline;
 }

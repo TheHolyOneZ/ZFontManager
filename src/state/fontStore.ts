@@ -198,6 +198,7 @@ interface FontStore {
   toggleFamilyInCollection: (collection: string, family: string) => Promise<void>;
   toggleFamiliesInCollection: (collection: string, families: string[]) => Promise<void>;
   collectFolder: (dir: string, perSubfolder: boolean) => Promise<void>;
+  addToCollections: (groups: Map<string, string[]>) => Promise<boolean>;
   toggleFavorite: (family: string) => Promise<void>;
   setFavorites: (families: string[], favorite: boolean) => Promise<void>;
   setFamilyNote: (family: string, note: string) => Promise<void>;
@@ -705,12 +706,29 @@ export const useFontStore = create<FontStore>((set, get) => ({
         const families = [...new Set(result.installed.map((f) => f.family))];
         set({ fonts: [...get().fonts, ...result.installed], lastImported: families });
         persistPrefs(get);
+        const folders = new Map(result.folders.map((g) => [g.name, g.families]));
         toast.success(
           families.length === 1
             ? t("toast.installedOne", { name: families[0] })
             : t("toast.installedMany", { count: families.length }),
-          undefined,
+          folders.size > 0 ? shortList([...folders.keys()]) : undefined,
           "install",
+          folders.size > 0
+            ? {
+                label: t("toast.foldersToCollections"),
+                run: () =>
+                  void get()
+                    .addToCollections(folders)
+                    .then(
+                      (ok) =>
+                        ok &&
+                        toast.success(
+                          t("toast.subfoldersCollected", { count: folders.size }),
+                          shortList([...folders.keys()]),
+                        ),
+                    ),
+              }
+            : undefined,
         );
       }
       for (const err of result.errors) toast.error(t("toast.installFailed"), err);
@@ -980,7 +998,17 @@ export const useFontStore = create<FontStore>((set, get) => ({
       toast.error(t(perSubfolder ? "toast.noSubfolderFonts" : "toast.noFontsInFolder"));
       return;
     }
-    const prev = s.collections;
+    if (!(await get().addToCollections(groups))) return;
+    if (perSubfolder) {
+      toast.success(t("toast.subfoldersCollected", { count: groups.size }), shortList([...groups.keys()]));
+    } else {
+      const [[name, families]] = [...groups.entries()];
+      toast.success(t("toast.folderCollected", { count: families.length, name }));
+    }
+  },
+
+  addToCollections: async (groups) => {
+    const prev = get().collections;
     const next = { ...prev };
     for (const [name, families] of groups) {
       next[name] = [...new Set([...(prev[name] ?? []), ...families])];
@@ -988,18 +1016,11 @@ export const useFontStore = create<FontStore>((set, get) => ({
     set({ collections: next });
     try {
       for (const name of groups.keys()) await ipc.setCollection(name, next[name]);
-      if (perSubfolder) {
-        toast.success(
-          t("toast.subfoldersCollected", { count: groups.size }),
-          [...groups.keys()].join(", "),
-        );
-      } else {
-        const [[name, families]] = [...groups.entries()];
-        toast.success(t("toast.folderCollected", { count: families.length, name }));
-      }
+      return true;
     } catch (e) {
       set({ collections: prev });
       toast.error(t("toast.couldntUpdateCollection"), String(e));
+      return false;
     }
   },
 
@@ -1874,6 +1895,10 @@ export function familiesFor(
 const conflictCache = new WeakMap<FontFace[], Map<string, FontConflict[]>>();
 
 const activeConflictCache = new WeakMap<FontFace[], Map<string, FontConflict[]>>();
+
+function shortList(names: string[]): string {
+  return names.length > 6 ? `${names.slice(0, 6).join(", ")}, …` : names.join(", ");
+}
 
 export function activeConflictsFor(fonts: FontFace[]): Map<string, FontConflict[]> {
   let cached = activeConflictCache.get(fonts);

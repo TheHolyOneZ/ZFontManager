@@ -3011,6 +3011,17 @@ h2.detail-title.copy-name {
   font-weight: 600;
   color: var(--warning);
 }
+.conflict-section-calm {
+  border-color: rgba(var(--ink-rgb), 0.08);
+  background: rgba(var(--ink-rgb), 0.02);
+}
+.conflict-section-calm .conflict-title {
+  color: var(--text-secondary);
+}
+.conflict-section-calm .conflict-file {
+  border-color: rgba(var(--ink-rgb), 0.07);
+  background: rgba(var(--ink-rgb), 0.02);
+}
 .conflict-sub {
   font-size: var(--fs-11);
   color: var(--text-secondary);

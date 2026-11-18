@@ -64,6 +64,7 @@ export interface InstallResult {
   installed: FontFace[];
   errors: string[];
   duplicates: string[];
+  folders: { name: string; families: string[] }[];
 }
 
 export interface ScanProgress {

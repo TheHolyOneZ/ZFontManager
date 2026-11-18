@@ -4,6 +4,35 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.17.0] — 2026-11-18
+
+### Added
+
+- **Keep your folder structure when you import a folder.** When you drop a
+  folder that has subfolders, the "fonts added" message now offers **Make
+  collections from its folders**. Each first-level subfolder becomes a
+  collection with everything inside it, so a library sorted into `Sans Serif`,
+  `Serif` and `Display` keeps that order in the sidebar. A folder without
+  subfolders becomes one collection with its own name. This works whether you
+  add the fonts where they are or copy them into your library folder, and
+  fonts that were already in your library count too. If a collection with the
+  same name exists, the fonts are added to it.
+
+  Suggested by Ringomaro. (#52)
+
+### Fixed
+
+- **A font in two files no longer looks like a problem when it isn't one.**
+  Having the same font as both `.ttf` and `.otf` made the detail panel warn
+  that apps "may pick either one unpredictably", even when only one copy was
+  switched on, or none. That only happens when two or more copies are active
+  at the same time. Now the warning appears only then; otherwise the panel
+  calmly says that the same font is in several files and that other apps
+  aren't affected, and you can still remove the copy you don't need. The small
+  badge on the card says the same.
+
+  Reported by Jadooooooooo. (#51)
+
 ## [0.16.0] — 2026-11-16
 
 ### Added

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { panelExit, spring, springSoft } from "../design/springs";
 import { useFontCss, formatBytes, pathBasename } from "../lib/fontLoader";
-import { familiesFor, conflictsFor, useFontStore, GLYPH_SIZE_DEFAULT, GLYPH_SIZE_MAX, GLYPH_SIZE_MIN } from "../state/fontStore";
+import { familiesFor, conflictsFor, activeConflictsFor, useFontStore, GLYPH_SIZE_DEFAULT, GLYPH_SIZE_MAX, GLYPH_SIZE_MIN } from "../state/fontStore";
 import { ipc, type FontFace, type VariationAxis } from "../lib/ipc";
 import { previewText, styleGroups, type StyleGroup } from "../lib/familyState";
 import { toast } from "../design/primitives/Toast";
@@ -705,6 +705,7 @@ export function DetailPanel() {
       : undefined;
   const favorite = family ? favorites.includes(family.name) : false;
   const conflicts = family ? conflictsFor(fonts).get(family.name) ?? [] : [];
+  const liveConflict = family ? (activeConflictsFor(fonts).get(family.name) ?? []).length > 0 : false;
 
   const variation =
     lead && lead.isVariable && Object.keys(axisValues).length > 0
@@ -1006,14 +1007,14 @@ export function DetailPanel() {
 
             {conflicts.length > 0 && (
               <motion.section
-                className="conflict-section"
+                className={`conflict-section${liveConflict ? "" : " conflict-section-calm"}`}
                 variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: spring } }}
               >
                 <div className="conflict-title">
-                  <AlertTriangle size={13} strokeWidth={1.5} />
-                  {t("detail.conflictTitle")}
+                  {liveConflict ? <AlertTriangle size={13} strokeWidth={1.5} /> : <Copy size={13} strokeWidth={1.5} />}
+                  {t(liveConflict ? "detail.conflictTitle" : "detail.duplicateTitle")}
                 </div>
-                <p className="conflict-sub">{t("detail.conflictBody")}</p>
+                <p className="conflict-sub">{t(liveConflict ? "detail.conflictBody" : "detail.duplicateBody")}</p>
                 {conflicts.map((c) => (
                   <div key={c.key} className="conflict-group">
                     <span className="conflict-key detail-mono">{c.key}</span>

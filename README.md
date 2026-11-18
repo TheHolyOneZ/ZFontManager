@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.16.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.17.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +99,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.16.0** — see the
+> ZFontManager is currently at **version 0.17.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -311,6 +311,11 @@ You can point the library folder somewhere else entirely under
 **Settings → Library folder**. A progress toast keeps you informed on big
 drops, and anything already in your library is skipped rather than duplicated.
 
+Drop a folder with subfolders — say `Sans Serif`, `Serif` and `Display` — and
+the toast offers **Make collections from its folders**: each first-level
+subfolder becomes a collection with everything inside it, so your old order
+comes along without moving a file.
+
 ### Activate a whole library at once
 
 Every font has a checkbox: in the corner of a Grid card, as the first column
@@ -334,7 +339,10 @@ Install a font that clashes with one already in your library and ZFontManager
 says so instead of quietly picking a winner. The detail panel lists every file
 involved, tells you which copy is the active one, and lets you act on each
 file separately — keep it, remove it, or send it to the Trash. System fonts
-are marked as protected and can't be removed either way.
+are marked as protected and can't be removed either way. As long as no more
+than one copy is switched on — the same font as both `.ttf` and `.otf`, say —
+nothing is wrong for other apps, and the panel says so calmly instead of
+warning.
 
 ### A trash can, not a shredder
 

@@ -23,6 +23,52 @@ pub struct InstallResult {
     pub installed: Vec<FontFace>,
     pub errors: Vec<String>,
     pub duplicates: Vec<String>,
+    pub folders: Vec<FolderCollection>,
+}
+
+#[derive(Serialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct FolderCollection {
+    pub name: String,
+    pub families: Vec<String>,
+}
+
+pub fn folder_collections(dirs: &[PathBuf], origins: &[(PathBuf, String)]) -> Vec<FolderCollection> {
+    use std::collections::{BTreeMap, BTreeSet};
+
+    let mut groups: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    for dir in dirs {
+        let mut nested: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+        let mut all: BTreeSet<String> = BTreeSet::new();
+        for (src, family) in origins {
+            let Ok(rest) = src.strip_prefix(dir) else {
+                continue;
+            };
+            all.insert(family.clone());
+            let parts: Vec<_> = rest.components().collect();
+            if parts.len() > 1 {
+                let name = parts[0].as_os_str().to_string_lossy().into_owned();
+                nested.entry(name).or_default().insert(family.clone());
+            }
+        }
+        if nested.is_empty() {
+            if let (false, Some(name)) = (all.is_empty(), dir.file_name()) {
+                groups.entry(name.to_string_lossy().into_owned()).or_default().extend(all);
+            }
+        } else {
+            for (name, families) in nested {
+                groups.entry(name).or_default().extend(families);
+            }
+        }
+    }
+    groups
+        .into_iter()
+        .filter(|(name, _)| !name.trim().is_empty())
+        .map(|(name, families)| FolderCollection {
+            name,
+            families: families.into_iter().collect(),
+        })
+        .collect()
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -125,6 +171,8 @@ pub fn install(
         }
     }
 
+    let dirs: Vec<PathBuf> = dropped.iter().map(PathBuf::from).filter(|p| p.is_dir()).collect();
+    let mut origins: Vec<(PathBuf, String)> = Vec::new();
     let mut files: Vec<PathBuf> = Vec::new();
     for p in &dropped {
         match expand_dropped(Path::new(p), &staging) {
@@ -137,7 +185,9 @@ pub fn install(
     for (i, src) in files.into_iter().enumerate() {
         let src_faces = parser::parse_font_file(&src, FontSource::Managed);
         let src_keys: Vec<String> = src_faces.iter().map(dup_key).collect();
+        let families: Vec<String> = src_faces.iter().map(|f| f.family.clone()).collect();
         if !src_keys.is_empty() && src_keys.iter().all(|k| known.contains(k)) {
+            origins.extend(families.iter().map(|f| (src.clone(), f.clone())));
             for k in &src_keys {
                 if !result.duplicates.contains(k) {
                     result.duplicates.push(k.clone());
@@ -198,6 +248,7 @@ pub fn install(
                     face.active = false;
                     known.insert(dup_key(face));
                 }
+                origins.extend(families.iter().map(|f| (src.clone(), f.clone())));
                 result.installed.extend(faces);
             }
             InstallMode::Move => {
@@ -225,6 +276,7 @@ pub fn install(
                             face.active = false;
                             known.insert(dup_key(face));
                         }
+                        origins.extend(families.iter().map(|f| (src.clone(), f.clone())));
                         result.installed.extend(faces);
                     }
                     Err(e) => result.errors.push(e),
@@ -235,6 +287,7 @@ pub fn install(
 
     let _ = fs::remove_dir_all(&staging);
     refresh_system_font_cache();
+    result.folders = folder_collections(&dirs, &origins);
     result
 }
 
@@ -420,6 +473,41 @@ fn refresh_system_font_cache() {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn dropped_folders_become_collections_by_their_first_level() {
+        use std::path::PathBuf;
+        let root = PathBuf::from("/drop/Fonts");
+        let o = |p: &str, f: &str| (root.join(p), f.to_string());
+        let origins = vec![
+            o("Sans Serif/Helvetica/Helvetica.otf", "Helvetica"),
+            o("Sans Serif/Inter/Inter-Regular.ttf", "Inter"),
+            o("Sans Serif/Inter/Inter-Bold.ttf", "Inter"),
+            o("Display/Retro/Bungee.ttf", "Bungee"),
+            o("Loose.ttf", "Loose"),
+            (PathBuf::from("/elsewhere/Other.ttf"), "Other".to_string()),
+        ];
+        let got = super::folder_collections(&[root.clone()], &origins);
+        assert_eq!(
+            got,
+            vec![
+                super::FolderCollection { name: "Display".into(), families: vec!["Bungee".into()] },
+                super::FolderCollection { name: "Sans Serif".into(), families: vec!["Helvetica".into(), "Inter".into()] },
+            ]
+        );
+
+        let flat = vec![o("A.ttf", "Alpha"), o("B.ttf", "Beta")];
+        let got = super::folder_collections(&[root.clone()], &flat);
+        assert_eq!(got, vec![super::FolderCollection { name: "Fonts".into(), families: vec!["Alpha".into(), "Beta".into()] }]);
+
+        assert!(super::folder_collections(&[], &origins).is_empty());
+        let other = PathBuf::from("/drop/More");
+        let merged = super::folder_collections(
+            &[root.clone(), other.clone()],
+            &[o("Display/x.ttf", "X"), (other.join("Display/y.ttf"), "Y".to_string())],
+        );
+        assert_eq!(merged, vec![super::FolderCollection { name: "Display".into(), families: vec!["X".into(), "Y".into()] }]);
+    }
+
     use super::*;
 
     #[test]

@@ -966,6 +966,33 @@
 .card-spacer {
   flex: 1;
 }
+.card-collections {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+.collection-chip {
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: var(--fs-11);
+  line-height: 18px;
+  color: var(--accent-a);
+  border: 1px solid color-mix(in srgb, var(--accent-a) 35%, transparent);
+  background: color-mix(in srgb, var(--accent-a) 10%, transparent);
+}
+button.collection-chip:hover {
+  background: color-mix(in srgb, var(--accent-a) 20%, transparent);
+}
+.collection-chip-more {
+  flex-shrink: 0;
+}
 .card-expand {
   display: flex;
   align-items: center;

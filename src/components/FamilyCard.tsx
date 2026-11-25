@@ -1,7 +1,7 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { AnimatePresence, motion } from "motion/react";
 import { AlertTriangle, ChevronRight, Lock, Star } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { spring, springSnappy, springSoft, staggerDelay } from "../design/springs";
 import { useFontCss } from "../lib/fontLoader";
@@ -141,6 +141,15 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
   const hasActiveConflict = useFontStore((s) => activeConflictsFor(s.fonts).has(family.name));
   const hasDormantConflict = useFontStore((s) => conflictsFor(s.fonts).has(family.name));
   const cover = useFontStore((s) => s.covers[family.name]);
+  const collections = useFontStore((s) => s.collections);
+  const setNav = useFontStore((s) => s.setNav);
+  const inCollections = useMemo(
+    () =>
+      Object.keys(collections)
+        .filter((name) => collections[name]?.includes(family.name))
+        .sort((a, b) => a.localeCompare(b)),
+    [collections, family.name],
+  );
   const expandAll = useFontStore((s) => s.expandStyles);
   const [expanded, setExpanded] = useState(expandAll);
   useEffect(() => setExpanded(expandAll), [expandAll]);
@@ -213,6 +222,29 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
           </motion.button>
         )}
         <span className="card-spacer" />
+        {inCollections.length > 0 && (
+          <span className="card-collections">
+            {inCollections.slice(0, 2).map((name) => (
+              <button
+                key={name}
+                className="collection-chip"
+                title={name}
+                aria-label={t("card.openCollection", { name })}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setNav({ kind: "collection", name });
+                }}
+              >
+                {name}
+              </button>
+            ))}
+            {inCollections.length > 2 && (
+              <span className="collection-chip collection-chip-more" title={inCollections.slice(2).join(", ")}>
+                +{inCollections.length - 2}
+              </span>
+            )}
+          </span>
+        )}
         {hasActiveConflict ? (
           <span
             className="conflict-badge"

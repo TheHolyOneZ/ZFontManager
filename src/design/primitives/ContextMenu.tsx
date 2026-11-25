@@ -59,10 +59,11 @@ function MenuPanel({ x, y, items }: { x: number; y: number; items: MenuItem[] })
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const r = el.getBoundingClientRect();
+    const width = el.offsetWidth;
+    const height = Math.min(el.scrollHeight, window.innerHeight - 16);
     setPos({
-      x: Math.max(8, Math.min(x, window.innerWidth - r.width - 8)),
-      y: Math.max(8, Math.min(y, window.innerHeight - r.height - 8)),
+      x: Math.max(8, Math.min(x, window.innerWidth - width - 8)),
+      y: Math.max(8, Math.min(y, window.innerHeight - height - 8)),
     });
   }, [x, y]);
 
@@ -94,7 +95,7 @@ function MenuPanel({ x, y, items }: { x: number; y: number; items: MenuItem[] })
     <motion.div
       ref={ref}
       className="ctx-menu glass-e3"
-      style={{ left: pos.x, top: pos.y }}
+      style={{ left: pos.x, top: pos.y, maxHeight: `calc(100vh - ${Math.round(pos.y) + 8}px)` }}
       initial={{ opacity: 0, scale: 0.96, y: -4 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.12 } }}
@@ -170,12 +171,16 @@ export function ContextMenuHost() {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
     const onScroll = () => close();
+    const onWheel = (e: WheelEvent) => {
+      if (e.target instanceof Element && e.target.closest(".ctx-menu")) return;
+      close();
+    };
     window.addEventListener("keydown", onKey);
-    window.addEventListener("wheel", onScroll, { passive: true });
+    window.addEventListener("wheel", onWheel, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
       window.removeEventListener("keydown", onKey);
-      window.removeEventListener("wheel", onScroll);
+      window.removeEventListener("wheel", onWheel);
       window.removeEventListener("resize", onScroll);
     };
   }, [open, close]);

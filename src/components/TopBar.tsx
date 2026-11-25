@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   List,
   RefreshCw,
+  RotateCcw,
   Search,
   Type,
   X,
@@ -505,6 +506,16 @@ export function TopBar() {
           aria-label={t("top.sampleAria")}
           spellCheck={false}
         />
+        {sampleText !== t("preview.defaultSample") && (
+          <button
+            className="search-clear sample-reset"
+            onClick={() => setSampleText(t("preview.defaultSample"))}
+            aria-label={t("top.resetSample")}
+            title={t("top.resetSample")}
+          >
+            <RotateCcw size={12} strokeWidth={2} />
+          </button>
+        )}
         <button
           className={`case-toggle ${previewUppercase ? "case-toggle-on" : ""}`}
           aria-label={t("top.uppercase")}

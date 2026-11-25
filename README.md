@@ -18,7 +18,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.17.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.18.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +99,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.17.0** — see the
+> ZFontManager is currently at **version 0.18.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -125,7 +125,8 @@ Every font family is shown **in its own typeface**, not as a generic name in
 a list. Type any sentence into the preview box at the top — your brand name,
 a headline you're working on — and the *entire library* re-renders in it
 instantly. The **AA** button next to it switches every preview to uppercase,
-which is handy for comparing display and headline faces. A size slider takes
+which is handy for comparing display and headline faces, and the ↺ button
+brings back the default sentence once you've typed your own. A size slider takes
 the preview anywhere from small print to poster size, and holding
 <kbd>Ctrl</kbd> (<kbd>⌘</kbd> on macOS) while you scroll does the same
 without reaching for it. Tall scripts and swashes
@@ -361,7 +362,8 @@ Four complementary ways to impose order on font chaos:
   once via multi-select.
 - **Collections** — folders you curate by hand, per project or per client.
   Right-click any font → Collections → add it. A font can live in as many
-  collections as you like. Right-click a watched folder to turn it, or each of
+  collections as you like, and its card shows which ones — click a name to
+  jump to that collection. Right-click a watched folder to turn it, or each of
   its subfolders, into a collection, and right-click a collection →
   **Export collection to folders…** to copy it into a real folder with one
   subfolder per family — the tidy font folder you always meant to have.

@@ -4,6 +4,36 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.18.0] — 2026-11-25
+
+### Added
+
+- **Reset the preview text in one click.** As soon as the preview text differs
+  from the default sentence, a small ↺ button appears in the field, next to
+  **AA**. Clicking it brings back the default sentence for your language.
+
+  Suggested by sort0m. (#54)
+
+- **See a font's collections on its card.** Cards in the grid now show the
+  collections a family belongs to as small labels next to the star: the first
+  two by name, and "+2" and so on for the rest, with their names when you hover
+  over it. Click a name to open that collection. Fonts that aren't in any
+  collection look exactly as before.
+
+  Suggested by ghostgabriel. (#53)
+
+### Fixed
+
+- **The bottom of a long right-click menu was out of reach.** With many
+  collections, the menu for a font gets taller than the window. It measured
+  its own height while its opening animation still had it slightly shrunk, so
+  it was placed a little too low and its last entries ended up below the edge
+  of the window; and scrolling with the mouse wheel closed the menu instead of
+  scrolling it. The menu now always fits inside the window, and you can scroll
+  through it with the wheel.
+
+  Reported by ghostgabriel. (#53)
+
 ## [0.17.0] — 2026-11-18
 
 ### Added

@@ -59,13 +59,16 @@ function NavRow({
   );
 }
 
-function NewCollectionInput({ onDone }: { onDone: () => void }) {
+function NewCollectionInput({ initial, onDone }: { initial: string; onDone: () => void }) {
   const t = useT();
   const createCollection = useFontStore((s) => s.createCollection);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(initial);
   const ref = useRef<HTMLInputElement>(null);
 
-  useEffect(() => ref.current?.focus(), []);
+  useEffect(() => {
+    ref.current?.focus();
+    ref.current?.select();
+  }, []);
 
   const commit = () => {
     if (name.trim()) void createCollection(name);
@@ -157,7 +160,10 @@ export function Sidebar() {
   const [renaming, setRenaming] = useState<string | null>(null);
 
   useEffect(() => {
-    if (pendingCollectionFor) setCreating(true);
+    if (!pendingCollectionFor) return;
+    setCreating(true);
+    const st = useFontStore.getState();
+    if (st.collapsedSections.includes("collections")) st.toggleSection("collections");
   }, [pendingCollectionFor]);
 
   const familyCount = familiesFor(fonts, tags).size;
@@ -292,6 +298,8 @@ export function Sidebar() {
           </div>
           {creating && (
             <NewCollectionInput
+              key={pendingCollectionFor?.name ?? ""}
+              initial={pendingCollectionFor?.name ?? ""}
               onDone={() => {
                 setCreating(false);
                 useFontStore.setState({ pendingCollectionFor: null });

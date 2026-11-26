@@ -24,7 +24,16 @@ export function FontGrid({ families }: { families: Family[] }) {
   useEffect(() => {
     if (!selectedFamily) return;
     const idx = families.findIndex((f) => f.name === selectedFamily);
-    if (idx >= 0) virtualizer.scrollToIndex(idx, { align: "auto" });
+    if (idx < 0) return;
+    const el = parentRef.current;
+    const item = virtualizer.measurementsCache[idx];
+    if (el && item && item.size > el.clientHeight) {
+      const top = el.scrollTop;
+      if (item.start < top + el.clientHeight && item.end > top) return;
+      virtualizer.scrollToIndex(idx, { align: "start" });
+      return;
+    }
+    virtualizer.scrollToIndex(idx, { align: "auto" });
   }, [selectedFamily]);
 
   const arriving = Date.now() - mountedAt.current < 1200;

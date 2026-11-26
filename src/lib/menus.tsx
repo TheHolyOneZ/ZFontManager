@@ -291,7 +291,7 @@ export function buildFamilyMenu(family: Family): MenuItem[] {
     {
       label: t("menu.newCollection"),
       icon: <FolderPlus size={14} strokeWidth={1.5} />,
-      action: () => useFontStore.setState({ pendingCollectionFor: family.name }),
+      action: () => useFontStore.setState({ pendingCollectionFor: { families: [family.name], name: "" } }),
     },
     { kind: "separator" },
     {

@@ -1,7 +1,7 @@
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { listen } from "@tauri-apps/api/event";
 import { AnimatePresence, motion } from "motion/react";
-import { FolderInput, Link2 } from "lucide-react";
+import { FolderInput, FolderOpen, FolderPlus, Link2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { springSnappy } from "../design/springs";
 import { ipc, type InstallMode, type InstallProgress } from "../lib/ipc";
@@ -12,9 +12,14 @@ export function DropZone() {
   const t = useT();
   const [dragging, setDragging] = useState(false);
   const [side, setSide] = useState<InstallMode>("link");
+  const [into, setInto] = useState<string | null | undefined>(undefined);
   const [defaultDir, setDefaultDir] = useState("");
   const [progress, setProgress] = useState<InstallProgress | null>(null);
   const installPaths = useFontStore((s) => s.installPaths);
+  const installInto = useFontStore((s) => s.installInto);
+  const collections = useFontStore((s) => s.collections);
+  const collectionNames = Object.keys(collections).sort((a, b) => a.localeCompare(b));
+  const chipsRef = useRef<HTMLDivElement>(null);
   const libraryDir = useFontStore((s) => s.settings.libraryDir);
   const libraryDirEnabled = useFontStore((s) => s.settings.libraryDirEnabled);
   const moveRef = useRef<HTMLDivElement>(null);
@@ -34,6 +39,19 @@ export function DropZone() {
     return "link";
   };
 
+  const collectionAt = (pos: { x: number; y: number }): string | null | undefined => {
+    const dpr = window.devicePixelRatio || 1;
+    const x = pos.x / dpr;
+    const y = pos.y / dpr;
+    for (const el of chipsRef.current?.querySelectorAll<HTMLElement>("[data-collection]") ?? []) {
+      const r = el.getBoundingClientRect();
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+        return el.dataset.collection || null;
+      }
+    }
+    return undefined;
+  };
+
   useEffect(() => {
     void ipc.defaultLibraryDir().then(setDefaultDir).catch(() => {});
   }, []);
@@ -43,16 +61,23 @@ export function DropZone() {
       if (event.payload.type === "over" || event.payload.type === "enter") {
         setDragging(true);
         setSide(sideAt(event.payload.position));
+        setInto(collectionAt(event.payload.position));
       } else if (event.payload.type === "drop") {
         const mode = sideAt(event.payload.position);
+        const target = collectionAt(event.payload.position);
         setDragging(false);
         setSide("link");
-        void installPaths(event.payload.paths, mode).finally(() => {
-          setTimeout(() => setProgress(null), 900);
-        });
+        setInto(undefined);
+        const done = () => setTimeout(() => setProgress(null), 900);
+        if (target === undefined) {
+          void installPaths(event.payload.paths, mode).finally(done);
+        } else {
+          void installInto(event.payload.paths, target).finally(done);
+        }
       } else {
         setDragging(false);
         setSide("link");
+        setInto(undefined);
       }
     });
     const unlistenProgress = listen<InstallProgress>("install:progress", (e) => {
@@ -65,7 +90,7 @@ export function DropZone() {
       void unlistenDrop.then((fn) => fn());
       void unlistenProgress.then((fn) => fn());
     };
-  }, [installPaths]);
+  }, [installPaths, installInto]);
 
   const target = libraryDirEnabled && libraryDir ? libraryDir : defaultDir;
   const moveTitle = libraryDirEnabled && libraryDir
@@ -86,7 +111,7 @@ export function DropZone() {
             <div className="dropchoice-hint">{t("drop.sub")}</div>
             <div className="dropchoice-panels">
               <div
-                className={`dropchoice-panel ${side === "link" ? "dropchoice-active" : "dropchoice-dim"}`}
+                className={`dropchoice-panel ${into === undefined && side === "link" ? "dropchoice-active" : "dropchoice-dim"}`}
               >
                 <Link2 size={30} strokeWidth={1.75} />
                 <div className="dropchoice-title">{t("drop.linkTitle")}</div>
@@ -94,12 +119,35 @@ export function DropZone() {
               </div>
               <div
                 ref={moveRef}
-                className={`dropchoice-panel dropchoice-move ${side === "move" ? "dropchoice-active" : "dropchoice-dim"}`}
+                className={`dropchoice-panel dropchoice-move ${into === undefined && side === "move" ? "dropchoice-active" : "dropchoice-dim"}`}
                 title={target}
               >
                 <FolderInput size={30} strokeWidth={1.75} />
                 <div className="dropchoice-title">{moveTitle}</div>
                 <div className="dropchoice-sub dropchoice-warn">{t("drop.moveSub")}</div>
+              </div>
+            </div>
+            <div className={`dropchoice-collections ${into !== undefined ? "dropchoice-collections-on" : ""}`}>
+              <div className="dropchoice-collections-title">{t("drop.toCollection")}</div>
+              <div className="dropchoice-chips" ref={chipsRef}>
+                <div
+                  data-collection=""
+                  className={`dropchoice-chip dropchoice-chip-new ${into === null ? "dropchoice-chip-active" : ""}`}
+                >
+                  <FolderPlus size={14} strokeWidth={1.75} />
+                  <span>{t("drop.newCollection")}</span>
+                </div>
+                {collectionNames.map((name) => (
+                  <div
+                    key={name}
+                    data-collection={name}
+                    className={`dropchoice-chip ${into === name ? "dropchoice-chip-active" : ""}`}
+                    title={name}
+                  >
+                    <FolderOpen size={14} strokeWidth={1.75} />
+                    <span>{name}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </motion.div>

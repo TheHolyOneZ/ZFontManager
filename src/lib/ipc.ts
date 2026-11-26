@@ -65,6 +65,7 @@ export interface InstallResult {
   errors: string[];
   duplicates: string[];
   folders: { name: string; families: string[] }[];
+  families: string[];
 }
 
 export interface ScanProgress {

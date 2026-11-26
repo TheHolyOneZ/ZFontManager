@@ -24,6 +24,7 @@ pub struct InstallResult {
     pub errors: Vec<String>,
     pub duplicates: Vec<String>,
     pub folders: Vec<FolderCollection>,
+    pub families: Vec<String>,
 }
 
 #[derive(Serialize, Debug, PartialEq)]
@@ -288,6 +289,8 @@ pub fn install(
     let _ = fs::remove_dir_all(&staging);
     refresh_system_font_cache();
     result.folders = folder_collections(&dirs, &origins);
+    let families: std::collections::BTreeSet<String> = origins.into_iter().map(|(_, f)| f).collect();
+    result.families = families.into_iter().collect();
     result
 }
 

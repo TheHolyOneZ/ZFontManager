@@ -174,7 +174,7 @@ interface FontStore {
   nav: Nav;
   selectedFamily: string | null;
 
-  pendingCollectionFor: string | null;
+  pendingCollectionFor: { families: string[]; name: string } | null;
 
   duplicateReport: { names: string[]; at: number } | null;
 
@@ -185,7 +185,8 @@ interface FontStore {
   activateFamilySession: (family: string) => Promise<void>;
   setFontFileActive: (path: string, active: boolean) => Promise<void>;
   uninstallFontFile: (path: string) => Promise<void>;
-  installPaths: (paths: string[], mode: InstallMode) => Promise<void>;
+  installPaths: (paths: string[], mode: InstallMode, quiet?: boolean) => Promise<string[]>;
+  installInto: (paths: string[], collection: string | null) => Promise<void>;
   uninstallFamily: (family: string) => Promise<void>;
   uninstallFamilies: (families: string[]) => Promise<void>;
   restoreTrash: (entryId: string) => Promise<void>;
@@ -696,12 +697,23 @@ export const useFontStore = create<FontStore>((set, get) => ({
     }
   },
 
-  installPaths: async (paths, mode) => {
+  installPaths: async (paths, mode, quiet = false) => {
     try {
       const dupKeyOf = (f: { postscriptName: string | null; family: string; style: string }) =>
         f.postscriptName ?? `${f.family} ${f.style}`;
       const existing = get().fonts.map(dupKeyOf);
       const result = await ipc.installFonts(paths, existing, mode);
+      if (quiet) {
+        if (result.installed.length > 0) {
+          set({
+            fonts: [...get().fonts, ...result.installed],
+            lastImported: [...new Set(result.installed.map((f) => f.family))],
+          });
+          persistPrefs(get);
+        }
+        for (const err of result.errors) toast.error(t("toast.installFailed"), err);
+        return result.families;
+      }
       if (result.installed.length > 0) {
         const families = [...new Set(result.installed.map((f) => f.family))];
         set({ fonts: [...get().fonts, ...result.installed], lastImported: families });
@@ -744,8 +756,33 @@ export const useFontStore = create<FontStore>((set, get) => ({
           duplicateReport: { names: [...result.duplicates], at: Date.now() },
         });
       }
+      return result.families;
     } catch (e) {
       toast.error(t("toast.installFailed"), String(e));
+      return [];
+    }
+  },
+
+  installInto: async (paths, collection) => {
+    const families = await get().installPaths(paths, "link", true);
+    if (families.length === 0) {
+      toast.error(t("toast.nothingToInstall"), t("toast.nothingToInstallSub"));
+      return;
+    }
+    if (collection === null) {
+      const base = (paths[0] ?? "").replace(/[\\/]+$/, "").split(/[\\/]/).pop() ?? "";
+      const name = base.replace(/\.(zip|ttf|otf|ttc|otc|woff2?|dfont)$/i, "");
+      set({ pendingCollectionFor: { families, name } });
+      return;
+    }
+    const ok = await get().addToCollections(new Map([[collection, families]]));
+    if (ok) {
+      toast.success(
+        t("toast.addedToCollection", { count: families.length, name: collection }),
+        shortList(families),
+        undefined,
+        { label: t("toast.openCollection"), run: () => get().setNav({ kind: "collection", name: collection }) },
+      );
     }
   },
 
@@ -896,12 +933,19 @@ export const useFontStore = create<FontStore>((set, get) => ({
     const clean = name.trim();
     if (!clean) return;
     if (get().collections[clean]) {
+      const pending = get().pendingCollectionFor?.families ?? [];
+      if (pending.length > 0) {
+        set({ pendingCollectionFor: null });
+        if (await get().addToCollections(new Map([[clean, pending]]))) {
+          toast.success(t("toast.addedToCollection", { count: pending.length, name: clean }), shortList(pending));
+        }
+        return;
+      }
       toast.error(t("toast.collectionExists"), t("toast.collectionExistsSub", { name: clean }));
       return;
     }
     const prev = get().collections;
-    const pending = get().pendingCollectionFor;
-    const families = pending ? [pending] : [];
+    const families = get().pendingCollectionFor?.families ?? [];
     set({
       collections: { ...prev, [clean]: families },
       pendingCollectionFor: null,
@@ -910,7 +954,11 @@ export const useFontStore = create<FontStore>((set, get) => ({
       await ipc.setCollection(clean, families);
       toast.success(
         t("toast.createdCollection", { name: clean }),
-        pending ? t("toast.familyAdded", { name: pending }) : t("toast.rightClickToAdd"),
+        families.length === 1
+          ? t("toast.familyAdded", { name: families[0] })
+          : families.length > 1
+            ? t("toast.familiesAdded", { count: families.length })
+            : t("toast.rightClickToAdd"),
       );
     } catch (e) {
       set({ collections: prev });

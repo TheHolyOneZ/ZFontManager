@@ -1966,6 +1966,62 @@ h2.detail-title.copy-name {
   color: var(--error);
   font-weight: 600;
 }
+.dropchoice-collections {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 32vh;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--e3);
+  border: 1.5px dashed rgba(var(--ink-rgb), 0.14);
+  transition: border-color var(--t-quick) ease;
+}
+.dropchoice-collections-on {
+  border-color: var(--accent-glow);
+}
+.dropchoice-collections-title {
+  font-size: var(--fs-13);
+  color: var(--text-secondary);
+}
+.dropchoice-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+.dropchoice-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 260px;
+  padding: 8px 13px;
+  border-radius: 8px;
+  font-size: var(--fs-13);
+  color: var(--text-primary);
+  background: rgba(var(--ink-rgb), 0.05);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  transition: border-color var(--t-quick) ease, box-shadow var(--t-state) ease,
+    color var(--t-quick) ease, background var(--t-state) ease, transform var(--t-state) ease;
+}
+.dropchoice-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dropchoice-chip-new {
+  color: var(--text-secondary);
+  border-style: dashed;
+}
+.dropchoice-chip-active {
+  color: var(--accent-a);
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--accent-a) 12%, var(--e3));
+  border-color: var(--accent-glow);
+  border-style: solid;
+  box-shadow: 0 0 0 1.5px var(--accent-glow), 0 0 24px var(--accent-glow-soft);
+}
 
 .install-toast {
   position: fixed;

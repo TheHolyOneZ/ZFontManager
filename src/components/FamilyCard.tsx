@@ -186,10 +186,7 @@ export const FamilyCard = memo(function FamilyCard({ family }: { family: Family 
         selectWith(family.name, "single", useFontStore.getState().visibleOrder);
       }}
       onContextMenu={(e) => openContextMenu(e, buildFamilyMenu(family))}
-
-      animate={{ scale: family.active ? 1 : 0.99 }}
       whileHover={{ y: -1 }}
-      whileTap={{ scale: family.active ? 0.99 : 0.98 }}
       transition={spring}
       layout="position"
     >

@@ -66,6 +66,47 @@
   gap: 9px;
   pointer-events: none;
 }
+.titlebar-mac-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.mac-traffic-lights {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+.mac-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 0.5px solid rgba(0, 0, 0, 0.14);
+  color: rgba(0, 0, 0, 0.65);
+  transition: filter var(--t-micro) ease;
+}
+.mac-dot svg {
+  opacity: 0;
+  transition: opacity var(--t-micro) ease;
+}
+.mac-traffic-lights:hover .mac-dot svg,
+.mac-dot:focus-visible svg {
+  opacity: 1;
+}
+.mac-dot:active {
+  filter: brightness(0.88);
+}
+.mac-dot-close {
+  background: #ff5f57;
+}
+.mac-dot-min {
+  background: #febc2e;
+}
+.mac-dot-max {
+  background: #28c840;
+}
 .brand-mark {
   width: 21px;
   height: 21px;

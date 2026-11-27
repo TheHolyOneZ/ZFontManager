@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { MotionConfig, motion } from "motion/react";
 import { Clock, Folder, FolderOpen, History, Monitor, Power, PowerOff, SearchX, Star, Tag as TagIcon, Type } from "lucide-react";
@@ -28,7 +29,7 @@ import { buildFamilyMenu } from "./lib/menus";
 import { Toaster } from "./design/primitives/Toast";
 import { spring } from "./design/springs";
 import { DEFAULT_SIZE_INDEX, familiesFor, selectVisibleFamilies, SIZES, useFontStore, type Family, type Nav } from "./state/fontStore";
-import { stepIndex, wheelPixels, wheelStep } from "./lib/wheelZoom";
+import { gestureStep, stepIndex, wheelPixels, wheelStep } from "./lib/wheelZoom";
 import { bulkToggleTarget } from "./lib/familyState";
 import { useT } from "./lib/i18n";
 
@@ -191,15 +192,25 @@ export default function App() {
   }, [init]);
 
   useEffect(() => {
+    interface WebKitGestureEvent extends Event {
+      scale: number;
+    }
+
     const wheel = { acc: 0, at: 0 };
-    const onWheel = (e: WheelEvent) => {
-      if (!e.ctrlKey && !e.metaKey) return;
-      e.preventDefault();
+    const gesture = { base: 1 };
+    let metaDown = false;
+    let ctrlDown = false;
+    let gestureActive = false;
+
+    const isModalOpen = () => {
       const st = useFontStore.getState();
-      if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
-      const step = wheelStep(wheel, wheelPixels(e.deltaY, e.deltaMode), e.timeStamp);
-      if (step === 0) return;
-      const over = e.target instanceof Element ? e.target : null;
+      return st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen;
+    };
+
+    const applyZoomStep = (step: -1 | 0 | 1, target: EventTarget | null) => {
+      if (step === 0 || isModalOpen()) return;
+      const st = useFontStore.getState();
+      const over = target instanceof Element ? target : null;
       if (over?.closest(".glyph-grid, .glyph-zoom")) {
         st.setGlyphSize(st.glyphSize + step * 4);
         return;
@@ -207,8 +218,100 @@ export default function App() {
       const next = stepIndex(st.sizeIndex, step, SIZES.length);
       if (next !== st.sizeIndex) st.setSizeIndex(next);
     };
-    window.addEventListener("wheel", onWheel, { passive: false });
-    return () => window.removeEventListener("wheel", onWheel);
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Meta" || e.metaKey) metaDown = true;
+      if (e.key === "Control" || e.ctrlKey) ctrlDown = true;
+    };
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Meta") metaDown = false;
+      if (e.key === "Control") ctrlDown = false;
+    };
+
+    const resetModifiers = () => {
+      metaDown = false;
+      ctrlDown = false;
+      gestureActive = false;
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) resetModifiers();
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (gestureActive) return;
+      if (!e.ctrlKey && !e.metaKey && !metaDown && !ctrlDown) return;
+      e.preventDefault();
+      if (isModalOpen()) return;
+      const step = wheelStep(wheel, wheelPixels(e.deltaY, e.deltaMode), e.timeStamp);
+      applyZoomStep(step, e.target);
+    };
+
+    const onGestureStart = (e: Event) => {
+      const ge = e as WebKitGestureEvent;
+      e.preventDefault();
+      gestureActive = true;
+      gesture.base = ge.scale > 0 ? ge.scale : 1;
+    };
+
+    const onGestureChange = (e: Event) => {
+      const ge = e as WebKitGestureEvent;
+      e.preventDefault();
+      if (isModalOpen()) return;
+      applyZoomStep(gestureStep(gesture, ge.scale), e.target);
+    };
+
+    const onGestureEnd = (e: Event) => {
+      e.preventDefault();
+      gestureActive = false;
+      gesture.base = 1;
+    };
+
+    const wheelOpts: AddEventListenerOptions = { passive: false, capture: true };
+    window.addEventListener("wheel", onWheel, wheelOpts);
+    window.addEventListener("gesturestart", onGestureStart, wheelOpts);
+    window.addEventListener("gesturechange", onGestureChange, wheelOpts);
+    window.addEventListener("gestureend", onGestureEnd, wheelOpts);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", resetModifiers);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    let dead = false;
+    let unlistenNativeZoom: (() => void) | undefined;
+    void listen<number>("native-zoom", ({ payload }) => {
+      if (isModalOpen()) return;
+      const st = useFontStore.getState();
+      if (payload === 0) {
+        st.setSizeIndex(DEFAULT_SIZE_INDEX);
+        return;
+      }
+      if (payload === 1 || payload === -1) {
+        if (document.querySelector(".glyph-grid:hover, .glyph-zoom:hover")) {
+          st.setGlyphSize(st.glyphSize + payload * 4);
+          return;
+        }
+        const next = stepIndex(st.sizeIndex, payload, SIZES.length);
+        if (next !== st.sizeIndex) st.setSizeIndex(next);
+      }
+    }).then((fn) => {
+      if (dead) fn();
+      else unlistenNativeZoom = fn;
+    });
+
+    return () => {
+      dead = true;
+      unlistenNativeZoom?.();
+      window.removeEventListener("wheel", onWheel, wheelOpts);
+      window.removeEventListener("gesturestart", onGestureStart, wheelOpts);
+      window.removeEventListener("gesturechange", onGestureChange, wheelOpts);
+      window.removeEventListener("gestureend", onGestureEnd, wheelOpts);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", resetModifiers);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -220,10 +323,13 @@ export default function App() {
         (e.target instanceof HTMLElement && e.target.isContentEditable);
       if (e.key === "Escape" && !inField) {
         const st = useFontStore.getState();
+        if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
         st.setComparePicking(false);
         st.select(null);
       }
       if (e.key === "/" && !inField) {
+        const st = useFontStore.getState();
+        if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
         e.preventDefault();
         document.getElementById("global-search")?.focus();
       }
@@ -233,19 +339,24 @@ export default function App() {
         st.setHelpOpen(!st.helpOpen);
       }
 
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         const st = useFontStore.getState();
         st.setPaletteOpen(!st.paletteOpen);
       }
 
-      if ((e.metaKey || e.ctrlKey) && !e.altKey && ["=", "+", "-", "_", "0"].includes(e.key)) {
+      const zoomIn =
+        ["=", "+"].includes(e.key) || e.code === "Equal" || e.code === "NumpadAdd";
+      const zoomOut =
+        ["-", "_"].includes(e.key) || e.code === "Minus" || e.code === "NumpadSubtract";
+      const zoomReset = e.key === "0" || e.code === "Digit0" || e.code === "Numpad0";
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && (zoomIn || zoomOut || zoomReset)) {
         const st = useFontStore.getState();
         if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
         e.preventDefault();
         const next =
-          e.key === "0" ? DEFAULT_SIZE_INDEX
-          : stepIndex(st.sizeIndex, e.key === "-" || e.key === "_" ? -1 : 1, SIZES.length);
+          zoomReset ? DEFAULT_SIZE_INDEX
+          : stepIndex(st.sizeIndex, zoomOut ? -1 : 1, SIZES.length);
         if (next !== st.sizeIndex) st.setSizeIndex(next);
       }
 
@@ -259,7 +370,7 @@ export default function App() {
       const arrows = ["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"];
       if (arrows.includes(e.key) && !inField && !slider) {
         const st = useFontStore.getState();
-        if (st.compare || st.settingsOpen || st.helpOpen) return;
+        if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
         const order = st.visibleOrder;
         if (order.length === 0) return;
         e.preventDefault();
@@ -274,7 +385,7 @@ export default function App() {
       }
       if (e.key === " " && !inField) {
         const st = useFontStore.getState();
-        if (st.compare || st.settingsOpen || st.helpOpen) return;
+        if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
         const names = targets(st);
         if (names.length === 0) return;
         e.preventDefault();
@@ -300,14 +411,14 @@ export default function App() {
 
       if ((e.key === "c" || e.key === "C") && !inField && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const st = useFontStore.getState();
-        if (st.compare || st.settingsOpen || st.helpOpen || st.selection.length < 2) return;
+        if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen || st.selection.length < 2) return;
         e.preventDefault();
         st.openCompare(st.selection);
       }
 
       if ((e.key === "f" || e.key === "F") && !inField && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const st = useFontStore.getState();
-        if (st.compare || st.settingsOpen || st.helpOpen) return;
+        if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
         const names = targets(st);
         if (names.length === 0) return;
         e.preventDefault();
@@ -317,9 +428,9 @@ export default function App() {
         }
         void st.toggleFavorite(names[0]);
       }
-      if (e.key === "Delete" && !inField) {
+      if ((e.key === "Delete" || ((e.metaKey || e.ctrlKey) && e.key === "Backspace")) && !inField) {
         const st = useFontStore.getState();
-        if (st.compare || st.settingsOpen || st.helpOpen) return;
+        if (st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen) return;
         const doomed = targets(st);
         if (doomed.length === 0) return;
         e.preventDefault();
@@ -329,7 +440,7 @@ export default function App() {
       if (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) {
         const st = useFontStore.getState();
         const focus = st.selectedFamily ?? st.selection[st.selection.length - 1];
-        if (inField || st.compare || st.settingsOpen || st.helpOpen || !focus) return;
+        if (inField || st.compare || st.settingsOpen || st.helpOpen || st.paletteOpen || !focus) return;
         e.preventDefault();
         const fam = familiesFor(st.fonts, st.tags).get(focus);
         if (!fam) return;

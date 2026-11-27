@@ -1,24 +1,15 @@
-# dependencies & build output
+
 node_modules/
 dist/
 src-tauri/target/
 src-tauri/gen/schemas/
-
-# editor / OS noise
 .DS_Store
 Thumbs.db
 *.log
 .vscode/
-.idea/
-
-strip-comments.mjs
 /src-tauri/gen/
-/release.txt
-/Issue-18.txt
 /.npmrc
 /release/
 /.gitignore
 /Issues/
-/base.png
-/image.png
-/settings.png
+

@@ -31,6 +31,7 @@ import { DEFAULT_SIZE_INDEX, familiesFor, selectVisibleFamilies, SIZES, useFontS
 import { stepIndex, wheelPixels, wheelStep } from "./lib/wheelZoom";
 import { bulkToggleTarget } from "./lib/familyState";
 import { useT } from "./lib/i18n";
+import { applyUiFont } from "./lib/appearance";
 
 function ScanSkeleton() {
   const t = useT();
@@ -183,6 +184,12 @@ function targets(st: { selection: string[]; selectedFamily: string | null }): st
 export default function App() {
   const init = useFontStore((s) => s.init);
   const motionPref = useFontStore((s) => s.motionPref);
+  const uiFont = useFontStore((s) => s.appearance.font);
+  const fontsLoaded = useFontStore((s) => s.fonts.length > 0);
+
+  useEffect(() => {
+    void applyUiFont(uiFont, useFontStore.getState().fonts);
+  }, [uiFont, fontsLoaded]);
 
   useEffect(() => {
     void init().then(() => {

@@ -8,6 +8,7 @@ import { toast } from "../design/primitives/Toast";
 import { t as translate, useT, type TKey } from "../lib/i18n";
 import { APP_LICENSE, APP_VERSION } from "../lib/version";
 import { ipc } from "../lib/ipc";
+import VariableProximity from "./VariableProximity";
 
 function GithubGlyph({ size = 16 }: { size?: number }) {
   return (
@@ -48,7 +49,7 @@ const LINKS: { key: TKey; sub: string; url: string; icon: React.ReactNode }[] = 
   },
 ];
 
-const STACK = ["Tauri v2", "Rust", "React 19", "TypeScript", "Vite", "pnpm"];
+const STACK = ["Tauri v2", "Rust", "React 19", "TypeScript", "Vite", "GSAP", "React Bits", "pnpm"];
 
 export function AboutView() {
   const t = useT();
@@ -67,7 +68,15 @@ export function AboutView() {
       transition={spring}
     >
       <img className="about-icon" src="/icon-512.png" alt="" draggable={false} />
-      <h1 className="about-name">ZFontManager</h1>
+      <h1 className="about-name">
+        <VariableProximity
+          label="ZFontManager"
+          fromFontVariationSettings="'wght' 600"
+          toFontVariationSettings="'wght' 900"
+          radius={120}
+          falloff="gaussian"
+        />
+      </h1>
       <div className="about-version tabular">
         {t("about.version", { version: APP_VERSION, license: APP_LICENSE })}
       </div>

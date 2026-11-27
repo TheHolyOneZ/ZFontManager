@@ -27,6 +27,8 @@ import {
   SunMoon,
   Trash2,
   Type,
+  Palette,
+  PanelLeft,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { springSnappy } from "../design/springs";
@@ -250,6 +252,18 @@ export function CommandPalette() {
         label: t("palette.settings"),
         icon: <Settings size={14} strokeWidth={1.5} />,
         run: () => s.setSettingsOpen(true),
+      },
+      {
+        id: "appearance",
+        label: t("palette.appearance"),
+        icon: <Palette size={14} strokeWidth={1.5} />,
+        run: () => s.setSettingsOpen(true, "appearance"),
+      },
+      {
+        id: "sidebar",
+        label: t("palette.sidebar"),
+        icon: <PanelLeft size={14} strokeWidth={1.5} />,
+        run: () => s.setSettingsOpen(true, "sidebar"),
       },
       {
         id: "shortcuts",

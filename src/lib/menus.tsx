@@ -16,6 +16,7 @@ import {
   Star,
   Timer,
   Trash2,
+  Type,
 } from "lucide-react";
 import type { MenuItem } from "../design/primitives/ContextMenu";
 import { toast } from "../design/primitives/Toast";
@@ -318,6 +319,18 @@ export function buildFamilyMenu(family: Family): MenuItem[] {
       label: t("menu.exportSpecimen"),
       icon: <ImageIcon size={14} strokeWidth={1.5} />,
       action: () => void exportSpecimen(family, useFontStore.getState().sampleText),
+    },
+    {
+      label: t(
+        s.appearance.font === family.name ? "menu.resetInterfaceFont" : "menu.useAsInterfaceFont",
+      ),
+      icon: <Type size={14} strokeWidth={1.5} />,
+      disabled: family.webOnly && s.appearance.font !== family.name,
+      action: () =>
+        s.setAppearance({
+          ...s.appearance,
+          font: s.appearance.font === family.name ? null : family.name,
+        }),
     },
     {
       label: t("menu.copyFamilyName"),

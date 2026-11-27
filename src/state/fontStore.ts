@@ -24,7 +24,16 @@ import { folderGroups, inFolder } from "../lib/folders";
 import { toast } from "../design/primitives/Toast";
 import { setQuickMotion } from "../design/springs";
 import { setSoundLevel, type SoundLevel } from "../lib/sound";
-import { applyTheme, type ThemePref } from "../lib/theme";
+import { applyAppearance, applyTheme, type ThemePref } from "../lib/theme";
+import { DEFAULT_APPEARANCE, parseAppearance, type Appearance } from "../lib/appearance";
+import {
+  BROWSE_IDS,
+  clampSidebarWidth,
+  normalizeOrder,
+  SECTION_IDS,
+  SIDEBAR_DEFAULT_WIDTH,
+  SIDEBAR_IDS,
+} from "../lib/sidebarLayout";
 import {
   getLocalePref,
   hydrateLocalePref,
@@ -107,6 +116,7 @@ interface FontStore {
 
   comparePicking: boolean;
   settingsOpen: boolean;
+  settingsPage: SettingsPage;
   helpOpen: boolean;
   paletteOpen: boolean;
   settings: AppSettings;
@@ -143,6 +153,11 @@ interface FontStore {
   soundPref: SoundLevel;
   themePref: ThemePref;
   localePref: LocalePref;
+  appearance: Appearance;
+  sidebarWidth: number;
+  sidebarOrder: string[];
+  sectionOrder: string[];
+  sidebarHidden: string[];
 
   bulkTagFor: string[] | null;
 
@@ -207,6 +222,12 @@ interface FontStore {
   setFontPathsActive: (paths: string[], active: boolean) => Promise<void>;
   applyFamilyInApp: (family: string, app: AdobeApp) => Promise<void>;
   setPanelWidth: (w: number) => void;
+  setAppearance: (next: Appearance, animate?: boolean) => void;
+  setSidebarWidth: (w: number) => void;
+  setSidebarOrder: (order: string[]) => void;
+  setSectionOrder: (order: string[]) => void;
+  setSidebarHidden: (id: string, hidden: boolean) => void;
+  resetSidebar: () => void;
   selectWith: (family: string, mode: "single" | "toggle" | "range", order: string[]) => void;
   selectAll: () => void;
   toggleSelected: (family: string, range?: boolean) => void;
@@ -214,7 +235,7 @@ interface FontStore {
   closeCompare: () => void;
   setComparePicking: (on: boolean) => void;
   togglePick: (family: string) => void;
-  setSettingsOpen: (open: boolean) => void;
+  setSettingsOpen: (open: boolean, page?: SettingsPage) => void;
   setHelpOpen: (open: boolean) => void;
   setPaletteOpen: (open: boolean) => void;
   updateSettings: (settings: AppSettings) => Promise<void>;
@@ -267,6 +288,7 @@ interface FontStore {
   toggleScriptFilter: (s: string) => void;
   setVariableOnly: (on: boolean) => void;
   setToggleableOnly: (on: boolean) => void;
+  clearFilters: () => void;
   exportLibraryData: (dest: string) => Promise<void>;
   importLibraryData: (src: string) => Promise<void>;
   setNav: (n: Nav) => void;
@@ -296,6 +318,15 @@ export function clampGlyphSize(px: number): number {
   return Math.round(Math.min(GLYPH_SIZE_MAX, Math.max(GLYPH_SIZE_MIN, px)));
 }
 
+export type SettingsPage =
+  | "general"
+  | "library"
+  | "appearance"
+  | "sidebar"
+  | "connections"
+  | "data"
+  | "about";
+
 let prefsTimer: ReturnType<typeof setTimeout> | undefined;
 function persistPrefs(get: () => FontStore) {
   clearTimeout(prefsTimer);
@@ -319,6 +350,11 @@ function persistPrefs(get: () => FontStore) {
       soundPref: s.soundPref,
       themePref: s.themePref,
       localePref: s.localePref,
+      appearance: s.appearance,
+      sidebarWidth: s.sidebarWidth,
+      sidebarOrder: s.sidebarOrder,
+      sectionOrder: s.sectionOrder,
+      sidebarHidden: s.sidebarHidden,
       onboarded: s.onboarded,
       lastImported: s.lastImported,
     });
@@ -338,11 +374,17 @@ export const useFontStore = create<FontStore>((set, get) => ({
   covers: {},
   trash: [],
   panelWidth: 348,
+  appearance: DEFAULT_APPEARANCE,
+  sidebarWidth: SIDEBAR_DEFAULT_WIDTH,
+  sidebarOrder: [...BROWSE_IDS],
+  sectionOrder: [...SECTION_IDS],
+  sidebarHidden: [],
   selection: [],
   visibleOrder: [],
   compare: null,
   comparePicking: false,
   settingsOpen: false,
+  settingsPage: "general",
   helpOpen: false,
   paletteOpen: false,
   settings: { extraDirs: [], watchEnabled: false, autoActivateImports: false, libraryDir: null, libraryDirEnabled: false, affinityEnabled: false, affinityDeactivateOnQuit: true, onlineFontsEnabled: false },
@@ -450,6 +492,18 @@ export const useFontStore = create<FontStore>((set, get) => ({
           ? (prefs.themePref as ThemePref)
           : "dark",
         onboarded: prefs.onboarded === true,
+        appearance: parseAppearance(prefs.appearance),
+        sidebarWidth:
+          typeof prefs.sidebarWidth === "number"
+            ? clampSidebarWidth(prefs.sidebarWidth)
+            : SIDEBAR_DEFAULT_WIDTH,
+        sidebarOrder: normalizeOrder(prefs.sidebarOrder, BROWSE_IDS),
+        sectionOrder: normalizeOrder(prefs.sectionOrder, SECTION_IDS),
+        sidebarHidden: Array.isArray(prefs.sidebarHidden)
+          ? (prefs.sidebarHidden as unknown[]).filter(
+              (n): n is string => typeof n === "string" && SIDEBAR_IDS.includes(n),
+            )
+          : [],
         localePref: isLocalePref(prefs.localePref) ? prefs.localePref : get().localePref,
         lastImported: Array.isArray(prefs.lastImported)
           ? (prefs.lastImported as unknown[]).filter((n): n is string => typeof n === "string")
@@ -459,6 +513,7 @@ export const useFontStore = create<FontStore>((set, get) => ({
       hydrateLocalePref(get().localePref);
     } catch {
     }
+    applyAppearance(get().appearance);
     applyTheme(get().themePref);
     applyMotionPref(get().motionPref);
     applyTransparencyPref(get().transparencyPref);
@@ -1312,7 +1367,8 @@ export const useFontStore = create<FontStore>((set, get) => ({
         ? s.selection.filter((f) => f !== family)
         : [...s.selection, family],
     })),
-  setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
+  setSettingsOpen: (settingsOpen, page) =>
+    set(page ? { settingsOpen, settingsPage: page } : { settingsOpen }),
   setHelpOpen: (helpOpen) => set({ helpOpen }),
   setPaletteOpen: (paletteOpen) => set({ paletteOpen }),
 
@@ -1552,6 +1608,43 @@ export const useFontStore = create<FontStore>((set, get) => ({
     persistPrefs(get);
   },
 
+  setAppearance: (appearance, animate = false) => {
+    set({ appearance });
+    applyAppearance(appearance, animate);
+    persistPrefs(get);
+  },
+
+  setSidebarWidth: (w) => {
+    set({ sidebarWidth: clampSidebarWidth(w) });
+    persistPrefs(get);
+  },
+
+  setSidebarOrder: (order) => {
+    set({ sidebarOrder: normalizeOrder(order, BROWSE_IDS) });
+    persistPrefs(get);
+  },
+
+  setSectionOrder: (order) => {
+    set({ sectionOrder: normalizeOrder(order, SECTION_IDS) });
+    persistPrefs(get);
+  },
+
+  setSidebarHidden: (id, hidden) => {
+    const cur = get().sidebarHidden.filter((x) => x !== id);
+    set({ sidebarHidden: hidden ? [...cur, id] : cur });
+    persistPrefs(get);
+  },
+
+  resetSidebar: () => {
+    set({
+      sidebarWidth: SIDEBAR_DEFAULT_WIDTH,
+      sidebarOrder: [...BROWSE_IDS],
+      sectionOrder: [...SECTION_IDS],
+      sidebarHidden: [],
+    });
+    persistPrefs(get);
+  },
+
   setSampleText: (sampleText) => {
     set({ sampleText });
     persistPrefs(get);
@@ -1656,6 +1749,19 @@ export const useFontStore = create<FontStore>((set, get) => ({
       });
   },
   setToggleableOnly: (toggleableOnly) => set({ toggleableOnly }),
+
+  clearFilters: () => {
+    set({
+      classFilter: [],
+      scriptFilter: [],
+      formatFilter: [],
+      featureFilter: [],
+      sourceFilter: "all",
+      variableOnly: false,
+      toggleableOnly: false,
+    });
+    get().setCharFilter("");
+  },
 
   exportLibraryData: async (dest) => {
     const { tags, collections, favorites, notes } = get();

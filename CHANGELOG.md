@@ -4,6 +4,68 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.19.0] — 2026-11-27
+
+### Added
+
+- **Themes you can make your own.** Settings → Appearance now has eight
+  themes: Ink, Graphite, Darkroom and Blueprint for dark, Paper, Letterpress,
+  Riso and Process for light. Pick one of each, and System switches between
+  them along with your desktop. The simple editor changes the accent color,
+  the corners (square to round) and the font the app itself is set in. The
+  advanced editor gives every color its own picker: window, toolbar, sidebar,
+  cards, inspector and menus, fields, borders, text, font previews, switches
+  (on, off and the knob), the size slider, scrollbars, the selection and focus
+  outlines, status colors and the format badges. A theme can be copied as
+  JSON, exported to a file and imported again.
+- **Any font in your library can be the interface font.** Pick it under
+  Appearance, or right-click a font and choose **Use as interface font**. The
+  font previews keep their own fonts.
+- **A sidebar you can resize and rearrange.** Drag the line between the sidebar
+  and the font list to make it wider or narrower, and double-click it to reset.
+  Drag the rows under Browse, or the Collections, Tags and Watched folders
+  headings, to change their order. Right-click a row to hide it. Settings →
+  Sidebar lists every item with drag handles and eye toggles, so you can bring
+  hidden ones back or reorder them there.
+- **Search inside the filter menu.** The filter menu opens with a search field
+  that already has the focus, so you can type "cyril" or "mono" instead of
+  scrolling. <kbd>↑</kbd> <kbd>↓</kbd> move through what's left and
+  <kbd>Enter</kbd> switches a filter on or off. <kbd>Esc</kbd> clears the
+  search first, then closes the menu. **Clear all** turns every active filter
+  off.
+- Two new command palette entries: **Change theme and colors** and
+  **Customize sidebar**.
+
+### Changed
+
+- **A bigger Settings window.** Settings now opens as a large window with its
+  pages listed on the left (General, Library, Appearance, Sidebar, Online and
+  apps, Data, About) and a search field that finds any setting on any page.
+  <kbd>Ctrl</kbd> <kbd>F</kbd> (<kbd>⌘</kbd> <kbd>F</kbd> on macOS) jumps to it.
+- **A new tag window.** Tagging several fonts at once now starts in a real
+  search field: type to narrow your tags down, use <kbd>↑</kbd> <kbd>↓</kbd>
+  and <kbd>Enter</kbd> to pick one, or press <kbd>Enter</kbd> on a new name to
+  create it. Tags are plain labels with a check box instead of colored bubbles,
+  and show a dash and a count when only some of the selected fonts have them.
+- **A tour that covers the whole window.** The tour now has 22 steps in six
+  chapters and puts the spotlight on the exact control it describes: filters,
+  sorting, the on/off switch, selecting, the bulk actions bar, compare,
+  collections, tags, the command palette, and the new sidebar and theme
+  options. Each step shows its keyboard shortcut and how far along you are.
+- **A calmer look.** The purple gradients, glows and glowing rings around
+  input fields are gone. Switches, buttons and badges use one flat accent
+  color, fields show focus with a brighter border, the selected sidebar row is
+  a plain highlight, and the small all-caps headings are now in sentence case.
+  Every button and panel is still where it was.
+
+### Fixed
+
+- **Text in the tag window's field sat out of line.** The field borrowed its
+  height from the toolbar, which it isn't part of, so the text and its outline
+  didn't line up.
+- The tag window said "Tag 1 fonts" for a single font. It now says
+  "Tag 1 font", in every language.
+
 ## [0.18.1] — 2026-11-26
 
 ### Added

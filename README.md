@@ -1,9 +1,3 @@
-
-## Demo Video
-
-[Watch ZFontManager Demo](https://github.com/TheHolyOneZ/ZFontManager/blob/main/zfontmanager.mp4)
-
-
 <div align="center">
 
 <img src="src-tauri/icons/128x128.png" alt="ZFontManager icon" width="110" />
@@ -18,7 +12,7 @@ from one clean, fast, native app. Your fonts never leave your machine.
 <br>
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-7c3aed?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.18.1-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
+[![Version](https://img.shields.io/badge/Version-0.19.0-5b21b6?style=flat-square)](https://zsync.eu/zfontmanager/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20·%20Windows%20·%20macOS-2d2a4a?style=flat-square)](#-platform-notes)
 [![Languages](https://img.shields.io/badge/Languages-9-4f46e5?style=flat-square)](#-translations)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square)](https://tauri.app)
@@ -99,7 +93,7 @@ ZFontManager is the answer to both:
   Everything happens on your machine.
 
 > [!NOTE]
-> ZFontManager is currently at **version 0.18.1** — see the
+> ZFontManager is currently at **version 0.19.0** — see the
 > [changelog](CHANGELOG.md) for what's new. It's already very usable
 > day-to-day, but expect the occasional rough edge — and please
 > [report anything odd](https://github.com/TheHolyOneZ/ZFontManager/issues)!
@@ -365,7 +359,9 @@ Four complementary ways to impose order on font chaos:
 
 - **Tags** — free-form labels on any family ("condensed", "80s", "client-x").
   Tags appear in the sidebar and act as instant filters. Tag many fonts at
-  once via multi-select.
+  once via multi-select: the tag window searches your tags as you type, and
+  <kbd>↑</kbd> <kbd>↓</kbd> plus <kbd>Enter</kbd> pick one without touching the
+  mouse.
 - **Collections** — folders you curate by hand, per project or per client.
   Right-click any font → Collections → add it. A font can live in as many
   collections as you like, and its card shows which ones — click a name to
@@ -389,6 +385,8 @@ Four complementary ways to impose order on font chaos:
 - **Show** all fonts, only the ones your system shipped, or only the ones you
   installed yourself. Handy when your own fonts are buried among hundreds of
   system faces.
+- **Search the filters themselves** — the filter menu opens with a search
+  field, so typing "cyril" or "mono" gets you there without scrolling.
 - **Filter** by classification — Serif, Sans, Mono, Script, Display and more.
 - **Filter** by writing system — Latin, Cyrillic, Greek, and others.
 - **Filter** by file format — OpenType, TrueType, WOFF and WOFF2.
@@ -408,6 +406,11 @@ until close**, **Deactivated**, **Last imported** and **System fonts**. Each
 one is reachable from the command palette too, so you can jump straight there
 without reaching for the mouse. Its Browse, Collections and Tags sections each
 fold away if you would rather not see them, and stay folded next time.
+
+The sidebar itself is yours to arrange. Drag the line between it and the font
+list to make it wider or narrower (double-click to reset), drag rows and
+section headings to reorder them, and right-click anything you never use to
+hide it. **Settings → Sidebar** brings hidden items back.
 
 Filters combine, and the empty state always tells you which filters are
 active so you're never staring at a mysteriously empty library.
@@ -463,8 +466,14 @@ browser, it works exactly the way you expect.
 
 ### Themes, sound &amp; motion
 
-- **Dark and light themes**, plus a System option that follows your desktop.
-  Same glass aesthetic, different light.
+- **Eight themes**, four dark (Ink, Graphite, Darkroom, Blueprint) and four
+  light (Paper, Letterpress, Riso, Process). Pick one of each, and System
+  switches between them with your desktop.
+- **Make a theme your own.** The simple editor sets the accent color, the
+  corners (square to round) and the font the interface is set in, which can
+  be any font in your library. The advanced editor has a color picker for
+  every surface, text color, switch, slider, outline, status color and format
+  badge. Themes export to a small JSON file you can import again or share.
 - **Interface sounds** — soft, synthesized feedback for toggles and events.
   Three levels: on, subtle, or off.
 - **Reduced motion** — replaces every springy animation with a quick 0.1 s
@@ -478,14 +487,15 @@ browser, it works exactly the way you expect.
   or low-resolution display shows the entire layout rather than a cropped one.
   Leave it on Auto or pin it between 80% and 125% yourself; larger settings are
   just as useful on a big display.
-- A **first-launch tour** glides a spotlight over the interface and teaches
-  the essentials in a minute. Replayable anytime from Settings.
+- A **first-launch tour** walks through the whole window in 22 short steps,
+  putting a spotlight on each control and showing its keyboard shortcut.
+  Replay it any time from **Settings → About**.
 
 <div align="center">
 
-<img src="settings.png" alt="ZFontManager settings — watched folders, backup, theme, reduced motion and interface sounds" width="820" />
+<img src="settings.png" alt="ZFontManager settings, Appearance page with dark and light theme presets, accent color and the simple and advanced editors" width="820" />
 
-<sub>Settings: watched folders, one-file backup, themes, motion and sound to taste.</sub>
+<sub>Settings: eight themes to start from, your own accent color and interface font, or a color picker for everything.</sub>
 
 </div>
 
@@ -522,6 +532,7 @@ same list in a pretty overlay.
 | Keys | Action |
 |---|---|
 | <kbd>Ctrl</kbd> <kbd>K</kbd> | Open the command palette |
+| <kbd>Ctrl</kbd> <kbd>F</kbd> | Search inside Settings (while Settings is open) |
 | <kbd>/</kbd> | Jump to search |
 | <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> | Move through the library |
 | <kbd>Home</kbd> / <kbd>End</kbd> | First / last font |
@@ -932,6 +943,10 @@ ZFontManager is free software, released under the
 
 In human terms: you may use it, share it, and change it — and if you
 distribute a changed version, it must stay just as free for the next person.
+
+Animations use [GSAP](https://gsap.com). The title on the About page reacts
+to the cursor with [VariableProximity](https://reactbits.dev) from React Bits
+by David Haz (MIT + Commons Clause).
 
 ---
 

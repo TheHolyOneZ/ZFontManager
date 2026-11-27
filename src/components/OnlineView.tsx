@@ -150,6 +150,13 @@ function GoogleBrowser() {
   const rowHeight = Math.round(previewSize * 1.35) + 108;
   const rowCount = Math.ceil(visible.length / cols);
 
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    setSettled(false);
+    const id = window.setTimeout(() => setSettled(true), 900);
+    return () => window.clearTimeout(id);
+  }, [visible]);
+
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => scrollRef.current,
@@ -272,6 +279,7 @@ function GoogleBrowser() {
                       key={f.id}
                       f={f}
                       index={start + j}
+                      animateIn={!settled}
                       installed={installedNames.has(f.family.toLowerCase())}
                       text={previewText(sampleText, f.family, previewUppercase)}
                       size={previewSize}
@@ -398,6 +406,7 @@ function GoogleBrowser() {
 function OnlineCard({
   f,
   index,
+  animateIn,
   installed,
   text,
   size,
@@ -405,6 +414,7 @@ function OnlineCard({
 }: {
   f: OnlineFamily;
   index: number;
+  animateIn: boolean;
   installed: boolean;
   text: string;
   size: number;
@@ -420,7 +430,7 @@ function OnlineCard({
       tabIndex={0}
       role="button"
       aria-label={f.family}
-      initial={{ opacity: 0, y: 8 }}
+      initial={animateIn ? { opacity: 0, y: 8 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...spring, delay: staggerDelay(Math.min(index, 24)) }}
       onClick={onOpen}

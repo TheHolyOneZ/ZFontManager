@@ -4,6 +4,36 @@ All notable changes to ZFontManager are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.19.1] — 2026-11-27
+
+### Added
+
+- **Mac-style window buttons on macOS.** The close, minimize and zoom buttons
+  now sit on the left as traffic lights, where Mac users expect them, instead
+  of the Windows-style buttons on the right. Contributed by amasun. (#56)
+- **Pinch to zoom on macOS.** A trackpad pinch, ⌘ + scroll and ⌘ + / − / 0 now
+  resize the previews reliably. Contributed by amasun. (#56)
+- **⌘ ⌫ moves fonts to the trash on macOS**, as in Finder, and Ctrl +
+  Backspace does the same on Windows and Linux. The shortcuts sheet shows ⌘
+  and ⇧ on a Mac. Contributed by amasun. (#56)
+
+### Changed
+
+- **The whole Google Fonts catalogue is browsable.** The online browser used to
+  show the first 400 results and ask you to narrow the search down. It now
+  lists every family and only draws the rows on screen, so scrolling and
+  resizing stay smooth. The Nerd Fonts list works the same way. Contributed by
+  amasun. (#57)
+
+### Fixed
+
+- **Shortcuts no longer act on the library behind the command palette.** With
+  the palette open, Space, the arrow keys, C, F, Delete, / and Esc used to
+  reach the font list underneath. Contributed by amasun. (#56)
+- **Ctrl + K works with Caps Lock on**, and Ctrl + plus, minus and 0 also work
+  on keyboard layouts that put those keys elsewhere. Contributed by amasun.
+  (#56)
+
 ## [0.19.0] — 2026-11-27
 
 ### Added

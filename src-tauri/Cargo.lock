@@ -6033,7 +6033,7 @@ dependencies = [
 
 [[package]]
 name = "zfontmanager"
-version = "0.19.0"
+version = "0.19.1"
 dependencies = [
  "block2",
  "dirs 6.0.0",

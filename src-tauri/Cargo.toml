@@ -41,3 +41,7 @@ tokio = { version = "1.53.1", features = ["time", "rt"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.59", features = ["Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging", "Win32_System_Registry", "Win32_Foundation"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-app-kit = { version = "0.3", features = ["NSEvent", "block2", "objc2-core-foundation"] }
+block2 = "0.6"

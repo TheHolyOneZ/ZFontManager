@@ -6,6 +6,17 @@ import { useFontStore } from "../state/fontStore";
 import { useFocusTrap } from "../lib/useFocusTrap";
 import { useT, type TKey } from "../lib/i18n";
 
+const IS_MAC =
+  typeof navigator !== "undefined" &&
+  (/Mac|iPod|iPhone|iPad/i.test(navigator.platform) || /Macintosh/i.test(navigator.userAgent));
+
+function formatKey(k: string, clickLabel: string): string {
+  if (k === "Click") return clickLabel;
+  if (IS_MAC && k === "Ctrl") return "⌘";
+  if (IS_MAC && k === "Shift") return "⇧";
+  return k;
+}
+
 const SECTIONS: [TKey, [string[], TKey][]][] = [
   [
     "sc.navigate",
@@ -42,7 +53,7 @@ const SECTIONS: [TKey, [string[], TKey][]][] = [
       [["Space"], "sc.toggleActive"],
       [["C"], "sc.compare"],
       [["F"], "sc.favorite"],
-      [["Del"], "sc.trash"],
+      [IS_MAC ? ["Ctrl", "⌫"] : ["Del"], "sc.trash"],
       [["Shift", "F10"], "sc.contextMenu"],
     ],
   ],
@@ -109,7 +120,7 @@ export function ShortcutsOverlay() {
                         <span className="shortcuts-keys">
                           {keys.map((k) => (
                             <kbd key={k} className="kbd">
-                              {k === "Click" ? t("key.click") : k}
+                              {formatKey(k, t("key.click"))}
                             </kbd>
                           ))}
                         </span>

@@ -933,6 +933,114 @@ async fn apply_font_in_app(
         .map_err(|e| e.to_string())?
 }
 
+#[cfg(target_os = "macos")]
+fn install_macos_zoom_monitor(handle: tauri::AppHandle) {
+    use block2::RcBlock;
+    use objc2_app_kit::{NSEvent, NSEventMask, NSEventModifierFlags, NSEventType};
+    use std::cell::RefCell;
+    use std::ptr::NonNull;
+    use std::time::{Duration, Instant};
+    use tauri::Emitter;
+
+    struct State {
+        mag_acc: f64,
+        last_mag: Instant,
+        scroll_acc: f64,
+        last_scroll: Instant,
+    }
+
+    let state = RefCell::new(State {
+        mag_acc: 0.0,
+        last_mag: Instant::now(),
+        scroll_acc: 0.0,
+        last_scroll: Instant::now(),
+    });
+
+    let block = RcBlock::new(move |event: NonNull<NSEvent>| -> *mut NSEvent {
+        let ev = unsafe { event.as_ref() };
+        let ty = ev.r#type();
+        let mods = ev.modifierFlags();
+        let now = Instant::now();
+
+        if ty == NSEventType::Magnify {
+            let mag = ev.magnification();
+            if mag != 0.0 {
+                let mut st = state.borrow_mut();
+                if now.duration_since(st.last_mag) > Duration::from_millis(350)
+                    || (st.mag_acc != 0.0 && mag.signum() != st.mag_acc.signum())
+                {
+                    st.mag_acc = 0.0;
+                }
+                st.last_mag = now;
+                st.mag_acc += mag;
+                if st.mag_acc.abs() >= 0.12 {
+                    let step: i8 = if st.mag_acc > 0.0 { 1 } else { -1 };
+                    st.mag_acc = 0.0;
+                    let _ = handle.emit("native-zoom", step);
+                }
+            }
+            return std::ptr::null_mut();
+        }
+
+        if ty == NSEventType::ScrollWheel
+            && (mods.contains(NSEventModifierFlags::Command)
+                || mods.contains(NSEventModifierFlags::Control))
+        {
+            let dy = ev.scrollingDeltaY();
+            if dy != 0.0 {
+                if !ev.hasPreciseScrollingDeltas() {
+                    let step: i8 = if dy > 0.0 { 1 } else { -1 };
+                    let _ = handle.emit("native-zoom", step);
+                } else {
+                    let mut st = state.borrow_mut();
+                    if now.duration_since(st.last_scroll) > Duration::from_millis(350)
+                        || (st.scroll_acc != 0.0 && dy.signum() != st.scroll_acc.signum())
+                    {
+                        st.scroll_acc = 0.0;
+                    }
+                    st.last_scroll = now;
+                    st.scroll_acc += dy;
+                    if st.scroll_acc.abs() >= 30.0 {
+                        let step: i8 = if st.scroll_acc > 0.0 { 1 } else { -1 };
+                        st.scroll_acc = 0.0;
+                        let _ = handle.emit("native-zoom", step);
+                    }
+                }
+            }
+            return std::ptr::null_mut();
+        }
+
+        if ty == NSEventType::KeyDown
+            && mods.contains(NSEventModifierFlags::Command)
+            && !mods.contains(NSEventModifierFlags::Option)
+            && !mods.contains(NSEventModifierFlags::Control)
+        {
+            let code = ev.keyCode();
+            if code == 24 || code == 69 {
+                let _ = handle.emit("native-zoom", 1i8);
+                return std::ptr::null_mut();
+            }
+            if code == 27 || code == 78 {
+                let _ = handle.emit("native-zoom", -1i8);
+                return std::ptr::null_mut();
+            }
+            if code == 29 || code == 82 {
+                let _ = handle.emit("native-zoom", 0i8);
+                return std::ptr::null_mut();
+            }
+        }
+
+        event.as_ptr()
+    });
+
+    let mask = NSEventMask::Magnify | NSEventMask::ScrollWheel | NSEventMask::KeyDown;
+    if let Some(monitor) =
+        unsafe { NSEvent::addLocalMonitorForEventsMatchingMask_handler(mask, &block) }
+    {
+        std::mem::forget(monitor);
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[cfg(target_os = "windows")]
@@ -964,6 +1072,8 @@ pub fn run() {
         .manage(Store(std::sync::Mutex::new(state)))
         .manage(watcher::WatchHandle(std::sync::Mutex::new(None)))
         .setup(move |app| {
+            #[cfg(target_os = "macos")]
+            install_macos_zoom_monitor(app.handle().clone());
             if let Some(window) = app.get_webview_window("main") {
                 fit_window(&window, ui_scale_pref);
             }

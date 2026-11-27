@@ -1,6 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { stepIndex, wheelPixels, wheelStep, type WheelState } from "../src/lib/wheelZoom.ts";
+import {
+  gestureStep,
+  stepIndex,
+  wheelPixels,
+  wheelStep,
+  type GestureState,
+  type WheelState,
+} from "../src/lib/wheelZoom.ts";
 
 test("one mouse wheel notch is one size step, up makes it bigger", () => {
   const s: WheelState = { acc: 0, at: 0 };
@@ -39,4 +46,20 @@ test("the size stays inside the slider range", () => {
   assert.equal(stepIndex(7, 1, 8), 7);
   assert.equal(stepIndex(0, -1, 8), 0);
   assert.equal(stepIndex(3, 1, 8), 4);
+});
+
+test("zero-delta wheel events do not reset accumulated delta", () => {
+  const s: WheelState = { acc: 0, at: 0 };
+  assert.equal(wheelStep(s, -20, 1), 0);
+  assert.equal(wheelStep(s, 0, 2), 0);
+  assert.equal(wheelStep(s, -20, 3), 1);
+});
+
+test("gestureStep detects pinch/spread and rebases continuously", () => {
+  const g: GestureState = { base: 1 };
+  assert.equal(gestureStep(g, 1.05), 0);
+  assert.equal(gestureStep(g, 1.12), 1);
+  assert.equal(gestureStep(g, 1.2), 0);
+  assert.equal(gestureStep(g, 1.26), 1);
+  assert.equal(gestureStep(g, 1.12), -1);
 });

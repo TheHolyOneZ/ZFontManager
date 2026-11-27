@@ -4368,6 +4368,12 @@ h2.detail-title.copy-name {
   margin-left: auto;
   font-size: var(--fs-10);
 }
+.online-grid-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: 20px;
+}
 .online-grid {
   flex: 1;
   overflow-y: auto;

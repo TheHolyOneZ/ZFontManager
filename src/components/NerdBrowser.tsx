@@ -1,8 +1,9 @@
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { AnimatePresence, motion } from "motion/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { Download, ExternalLink, Globe, RefreshCw, Search, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { spring, springSnappy, staggerDelay } from "../design/springs";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { spring, springSnappy } from "../design/springs";
 import { SIZES, useFontStore } from "../state/fontStore";
 import { useT } from "../lib/i18n";
 import { usePathFontCss } from "../lib/fontLoader";
@@ -59,6 +60,36 @@ export function NerdBrowser() {
       (f) => compact(f.family).includes(q) || compact(f.original).includes(q) || compact(f.id).includes(q),
     );
   }, [families, query]);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [cols, setCols] = useState(3);
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const measure = () => {
+      const w = el.clientWidth;
+      if (w > 0) setCols(Math.max(1, Math.floor((w + 12) / (220 + 12))));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [families]);
+
+  const rowGap = 12;
+  const rowHeight = 148;
+  const rowCount = Math.ceil(visible.length / cols);
+
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => rowHeight,
+    overscan: 3,
+  });
+
+  useEffect(() => {
+    virtualizer.measure();
+  }, [virtualizer, cols, visible.length]);
 
   const isInstalled = (f: NerdFamily) => {
     const prefix = compact(f.patchedName);
@@ -129,37 +160,57 @@ export function NerdBrowser() {
           <p>{t("online.noMatchBody")}</p>
         </div>
       ) : (
-        <div className="online-grid">
-          {visible.map((f, i) => (
-            <motion.article
-              key={f.id}
-              className="family-card online-card"
-              tabIndex={0}
-              role="button"
-              aria-label={f.family}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...spring, delay: staggerDelay(Math.min(i, 24)) }}
-              onClick={() => void openFamily(f.id)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  void openFamily(f.id);
-                }
-              }}
-            >
-              <div className="card-head">
-                <span className="card-name">{f.family}</span>
-                <span className="card-spacer" />
-                {isInstalled(f) && <span className="badge online-badge-have">{t("online.inLibrary")}</span>}
-              </div>
-              <div className="online-card-meta">
-                <span>{f.original}</span>
-                <span>· {f.licenseShort}</span>
-              </div>
-              {f.description && <p className="nerd-desc">{f.description}</p>}
-            </motion.article>
-          ))}
+        <div ref={scrollRef} className="online-grid-scroll">
+          <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
+            {virtualizer.getVirtualItems().map((vRow) => {
+              const start = vRow.index * cols;
+              const slice = visible.slice(start, start + cols);
+              return (
+                <div
+                  key={vRow.key}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: vRow.size - rowGap,
+                    transform: `translateY(${vRow.start}px)`,
+                    display: "grid",
+                    gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+                    gap: rowGap,
+                  }}
+                >
+                  {slice.map((f) => (
+                    <article
+                      key={f.id}
+                      className="family-card online-card"
+                      tabIndex={0}
+                      role="button"
+                      aria-label={f.family}
+                      onClick={() => void openFamily(f.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          void openFamily(f.id);
+                        }
+                      }}
+                    >
+                      <div className="card-head">
+                        <span className="card-name">{f.family}</span>
+                        <span className="card-spacer" />
+                        {isInstalled(f) && <span className="badge online-badge-have">{t("online.inLibrary")}</span>}
+                      </div>
+                      <div className="online-card-meta">
+                        <span>{f.original}</span>
+                        <span>· {f.licenseShort}</span>
+                      </div>
+                      {f.description && <p className="nerd-desc">{f.description}</p>}
+                    </article>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

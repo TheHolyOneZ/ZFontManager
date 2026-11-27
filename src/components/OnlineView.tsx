@@ -1,7 +1,8 @@
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { AnimatePresence, motion } from "motion/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { Download, ExternalLink, Globe, RefreshCw, Search, Settings2, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { spring, springSnappy, staggerDelay } from "../design/springs";
 import { PillToggle } from "../design/primitives/PillToggle";
 import { SIZES, useFontStore } from "../state/fontStore";
@@ -129,6 +130,37 @@ function GoogleBrowser() {
     });
   }, [families, query, category, license, variableOnly]);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [cols, setCols] = useState(3);
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const measure = () => {
+      const w = el.clientWidth;
+      if (w > 0) setCols(Math.max(1, Math.floor((w + 12) / (220 + 12))));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [families]);
+
+  const previewSize = Math.min(SIZES[sizeIndex], 32);
+  const rowGap = 12;
+  const rowHeight = Math.round(previewSize * 1.35) + 108;
+  const rowCount = Math.ceil(visible.length / cols);
+
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => rowHeight,
+    overscan: 3,
+  });
+
+  useEffect(() => {
+    virtualizer.measure();
+  }, [virtualizer, rowHeight, cols, visible.length]);
+
   if (error && !families) {
     return (
       <motion.div className="empty-state" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={spring}>
@@ -215,22 +247,42 @@ function GoogleBrowser() {
           <p>{t("online.noMatchBody")}</p>
         </div>
       ) : (
-        <div className="online-grid">
-          {visible.slice(0, 400).map((f, i) => (
-            <OnlineCard
-              key={f.id}
-              f={f}
-              index={i}
-              installed={installedNames.has(f.family.toLowerCase())}
-              text={previewText(sampleText, f.family, previewUppercase)}
-              size={Math.min(SIZES[sizeIndex], 32)}
-              onOpen={() => void openFamily(f.id)}
-            />
-          ))}
+        <div ref={scrollRef} className="online-grid-scroll">
+          <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
+            {virtualizer.getVirtualItems().map((vRow) => {
+              const start = vRow.index * cols;
+              const slice = visible.slice(start, start + cols);
+              return (
+                <div
+                  key={vRow.key}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: vRow.size - rowGap,
+                    transform: `translateY(${vRow.start}px)`,
+                    display: "grid",
+                    gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+                    gap: rowGap,
+                  }}
+                >
+                  {slice.map((f, j) => (
+                    <OnlineCard
+                      key={f.id}
+                      f={f}
+                      index={start + j}
+                      installed={installedNames.has(f.family.toLowerCase())}
+                      text={previewText(sampleText, f.family, previewUppercase)}
+                      size={previewSize}
+                      onOpen={() => void openFamily(f.id)}
+                    />
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      )}
-      {visible.length > 400 && (
-        <p className="online-more">{t("online.narrowDown", { count: visible.length - 400 })}</p>
       )}
 
       <AnimatePresence>
